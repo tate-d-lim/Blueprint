@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import type { RiskAnswers } from '../risk/assess';
 import type {
   Approval,
   Catalog,
@@ -10,6 +11,8 @@ import type {
   Profile,
   Project,
   Requirement,
+  RequirementKey,
+  TaskStatus,
   Tool,
   ToolVersion,
 } from '../domain/types';
@@ -83,6 +86,50 @@ export function expandSeedVersion(
   return version;
 }
 
+/** A saved project as hand-written in seed JSON: requirement IDs instead of keys. */
+export interface SeedProjectFile {
+  _id: string;
+  name: string;
+  ownerName: string;
+  profileId: string;
+  riskAnswers: RiskAnswers;
+  toolIds: string[];
+  tasks: Record<string, { status: TaskStatus; note?: string }>;
+  answers: Record<string, { applies: boolean; reason?: string }>;
+}
+
+export function expandSeedProject(
+  file: string,
+  seed: SeedProjectFile,
+  profiles: Profile[],
+  toolIds: Set<string>,
+  now: string,
+): Project {
+  const profile = profiles.find(p => p._id === seed.profileId);
+  if (!profile) throw new Error(`Unknown profile ${seed.profileId} in ${file}`);
+  for (const id of seed.toolIds) if (!toolIds.has(id)) throw new Error(`Unknown tool ${id} in ${file}`);
+  const keyOf = (id: string): RequirementKey => {
+    const entry = profile.entries.find(e => e.id === id);
+    if (!entry) throw new UnknownRequirementError(id, file);
+    return entry.key;
+  };
+  const taskStatus: Project['taskStatus'] = {};
+  for (const [id, status] of Object.entries(seed.tasks)) taskStatus[keyOf(id)] = status;
+  const questionAnswers: Project['questionAnswers'] = {};
+  for (const [id, a] of Object.entries(seed.answers)) questionAnswers[keyOf(id)] = { applies: a.applies, reason: a.reason ?? '' };
+  return {
+    _id: seed._id,
+    name: seed.name,
+    ownerName: seed.ownerName,
+    riskAnswers: seed.riskAnswers,
+    toolIds: seed.toolIds,
+    taskStatus,
+    questionAnswers,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 async function readJson<T>(file: string): Promise<T> {
   return JSON.parse(await readFile(file, 'utf8')) as T;
 }
@@ -135,6 +182,8 @@ export async function buildSeedDocuments(
     profiles,
     tools,
     toolVersions,
-    projects: [],
+    projects: (await readJson<SeedProjectFile[]>(path.join(dataDir, 'seed', 'projects.json'))).map(p =>
+      expandSeedProject('projects.json', p, profiles, toolIds, now),
+    ),
   };
 }

@@ -3,14 +3,17 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { Project } from "@/lib/domain/types";
-import { buildPlan, type Heading, type PlanData, type PlanItem } from "@/lib/plan/engine";
+import { setProjectToolsAction, setQuestionAnswerAction, setTaskStatusAction } from "@/app/projects/actions";
+import { buildPlan, type Heading, type PlanData, type PlanItem, type ProjectOverlay } from "@/lib/plan/engine";
 import { HEADING_TITLES } from "@/lib/plan/labels";
 import { selectPlanInput } from "@/lib/plan/select";
 import { planQuery } from "@/lib/plan/url-state";
 import { versionVerification, type Verification } from "@/lib/plan/verification";
 import { assessRisk, type RiskAnswers } from "@/lib/risk/assess";
 import { AgentSnippet } from "./agent-snippet";
+import type { ItemControls } from "./item-controls";
 import { PlanItemView } from "./plan-item";
+import { SaveDialog } from "./save-dialog";
 import { ToolPicker } from "./tool-picker";
 
 const PROFILE_ID = "low-risk-cloud";
@@ -27,19 +30,20 @@ export function PlanView({
   answers,
   initialToolIds,
   project,
-  onChangeTools,
 }: {
   data: PlanData;
   answers: RiskAnswers;
   initialToolIds: string[];
   project?: Project;
-  onChangeTools?: (toolIds: string[]) => void;
 }) {
   const [toolIds, setToolIds] = useState(initialToolIds);
+  const [overlay, setOverlay] = useState<ProjectOverlay | undefined>(
+    project && { taskStatus: project.taskStatus, questionAnswers: project.questionAnswers },
+  );
 
   const plan = useMemo(
-    () => buildPlan(selectPlanInput(data, { profileId: PROFILE_ID, toolIds }, project)),
-    [data, toolIds, project],
+    () => buildPlan(selectPlanInput(data, { profileId: PROFILE_ID, toolIds }, overlay)),
+    [data, toolIds, overlay],
   );
   const entries = useMemo(
     () => new Map(data.profiles.flatMap(p => p.entries.map(e => [e.key, e] as const))),
@@ -57,15 +61,32 @@ export function PlanView({
   const toggle = (id: string) => {
     const next = toolIds.includes(id) ? toolIds.filter(t => t !== id) : [...toolIds, id];
     setToolIds(next);
-    window.history.replaceState(null, "", `/plan?${planQuery(answers, next)}`);
-    onChangeTools?.(next);
+    if (project) void setProjectToolsAction(project._id, next);
+    else window.history.replaceState(null, "", `/plan?${planQuery(answers, next)}`);
   };
 
-  const query = planQuery(answers, toolIds);
+  const controls: ItemControls | undefined = project && {
+    onStatus: (key, value) => {
+      setOverlay(o => o && { ...o, taskStatus: { ...o.taskStatus, [key]: value } });
+      void setTaskStatusAction(project._id, key, value);
+    },
+    onAnswer: (key, answer) => {
+      setOverlay(o => {
+        if (!o) return o;
+        const questionAnswers = { ...o.questionAnswers };
+        if (answer) questionAnswers[key] = answer;
+        else delete questionAnswers[key];
+        return { ...o, questionAnswers };
+      });
+      void setQuestionAnswerAction(project._id, key, answer);
+    },
+  };
+
+  const query = project ? `project=${encodeURIComponent(project._id)}` : planQuery(answers, toolIds);
   const byHeading = (h: Heading) => plan.items.filter(i => i.heading === h);
   const platformGroups = groupPlatform(byHeading("platform"));
   const view = (item: PlanItem, compact = false) => (
-    <PlanItemView key={`${item.profileId}:${item.key}`} item={item} entry={entries.get(item.key)} compact={compact} />
+    <PlanItemView key={`${item.profileId}:${item.key}`} item={item} entry={entries.get(item.key)} compact={compact} controls={controls} />
   );
 
   return (
@@ -99,6 +120,7 @@ export function PlanView({
               Security review spreadsheet
             </a>
           </div>
+          {!project && <SaveDialog answers={answers} toolIds={toolIds} />}
           <AgentSnippet />
         </div>
 

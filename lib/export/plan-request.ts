@@ -1,5 +1,7 @@
 import { withDb } from '../data/db';
 import { loadPlanData } from '../data/repos/plan-data';
+import { getProject } from '../data/repos/projects';
+import type { Project } from '../domain/types';
 import { buildPlan, type Plan, type PlanData } from '../plan/engine';
 import { selectPlanInput } from '../plan/select';
 import { parsePlanQuery } from '../plan/url-state';
@@ -13,26 +15,43 @@ export interface PlanRequest {
   data: PlanData;
   answers: RiskAnswers;
   toolIds: string[];
+  project?: Project;
   meta: BuildPlanMeta;
 }
 
 /** Turns a download link's query string into the plan it describes. Shared by every export route. */
 export async function resolvePlanRequest(sp: URLSearchParams): Promise<PlanRequest> {
-  const data = await withDb(loadPlanData);
-  const parsed = parsePlanQuery(Object.fromEntries(sp), data.tools.map(t => t._id));
-  if (!parsed) throw new BadPlanRequestError('The plan link is missing or has invalid answers.');
-  const risk = assessRisk(parsed.answers);
+  const { data, project } = await withDb(async db => {
+    const projectId = sp.get('project');
+    const found = projectId ? await getProject(db, projectId) : null;
+    if (projectId && !found) throw new BadPlanRequestError('That saved project no longer exists.');
+    return { data: await loadPlanData(db), project: found ?? undefined };
+  });
+
+  let answers: RiskAnswers;
+  let toolIds: string[];
+  if (project) {
+    const known = new Set(data.tools.map(t => t._id));
+    answers = project.riskAnswers;
+    toolIds = project.toolIds.filter(id => known.has(id));
+  } else {
+    const parsed = parsePlanQuery(Object.fromEntries(sp), data.tools.map(t => t._id));
+    if (!parsed) throw new BadPlanRequestError('The plan link is missing or has invalid answers.');
+    ({ answers, toolIds } = parsed);
+  }
+  const risk = assessRisk(answers);
   if (!risk.profileId) throw new BadPlanRequestError('This type of app is not supported yet.');
 
-  const input = selectPlanInput(data, { profileId: risk.profileId, toolIds: parsed.toolIds });
+  const input = selectPlanInput(data, { profileId: risk.profileId, toolIds }, project);
   const profile = data.profiles.find(p => p._id === risk.profileId)!;
   return {
     plan: buildPlan(input),
     data,
-    answers: parsed.answers,
-    toolIds: parsed.toolIds,
+    answers,
+    toolIds,
+    project,
     meta: {
-      title: 'Your app',
+      title: project?.name ?? 'Your app',
       appType: risk.appType,
       profileTitle: profile.title,
       tools: toolsForMeta(input, risk.profileId),

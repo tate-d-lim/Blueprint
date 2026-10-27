@@ -1,0 +1,91 @@
+[
+  {
+    "_id": "sample-two-weeks-in",
+    "name": "Sample project (two weeks in)",
+    "ownerName": "Sample builder",
+    "profileId": "low-risk-cloud",
+    "riskAnswers": {
+      "classification": "restricted",
+      "sensitivity": "sensitive-normal",
+      "impact": "slight",
+      "downstream": "minimal",
+      "cii": false,
+      "sii": false
+    },
+    "toolIds": [
+      "appcentral",
+      "dbaas",
+      "iga"
+    ],
+    "tasks": {
+      "as-1": {
+        "status": "done",
+        "note": "Schemas on every route."
+      },
+      "as-2": {
+        "status": "done"
+      },
+      "as-3": {
+        "status": "done"
+      },
+      "as-7": {
+        "status": "done"
+      },
+      "sc-4": {
+        "status": "done"
+      },
+      "sc-6": {
+        "status": "done"
+      },
+      "st-5": {
+        "status": "done"
+      },
+      "as-9": {
+        "status": "in-progress",
+        "note": "CSP is set; tightening script-src."
+      },
+      "st-4": {
+        "status": "in-progress",
+        "note": "Penetration test booked for next month."
+      },
+      "pm-3": {
+        "status": "done"
+      },
+      "pm-6": {
+        "status": "done"
+      }
+    },
+    "answers": {
+      "is-11": {
+        "applies": false,
+        "reason": "No .gov.sg domain for this app (sample answer)"
+      },
+      "is-14": {
+        "applies": false,
+        "reason": "The app sends no SMS (sample answer)"
+      },
+      "is-15": {
+        "applies": false,
+        "reason": "The app shares no short links (sample answer)"
+      },
+      "pm-1": {
+        "applies": true
+      },
+      "pm-2": {
+        "applies": true
+      },
+      "pm-3": {
+        "applies": true
+      },
+      "pm-4": {
+        "applies": true
+      },
+      "pm-5": {
+        "applies": true
+      },
+      "pm-6": {
+        "applies": true
+      }
+    }
+  }
+]

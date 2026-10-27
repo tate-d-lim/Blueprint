@@ -1,0 +1,88 @@
+import { closeDb, getDb } from '@/lib/data/db';
+import { loadPlanData } from '@/lib/data/repos/plan-data';
+import {
+  createProject, getProject, listProjects, setProjectTools, setQuestionAnswer, setTaskStatus,
+} from '@/lib/data/repos/projects';
+import { seedDatabase } from '@/lib/data/seed';
+import { BadPlanRequestError, resolvePlanRequest } from '@/lib/export/plan-request';
+import { buildPlan } from '@/lib/plan/engine';
+import { selectPlanInput } from '@/lib/plan/select';
+import type { RiskAnswers } from '@/lib/risk/assess';
+
+const answers: RiskAnswers = { classification: 'restricted', sensitivity: 'sensitive-normal', impact: 'slight', downstream: 'minimal', cii: false, sii: false };
+
+beforeEach(async () => {
+  await seedDatabase(await getDb());
+});
+afterAll(closeDb);
+
+const make = async (over = {}) =>
+  createProject(await getDb(), { name: 'Member app', ownerName: 'Sam', riskAnswers: answers, toolIds: ['appcentral'], ...over });
+
+async function planFor(id: string) {
+  const db = await getDb();
+  const project = (await getProject(db, id))!;
+  const data = await loadPlanData(db);
+  return buildPlan(selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds: project.toolIds }, project));
+}
+
+test('create, mark as-1 Done with a note, reload: the plan shows it', async () => {
+  const project = await make();
+  await setTaskStatus(await getDb(), project._id, 'im8-reform:as-1', { status: 'done', note: 'Schemas everywhere' });
+  const item = (await planFor(project._id)).items.find(i => i.id === 'as-1')!;
+  expect(item.status).toEqual({ status: 'done', note: 'Schemas everywhere' });
+});
+
+test('answering "Applies" turns a question into a task; clearing the answer puts it back', async () => {
+  const project = await make();
+  const db = await getDb();
+  await setQuestionAnswer(db, project._id, 'im8-reform:pm-1', { applies: true, reason: '' });
+  expect((await planFor(project._id)).items.find(i => i.id === 'pm-1')!.placement).toBe('answered-applies');
+  await setQuestionAnswer(db, project._id, 'im8-reform:pm-1', null);
+  expect((await planFor(project._id)).items.find(i => i.id === 'pm-1')!.placement).toBe('open');
+});
+
+test('project data that points at things that no longer exist still plans without errors', async () => {
+  const db = await getDb();
+  const project = await make({ toolIds: ['appcentral', 'deleted-tool'] });
+  await setTaskStatus(db, project._id, 'im8-reform:zz-1', { status: 'done' });
+  await setQuestionAnswer(db, project._id, 'im8-reform:zz-2', { applies: false, reason: 'x' });
+  const plan = await planFor(project._id);
+  expect(plan.items.find(i => i.id === 'as-4')!.placement).toBe('provided');
+  expect(plan.items.some(i => i.id === 'zz-1')).toBe(false);
+});
+
+test('picks can be changed', async () => {
+  const project = await make();
+  await setProjectTools(await getDb(), project._id, ['appcentral', 'dbaas']);
+  expect((await getProject(await getDb(), project._id))!.toolIds).toEqual(['appcentral', 'dbaas']);
+});
+
+test('keys that could reach other fields are rejected', async () => {
+  const project = await make();
+  await expect(setTaskStatus(await getDb(), project._id, 'a.b', { status: 'done' })).rejects.toThrow(/key/i);
+  await expect(setQuestionAnswer(await getDb(), project._id, '$set', { applies: true, reason: '' })).rejects.toThrow(/key/i);
+});
+
+test('a project needs a name and an owner', async () => {
+  await expect(make({ name: '  ' })).rejects.toThrow(/name/i);
+  await expect(make({ ownerName: '' })).rejects.toThrow(/owner/i);
+});
+
+test('the list is newest-updated first and includes the sample project', async () => {
+  const project = await make();
+  const list = await listProjects(await getDb());
+  expect(list.map(p => p._id)).toContain('sample-two-weeks-in');
+  expect(list[0]._id).toBe(project._id);
+  await setTaskStatus(await getDb(), 'sample-two-weeks-in', 'im8-reform:cs-3', { status: 'in-progress' });
+  expect((await listProjects(await getDb()))[0]._id).toBe('sample-two-weeks-in');
+});
+
+test('a download link with ?project= uses the saved answers, tools and statuses', async () => {
+  const request = await resolvePlanRequest(new URLSearchParams({ project: 'sample-two-weeks-in' }));
+  expect(request.project?.name).toBe('Sample project (two weeks in)');
+  expect(request.meta.title).toBe('Sample project (two weeks in)');
+  expect(request.toolIds).toEqual(['appcentral', 'dbaas', 'iga']);
+  expect((request.plan.items.find(i => i.id === 'as-1')!.status as { status: string }).status).toBe('done');
+  await expect(resolvePlanRequest(new URLSearchParams({ project: 'nope' }))).rejects.toBeInstanceOf(BadPlanRequestError);
+});

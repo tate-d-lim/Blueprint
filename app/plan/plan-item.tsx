@@ -3,8 +3,19 @@ import type { PlanItem } from "@/lib/plan/engine";
 import { GOOD_TO_HAVE_LABEL } from "@/lib/plan/labels";
 import { itemVerification } from "@/lib/plan/verification";
 import { Badge, Chip } from "./badge";
+import { QuestionControls, TaskControls, type ItemControls } from "./item-controls";
 
-export function PlanItemView({ item, entry, compact = false }: { item: PlanItem; entry?: ProfileEntry; compact?: boolean }) {
+export function PlanItemView({
+  item,
+  entry,
+  compact = false,
+  controls,
+}: {
+  item: PlanItem;
+  entry?: ProfileEntry;
+  compact?: boolean;
+  controls?: ItemControls;
+}) {
   const verification = itemVerification(item);
   const title = item.plain?.title ?? item.title;
   const why = item.plain?.why ?? entry?.rationale;
@@ -49,6 +60,9 @@ export function PlanItemView({ item, entry, compact = false }: { item: PlanItem;
       {compact && explanations.length > 0 && (
         <p className="mt-1 text-sm text-muted">{explanations.map(c => c.explanation).join(" ")}</p>
       )}
+
+      {controls && item.heading === "you" && <TaskControls item={item} controls={controls} />}
+      {controls && item.heading === "questions" && <QuestionControls item={item} controls={controls} />}
 
       <p className="mt-2 font-mono text-xs text-muted">{item.id}</p>
     </li>

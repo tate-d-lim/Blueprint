@@ -15,6 +15,9 @@ export async function Header() {
           <Link href="/start" className="hover:text-foreground">
             New plan
           </Link>
+          <Link href="/projects" className="hover:text-foreground">
+            Saved projects
+          </Link>
           {role === "admin" && (
             <Link href="/admin" className="hover:text-foreground">
               Admin
