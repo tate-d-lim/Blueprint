@@ -1,5 +1,5 @@
 import type { Db } from 'mongodb';
-import type { CoverageEntry, Profile, ToolVersion } from '../../domain/types';
+import type { CoverageEntry, Profile, Tool, ToolVersion } from '../../domain/types';
 
 export interface NewToolVersion {
   toolId: string;
@@ -46,4 +46,44 @@ export async function createToolVersion(db: Db, input: NewToolVersion): Promise<
       throw err;
     }
   }
+}
+
+export class StaleVersionError extends Error {
+  constructor() {
+    super('A newer version exists');
+    this.name = 'StaleVersionError';
+  }
+}
+
+/** Approves a version, but only if it is still the newest for its tool and profile. Approving twice keeps the first approval. */
+export async function approveCurrentVersion(db: Db, versionId: string, by: string): Promise<ToolVersion> {
+  const versions = db.collection<ToolVersion>('toolVersions');
+  const version = await versions.findOne({ _id: versionId });
+  if (!version) throw new Error(`No such version ${versionId}`);
+  const newest = await versions.find({ toolId: version.toolId, profileId: version.profileId }).sort({ version: -1 }).limit(1).next();
+  if (newest && newest.version > version.version) throw new StaleVersionError();
+  if (version.approval) return version;
+  const approval = { at: new Date().toISOString(), by, kind: 'verifier' as const };
+  await versions.updateOne({ _id: versionId }, { $set: { approval } });
+  return { ...version, approval };
+}
+
+/** Tools whose newest version, for any profile, has not been approved yet. */
+export async function listAwaitingApproval(db: Db): Promise<{ tool: Tool; current: ToolVersion }[]> {
+  const [tools, versions] = await Promise.all([
+    db.collection<Tool>('tools').find().toArray(),
+    db.collection<ToolVersion>('toolVersions').find().toArray(),
+  ]);
+  const newest = new Map<string, ToolVersion>();
+  for (const v of versions) {
+    const k = `${v.toolId}|${v.profileId}`;
+    if (!newest.has(k) || newest.get(k)!.version < v.version) newest.set(k, v);
+  }
+  return [...newest.values()]
+    .filter(v => !v.approval)
+    .flatMap(current => {
+      const tool = tools.find(t => t._id === current.toolId);
+      return tool ? [{ tool, current }] : [];
+    })
+    .sort((a, b) => a.tool.name.localeCompare(b.tool.name));
 }
