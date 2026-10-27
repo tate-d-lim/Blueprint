@@ -64,3 +64,36 @@ export const approved = (kind: Approval['kind'] = 'verifier'): Approval => ({ at
 export function pair(current: ToolVersion, lastApproved?: ToolVersion): VersionPair {
   return lastApproved ? { current, lastApproved } : { current };
 }
+
+import type { Claim, PlanItem } from '@/lib/plan/engine';
+
+export function makeClaim(over: Partial<Claim> = {}): Claim {
+  return {
+    toolId: 'appcentral',
+    toolName: 'appCentral',
+    value: 'provided',
+    source: 'AEO TPC slide 12 (28 Oct 2026)',
+    verification: 'verified',
+    ...over,
+  };
+}
+
+/** A plan item built by hand, for testing exports without running the engine. */
+export function makeItem(over: Partial<PlanItem> = {}): PlanItem {
+  return {
+    key: key('as-1'),
+    profileId: 'low-risk-cloud',
+    id: 'as-1',
+    family: 'as',
+    title: 'Input Validation',
+    rationale: 'Because.',
+    recommendations: 'Do this.',
+    level: 1,
+    heading: 'platform',
+    placement: 'provided',
+    claims: [],
+    decisive: [],
+    reason: '',
+    ...over,
+  };
+}
