@@ -1,4 +1,5 @@
-import type { CoverageEntry, CoverageValue, RequirementKey } from '../domain/types';
+import type { CoverageEntry, CoverageValue, RequirementKey, ToolVersion } from '../domain/types';
+import { sameCoverage } from '../plan/verification';
 
 /** One row of the coverage editor as the admin left it. A blank value means "this tool says nothing about it". */
 export interface DraftRow {
@@ -15,6 +16,31 @@ export type NewVersionResult =
   | { ok: false; errors: { key?: RequirementKey; message: string }[] };
 
 const clean = (s?: string) => s?.trim() || undefined;
+
+/**
+ * Rows with no source of their own inherit the version's source. When a new version is saved that would
+ * relabel every untouched row with the new source, and credit a changed row to the old one. So: a row the
+ * admin did not change keeps the source it effectively had; a row they changed takes the new version's
+ * source unless they typed one for it.
+ */
+export function carrySources(rows: DraftRow[], previous?: ToolVersion): DraftRow[] {
+  if (!previous) return rows;
+  const before = new Map(previous.entries.map(e => [e.key, e]));
+  return rows.map(row => {
+    const old = before.get(row.key);
+    if (!row.value || !old) return row;
+    const typed = clean(row.source);
+    if (typed && typed !== clean(old.source)) return row;
+    const unchanged = sameCoverage(old, {
+      key: row.key,
+      value: row.value,
+      otherToolId: clean(row.otherToolId),
+      explanation: clean(row.explanation),
+      builderPart: clean(row.builderPart),
+    });
+    return { ...row, source: unchanged ? (clean(old.source) ?? previous.source) : undefined };
+  });
+}
 
 export function validateNewVersion(rows: DraftRow[], versionSource: string): NewVersionResult {
   const errors: { key?: RequirementKey; message: string }[] = [];

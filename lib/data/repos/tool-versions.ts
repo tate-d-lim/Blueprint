@@ -15,6 +15,11 @@ export interface NewToolVersion {
 const DUPLICATE_KEY = 11000;
 const ATTEMPTS = 3;
 
+/** The newest version of a tool's coverage for a profile, or null if it has none yet. */
+export async function getCurrentVersion(db: Db, toolId: string, profileId: string): Promise<ToolVersion | null> {
+  return db.collection<ToolVersion>('toolVersions').find({ toolId, profileId }).sort({ version: -1 }).limit(1).next();
+}
+
 /** Saves the next version of a tool's coverage. It is never approved: the verifier does that. */
 export async function createToolVersion(db: Db, input: NewToolVersion): Promise<ToolVersion> {
   const profile = await db.collection<Profile>('profiles').findOne({ _id: input.profileId });

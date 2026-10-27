@@ -10,6 +10,8 @@ npm run seed                  # or use "Reset demo data" in the header
 npm run build && npm start    # steadier than `npm run dev` for a live demo; opens on http://localhost:3000
 ```
 
+The app and MongoDB listen on this Mac only (127.0.0.1), because the database has no password and the venue's Wi-Fi isn't yours. If a page shows a banner saying the database isn't running or is empty, follow it (`docker-compose up -d`, then `npm run seed`).
+
 - Role switcher on **Builder**. Browser at `http://localhost:3000/start`. Downloads folder empty.
 - If a page ever shows an error about a missing function after you edited code, restart the server. Turbopack's dev server can serve a stale module.
 - `npm run e2e` checks moments 1 to 3 automatically (own port and database, so it never touches your demo data).
@@ -66,7 +68,7 @@ The 86 requirements that must or should be done become **11 that are yours and 9
 
 ## Moment 5: The platform cut-away (about 30 seconds)
 
-1. Switch role to **Admin** → **Admin** → **appCentral** → **Edit coverage**. In the as-4 row, type an explanation ("appCentral rate-limits sign-ins at the gateway."). Click **Save new version**, add "What changed", **Save**. A green note says version 2 is not yet verified.
+1. Switch role to **Admin** → **Admin** → **appCentral** → **Edit coverage**. In the as-4 row, type an explanation ("appCentral rate-limits sign-ins at the gateway."). Click **Save new version**, type a source for this version (it is required and starts empty on purpose, for example "appCentral team, 2026-10-27"; only the row you changed is credited to it, every other row keeps its old source), add "What changed", **Save**. A green note says version 2 is not yet verified.
 2. Open the plan for appCentral: **only as-4** shows **Not yet verified**, and so does appCentral in the picker.
 3. Switch role to **Verifier** → **Verify** → **Review** on appCentral. The table shows the one changed row. Click **Approve this version**.
 4. Reload the plan: as-4 and appCentral are **Verified** again.

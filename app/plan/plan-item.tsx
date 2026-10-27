@@ -21,9 +21,13 @@ export function PlanItemView({
   const verification = itemVerification(item);
   const title = item.plain?.title ?? item.title;
   const why = item.plain?.why ?? entry?.rationale;
-  const shared = item.decisive.filter(c => c.value === "shared");
-  const yourPart = item.decisive.map(c => c.builderPart).find(Boolean) ?? item.plain?.task;
-  const explanations = item.decisive.filter(c => c.explanation);
+  // GovTech's published guides are written for agencies and use their jargon. Their words are shown in the
+  // detail panel, attributed; this list sticks to plain language.
+  const ours = item.decisive.filter(c => c.verification !== "govtech-published");
+  const hasGovTechText = item.decisive.some(c => c.verification === "govtech-published" && (c.explanation || c.builderPart));
+  const shared = ours.filter(c => c.value === "shared");
+  const yourPart = ours.map(c => c.builderPart).find(Boolean) ?? item.plain?.task;
+  const explanations = ours.filter(c => c.explanation);
 
   return (
     <li className="rounded-lg border border-line bg-surface p-4">
@@ -70,6 +74,7 @@ export function PlanItemView({
       {compact && explanations.length > 0 && (
         <p className="mt-1 text-sm text-muted">{explanations.map(c => c.explanation).join(" ")}</p>
       )}
+      {hasGovTechText && <p className="mt-1 text-xs text-muted">GovTech&apos;s own notes are in the details: open this item to read them.</p>}
 
       {controls && item.heading === "you" && <TaskControls item={item} controls={controls} />}
       {controls && item.heading === "questions" && <QuestionControls item={item} controls={controls} />}

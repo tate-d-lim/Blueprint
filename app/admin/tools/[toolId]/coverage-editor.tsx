@@ -43,7 +43,8 @@ export function CoverageEditor({
   const [level, setLevel] = useState("");
   const [coveredOnly, setCoveredOnly] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [source, setSource] = useState(defaultSource);
+  // Starts empty on purpose: a changed row is credited to the source typed here, never to the previous one.
+  const [source, setSource] = useState("");
   const [changeNote, setChangeNote] = useState("");
   const [errors, setErrors] = useState<{ key?: string; message: string }[]>([]);
   const [savedVersion, setSavedVersion] = useState<number | null>(null);
@@ -182,7 +183,7 @@ export function CoverageEditor({
                       aria-label={`Source for ${req.id}`}
                       value={row.source ?? ""}
                       onChange={e => update(req.key, { source: e.target.value })}
-                      placeholder="Same as version"
+                      placeholder="Same as before"
                       className={INPUT}
                     />
                   </td>
@@ -202,7 +203,12 @@ export function CoverageEditor({
           <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
             <label className="text-sm font-medium">
               Source for this version
-              <input value={source} onChange={e => setSource(e.target.value)} className={`${INPUT} mt-1`} />
+              <input
+                value={source}
+                onChange={e => setSource(e.target.value)}
+                placeholder={defaultSource ? `Where the changes come from (before: ${defaultSource})` : "Where this coverage comes from"}
+                className={`${INPUT} mt-1`}
+              />
             </label>
             <label className="text-sm font-medium">
               What changed

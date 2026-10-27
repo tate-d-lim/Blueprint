@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Project } from "@/lib/domain/types";
 import { setProjectToolsAction, setQuestionAnswerAction, setTaskStatusAction } from "@/app/projects/actions";
 import { buildPlan, type Heading, type PlanData, type PlanItem, type ProjectOverlay } from "@/lib/plan/engine";
 import { HEADING_TITLES } from "@/lib/plan/labels";
+import { runSave, type SaveOutcome } from "@/lib/plan/save";
 import { selectPlanInput } from "@/lib/plan/select";
-import { planQuery } from "@/lib/plan/url-state";
+import { parsePlanQuery, planQuery } from "@/lib/plan/url-state";
 import { versionVerification, type Verification } from "@/lib/plan/verification";
 import { assessRisk, type RiskAnswers } from "@/lib/risk/assess";
 import { AgentSnippet } from "./agent-snippet";
@@ -37,7 +39,13 @@ export function PlanView({
   initialToolIds: string[];
   project?: Project;
 }) {
-  const [toolIds, setToolIds] = useState(initialToolIds);
+  // The page's own props can be a stale copy when the browser restores it with Back, so an unsaved plan
+  // takes its picks from the live address bar, which the toggles below keep up to date.
+  const params = useSearchParams();
+  const [toolIds, setToolIds] = useState(() =>
+    project ? initialToolIds : (parsePlanQuery(Object.fromEntries(params), data.tools.map(t => t._id))?.toolIds ?? initialToolIds),
+  );
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [overlay, setOverlay] = useState<ProjectOverlay | undefined>(
     project && { taskStatus: project.taskStatus, questionAnswers: project.questionAnswers },
@@ -60,19 +68,33 @@ export function PlanView({
     return out;
   }, [data]);
 
+  /** Saves in the background; if it fails, undoes the change on screen and says so. */
+  const save = async (action: () => Promise<SaveOutcome>, rollback: () => void) => {
+    const error = await runSave(action);
+    if (error) {
+      rollback();
+      setSaveError(error);
+    } else {
+      setSaveError(null);
+    }
+  };
+
   const toggle = (id: string) => {
+    const previous = toolIds;
     const next = toolIds.includes(id) ? toolIds.filter(t => t !== id) : [...toolIds, id];
     setToolIds(next);
-    if (project) void setProjectToolsAction(project._id, next);
+    if (project) void save(() => setProjectToolsAction(project._id, next), () => setToolIds(previous));
     else window.history.replaceState(null, "", `/plan?${planQuery(answers, next)}`);
   };
 
   const controls: ItemControls | undefined = project && {
     onStatus: (key, value) => {
+      const previous = overlay;
       setOverlay(o => o && { ...o, taskStatus: { ...o.taskStatus, [key]: value } });
-      void setTaskStatusAction(project._id, key, value);
+      void save(() => setTaskStatusAction(project._id, key, value), () => setOverlay(previous));
     },
     onAnswer: (key, answer) => {
+      const previous = overlay;
       setOverlay(o => {
         if (!o) return o;
         const questionAnswers = { ...o.questionAnswers };
@@ -80,7 +102,7 @@ export function PlanView({
         else delete questionAnswers[key];
         return { ...o, questionAnswers };
       });
-      void setQuestionAnswerAction(project._id, key, answer);
+      void save(() => setQuestionAnswerAction(project._id, key, answer), () => setOverlay(previous));
     },
   };
 
@@ -99,6 +121,14 @@ export function PlanView({
       </aside>
 
       <div className="min-w-0 space-y-10">
+        {saveError && (
+          <div role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm">
+            <span className="font-medium">{saveError}</span>
+            <button type="button" onClick={() => setSaveError(null)} className="ml-3 underline">
+              Dismiss
+            </button>
+          </div>
+        )}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Your build plan</h1>

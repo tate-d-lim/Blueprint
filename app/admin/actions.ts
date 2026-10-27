@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { validateNewVersion, type DraftRow } from "@/lib/admin/new-version";
+import { carrySources, validateNewVersion, type DraftRow } from "@/lib/admin/new-version";
 import { withDb } from "@/lib/data/db";
-import { createToolVersion } from "@/lib/data/repos/tool-versions";
+import { createToolVersion, getCurrentVersion } from "@/lib/data/repos/tool-versions";
 import { createTool } from "@/lib/data/repos/tools";
 import type { Section } from "@/lib/domain/types";
 import { getRole } from "@/lib/role";
@@ -25,11 +25,12 @@ export async function saveVersionAction(
   changeNote?: string,
 ): Promise<SaveResult> {
   await requireAdmin();
-  const result = validateNewVersion(rows, source);
-  if (!result.ok) return result;
-  const saved = await withDb(db =>
-    createToolVersion(db, { toolId, profileId, source: source.trim(), changeNote, entries: result.entries, createdByRole: "admin" }),
-  );
+  const saved = await withDb(async db => {
+    const result = validateNewVersion(carrySources(rows, (await getCurrentVersion(db, toolId, profileId)) ?? undefined), source);
+    if (!result.ok) return result;
+    return createToolVersion(db, { toolId, profileId, source: source.trim(), changeNote, entries: result.entries, createdByRole: "admin" });
+  });
+  if ("ok" in saved) return saved;
   revalidatePath("/admin");
   revalidatePath("/verify");
   return { ok: true, version: saved.version };
