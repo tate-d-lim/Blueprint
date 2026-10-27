@@ -64,13 +64,30 @@ test('exactly the 11 defaults are app-builder', async () => {
   expect(builderIds.sort()).toEqual([...DEFAULT_BUILDER_IDS].sort());
 });
 
-test('tools: appCentral, DBaaS, IGA and genCentral, which activates the GenAI profile', async () => {
+test('tools: appCentral, DBaaS, IGA, genCentral (which activates the GenAI profile), then the GovTech tools', async () => {
   const { tools, profiles, catalogs, requirements } = await loadSeed();
-  expect(tools.map(t => t._id)).toEqual(['appcentral', 'dbaas', 'iga', 'gencentral']);
+  expect(tools.map(t => t._id)).toEqual(['appcentral', 'dbaas', 'iga', 'gencentral', 'websg', 'isomer']);
   expect(tools.find(t => t._id === 'gencentral')).toMatchObject({ isSample: true, activatesProfiles: ['generative-ai'] });
   expect(profiles.map(p => p._id)).toEqual(['low-risk-cloud', 'generative-ai']);
   expect(catalogs.map(c => c._id)).toEqual(['im8-reform', 'genai']);
   expect(requirements).toHaveLength(149 + 8);
+});
+
+test('WebSG and Isomer are seeded from their published guides, approved as GovTech-published', async () => {
+  const { tools, toolVersions } = await loadSeed();
+  for (const [id, counts, source, against] of [
+    ['websg', [99, 14, 4, 0], 'WebSG Component Guide, Low-Risk Cloud (published 2026-07-28)', '2026-07-28'],
+    ['isomer', [99, 15, 3, 0], 'Isomer Component Guide, Low-Risk Cloud (baseline 2025-09-17, file dated 6 Oct 2025)', '2025-09-17'],
+  ] as const) {
+    expect(tools.find(t => t._id === id)).toMatchObject({ section: 'wog', isSample: false });
+    const v = toolVersions.find(v => v._id === `${id}:low-risk-cloud:v1`)!;
+    const count = (value: string) => v.entries.filter(e => e.value === value).length;
+    expect([count('provided'), count('app-builder'), count('shared'), count('not-applicable')]).toEqual(counts);
+    expect(v.source).toBe(source);
+    expect(v.writtenAgainst).toContain(against);
+    expect(v.approval).toMatchObject({ kind: 'govtech-published', by: 'GovTech (published Component Guide)' });
+    expect(v.importedFrom?.missingKeys).toEqual(['im8-reform:is-15']);
+  }
 });
 
 test('unknown requirement ID fails with file and ID', async () => {

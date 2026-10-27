@@ -75,6 +75,13 @@ async function AdminTools() {
         </table>
       </div>
 
+      <p>
+        <Link href="/admin/import" className="font-medium text-accent hover:underline">
+          Import a Component Guide
+        </Link>{" "}
+        <span className="text-muted">to create a version from a product team&apos;s published spreadsheet.</span>
+      </p>
+
       <NewToolForm />
     </div>
   );

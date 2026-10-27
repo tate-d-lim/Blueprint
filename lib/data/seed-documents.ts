@@ -16,6 +16,8 @@ import type {
   Tool,
   ToolVersion,
 } from '../domain/types';
+import { buildImportEntries, previewImport } from '../import/plan-import';
+import { parseGuide } from '../import/parse-guide';
 import { UnknownRequirementError, loadGenAi, loadIm8Catalog, loadLowRiskCloudProfile } from './load-sources';
 
 export interface SeedDocuments {
@@ -84,6 +86,52 @@ export function expandSeedVersion(
   };
   if (seed.approval) version.approval = { at: now, by: seed.approval.by, kind: seed.approval.kind };
   return version;
+}
+
+/** A published GovTech Component Guide that becomes a tool, using the suggested mapping. */
+export interface SeedGuideFile {
+  toolId: string;
+  name: string;
+  description: string;
+  file: string;
+  profileId: string;
+  source: string;
+}
+
+const GOVTECH_APPROVAL_BY = 'GovTech (published Component Guide)';
+
+async function importSeedGuide(
+  seed: SeedGuideFile,
+  dataDir: string,
+  profiles: Profile[],
+  now: string,
+): Promise<{ tool: Tool; version: ToolVersion }> {
+  const profile = profiles.find(p => p._id === seed.profileId);
+  if (!profile) throw new Error(`Unknown profile ${seed.profileId} in guides.json`);
+  const guide = await parseGuide(await readFile(path.join(dataDir, 'guides', seed.file)), seed.file);
+  const preview = previewImport(guide, profile);
+  if (preview.unknownIds.length) throw new UnknownRequirementError(preview.unknownIds[0], seed.file);
+  const mapping: Record<string, CoverageValue> = {};
+  for (const pair of preview.pairs) {
+    if (!pair.suggested) throw new Error(`No suggested value for owner "${pair.owner}" in ${seed.file}`);
+    mapping[pair.pairKey] = pair.suggested;
+  }
+  return {
+    tool: { _id: seed.toolId, name: seed.name, description: seed.description, section: 'wog', oscalType: 'service', isSample: false },
+    version: {
+      _id: `${seed.toolId}:${seed.profileId}:v1`,
+      toolId: seed.toolId,
+      profileId: seed.profileId,
+      version: 1,
+      writtenAgainst: preview.writtenAgainst,
+      source: seed.source,
+      createdAt: now,
+      createdByRole: 'seed',
+      approval: { at: now, by: GOVTECH_APPROVAL_BY, kind: 'govtech-published' },
+      importedFrom: { fileName: seed.file, missingKeys: preview.missingKeys },
+      entries: buildImportEntries(guide, profile, mapping),
+    },
+  };
 }
 
 /** A saved project as hand-written in seed JSON: requirement IDs instead of keys. */
@@ -162,7 +210,11 @@ export async function buildSeedDocuments(
     }
   }
 
-  const tools = await readJson<Tool[]>(path.join(dataDir, 'seed', 'tools.json'));
+  const handWritten = await readJson<Tool[]>(path.join(dataDir, 'seed', 'tools.json'));
+  const guides = await Promise.all(
+    (await readJson<SeedGuideFile[]>(path.join(dataDir, 'seed', 'guides.json'))).map(g => importSeedGuide(g, dataDir, profiles, now)),
+  );
+  const tools = [...handWritten, ...guides.map(g => g.tool)];
   const toolIds = new Set(tools.map(t => t._id));
   const versionFiles = [
     ['appcentral-slide12.json', await readVersionFiles(path.join(dataDir, 'seed', 'appcentral-slide12.json'))],
@@ -175,6 +227,8 @@ export async function buildSeedDocuments(
       return expandSeedVersion(name, seed, target, toolIds, now);
     }),
   );
+
+  toolVersions.push(...guides.map(g => g.version));
 
   return {
     catalogs: [im8.catalog, genai.catalog],

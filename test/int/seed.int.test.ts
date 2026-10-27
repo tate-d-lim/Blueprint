@@ -30,8 +30,8 @@ test('the seeded data gives the headline counts: you 11, platform 66, questions 
 test('seeding twice replaces the data instead of duplicating it', async () => {
   const db = await getDb();
   const counts = await seedDatabase(db);
-  expect(counts.toolVersions).toBe(3);
-  expect(await db.collection('toolVersions').countDocuments()).toBe(3);
+  expect(counts.toolVersions).toBe(5);
+  expect(await db.collection('toolVersions').countDocuments()).toBe(5);
 });
 
 test('a second version with the same (tool, profile, version) is rejected by the unique index', async () => {
