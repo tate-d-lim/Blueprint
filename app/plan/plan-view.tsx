@@ -9,6 +9,7 @@ import { selectPlanInput } from "@/lib/plan/select";
 import { planQuery } from "@/lib/plan/url-state";
 import { versionVerification, type Verification } from "@/lib/plan/verification";
 import { assessRisk, type RiskAnswers } from "@/lib/risk/assess";
+import { AgentSnippet } from "./agent-snippet";
 import { PlanItemView } from "./plan-item";
 import { ToolPicker } from "./tool-picker";
 
@@ -98,6 +99,7 @@ export function PlanView({
               Security review spreadsheet
             </a>
           </div>
+          <AgentSnippet />
         </div>
 
         <Section heading="you" count={plan.counts.you}>

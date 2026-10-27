@@ -1,4 +1,4 @@
-import type { CoverageValue } from '../domain/types';
+import type { CoverageValue, TaskStatus } from '../domain/types';
 import type { Heading, Placement } from './engine';
 import type { Verification } from './verification';
 
@@ -67,4 +67,10 @@ export const REASON = {
     `Your tools disagree: ${and(naTools)} says this doesn't apply, but ${and(otherTools)} covers it.`,
   open: () => 'Depends on your app, and no tool you picked covers it.',
   'answered-not-applicable': (reason: string) => `You said this doesn't apply: ${reason}`,
+};
+
+export const STATUS_LABEL: Record<TaskStatus, string> = {
+  todo: 'To do',
+  'in-progress': 'In progress',
+  done: 'Done',
 };

@@ -46,6 +46,9 @@ export interface PlanItem {
   family: string;
   title: string;
   plain?: PlainText;
+  /** Official wording, used where the plain-language text is missing. */
+  rationale: string;
+  recommendations: string;
   level: Level;
   heading: Heading;
   placement: Placement;
@@ -189,6 +192,8 @@ export function buildPlan(input: PlanInput): Plan {
         id: entry.id,
         family: entry.family,
         title: entry.title,
+        rationale: entry.rationale,
+        recommendations: entry.recommendations,
         level: entry.level,
         heading: headingOf(verdict.placement, entry.level),
         placement: verdict.placement,

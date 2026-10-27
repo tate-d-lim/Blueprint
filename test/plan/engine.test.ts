@@ -29,6 +29,12 @@ function planOf(profile: Profile, specs: ToolSpec[], opts: { picked?: string[]; 
 const item = (plan: ReturnType<typeof planOf>, id: string) => plan.items.find(i => i.id === id)!;
 const oneReq = makeProfile('p', [{ id: 'as-1' }]);
 
+test('items carry the profile’s rationale and recommendations for use as fallbacks', () => {
+  const profile = makeProfile('p', [{ id: 'as-1', rationale: 'Because.', recommendations: 'Do this.' }]);
+  const i = item(planOf(profile, []), 'as-1');
+  expect([i.rationale, i.recommendations]).toEqual(['Because.', 'Do this.']);
+});
+
 test('Provided beats Shared beats App Builder, and every claim is kept', () => {
   const plan = planOf(oneReq, [
     { id: 'a', entries: [makeEntry('as-1', { value: 'provided' })] },

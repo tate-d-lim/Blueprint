@@ -1,0 +1,160 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the whole document for the demo case 1`] = `
+"# Build plan: Your app
+
+App type: Low-risk app on the cloud (IM8 Low-Risk Cloud).
+Tools: appCentral (verified), DBaaS (not yet verified), IGA (not yet verified).
+Generated 2026-10-27 by the CPFB build plan app. IDs in brackets are IM8 requirement IDs.
+
+## How to use this plan
+- Section 1 is required work. When you finish an item, mention its ID in the commit or PR description.
+- Before building anything section 2 asks about, ask the person you're working with.
+- Never build what section 3 lists. Use the platform's feature instead.
+
+## 1. What you need to do (11)
+
+### Input Validation (as-1)
+Why it matters: Without input validation, there's a heightened risk of injection attacks, data manipulation, or system crashes due to unexpected input, potentially leading to unauthorised access or disruption of services.
+What to do: Strictly validating inputs against a comprehensive schema prevents injection attacks caused by inserting special characters or content that would cause the application to perform incorrect operations.
+Status: To do
+
+### Parameterised Interfaces (as-2)
+Why it matters: Failure to use parameterised interfaces increases the vulnerability to SQL injection or command injection attacks, posing a significant risk of unauthorised access, data manipulation, or even potential system compromise.
+What to do: Parameterised interfaces such Object-Relational Mapping (ORM) libraries ensure that parameters used in database queries or system commands are properly sanitised and prevent injection attacks.
+Status: To do
+
+### Output Sanitisation (as-3)
+Why it matters: Lack of sanitisation for application outputs used in rendering HTML documents exposes the system to the risk of cross-site scripting (XSS) attacks, allowing malicious code execution in browsers.
+What to do: Any application outputs that are returned to the requester and used to render a HTML document can lead to cross-site scripting (XSS) attacks if they contain special characters that change the rendering of the HTML document by the browser.
+Status: To do
+
+### Access Control Check Enforcement (as-7)
+Why it matters: Failure to perform access control checks on authenticated requests increases the risk of unauthorised access to sensitive data or functionalities, potentially leading to data breaches and misuse of system resources.
+What to do: Utilise authorisation filters or middleware to force all authenticated requests to undergo access control checks.
+Status: To do
+
+### Content Security Policy (CSP) (as-9)
+Why it matters: Without minimally permissive Content Security Policy (CSP) headers, the risk of cross-site scripting attacks, leading to unauthorised script execution and potential data theft, is increased.
+What to do: Utilise the relevant fetch directives such as \`default-src\`, \`script-src\`, \`style-src\`, \`connect-src\`, \`img-src\`, \`media-src\` and \`object-src\` to prevent loading of scripts from malicious sources. Refer to the [OWASP Secure Headers Project](https://owasp.org/www-project-secure-headers) Best Practices for recommended header values.
+Status: To do
+
+### Dependency Manifest Version Pinning (sc-4)
+Why it matters: Failure to pin direct and transitive dependency versions in the application's manifest may lead to version drift, introducing compatibility issues, security vulnerabilities, and unpredictability in the software environment.
+What to do: Dependency manifests such as package-lock.json for npm and Pipfile.lock for pipenv allow you to pin dependency versions.
+Status: To do
+
+### Dependency Installation during Deployment (sc-6)
+Why it matters: Failure to install only pinned versions of dependencies during deployment increases the risk of introducing unforeseen changes, compatibility issues, and potential security vulnerabilities into the deployed environment.
+What to do: Use package manager commands such as npm ci for npm and pipenv sync for pipenv that ensure only versions specified in the manifest are installed rather than the latest version.
+Status: To do
+
+### Security Testing Programme (st-4)
+Why it matters: Without undergoing security testing, there's an increased risk of undetected security weaknesses, leaving the application susceptible to exploitation, data breaches, and unauthorised access.
+What to do: Refer to the WOG Security Testing Guidelines for recommendations on the conduct of security testing engagements. For systems that are permitted to use Government Bug Bounty Programme as an alternative, obtain a passing rating based on the Agency Readiness Scorecard. For SaaS, refer to past penetration testing reports done by the SaaS provider, if any.
+Status: To do
+
+### Vulnerability Management (st-5)
+Why it matters: Failure to promptly remediate vulnerabilities increases the risk of potential exploits, security breaches, and prolonged exposure to known vulnerabilities in the system.
+What to do: Vulnerabilities that materially impact security include vulnerabilities that have a high likelihood of exploitability, or are known to be exploited. Refer to resources such as the [Known Exploited Vulnerabilities Catalog](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) to prioritise vulnerabilities that should be remediated. Seek approval from the appropriate approving authority for risk acceptance. Document the actions taken.
+Status: To do
+
+### Runtime Container Secrets (cs-3)
+Why it matters: Providing secrets and sensitive data to the container at runtime instead of image build time reduces the risk of exposing sensitive information in the image and enhances security by ensuring that secrets are managed and updated independently, minimising the risk of unauthorised access or data compromise.
+What to do: Ensure no secrets (e.g., TLS certificate keys, cloud provider credentials, SSH private keys, database passwords) are embedded in the container image by using dedicated features like Docker secrets or \`podman-secret-create\`.
+Status: To do
+
+### Non-Privileged Container User (cs-4)
+Why it matters: Failure to create a non-root user and set it as the default user in container image build instructions increases the risk of security vulnerabilities, as running containers with root privileges may lead to potential exploitation and compromise of the host system.
+What to do: Ensure the non-root user has the minimal set of permissions required to run the container.
+Status: To do
+
+## 2. Ask a person first (9)
+
+- **Does "Cybersecurity Incident Management Plan" apply to your app, and who handles it?** (pm-1). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Does "Risk Assessment" apply to your app, and who handles it?** (pm-2). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Does "System Security Plan (SSP) Development" apply to your app, and who handles it?** (pm-3). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Does "Approval of Residual Risks" apply to your app, and who handles it?** (pm-4). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Does "Central Submission of Approved System Security Plan (SSP)" apply to your app, and who handles it?** (pm-5). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Does "System Documentation" apply to your app, and who handles it?** (pm-6). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Does "Central Domain Name Registration" apply to your app, and who handles it?** (is-11). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Does "Singapore SMS Sender ID Registry Registration" apply to your app, and who handles it?** (is-14). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Does "Official URL shorteners" apply to your app, and who handles it?** (is-15). Why we ask: Depends on your app, and no tool you picked covers it.
+
+## 3. Don't build this: your platform already does it (66)
+
+### appCentral
+- Authentication Mechanism Rate-Limiting (as-4): Handled by appCentral.
+- Password Requirements (as-5): Handled by appCentral.
+- Password Salting and Hashing (as-6): Handled by appCentral.
+- Secrets Management (as-8): Handled by appCentral.
+- Session Management (as-11): Handled by appCentral.
+- Password Change (as-15): Handled by appCentral.
+- Code Repository (sc-1): Handled by appCentral.
+- Peer Review (sc-3): Handled by appCentral.
+- Build and Release Process (sc-5): Handled by appCentral.
+- Vulnerability Assessment (st-1): Handled by appCentral.
+- Cloud Security Posture Management (st-2): Handled by appCentral.
+- Public Vulnerability Disclosure Programme (st-3): Handled by appCentral.
+- Network and System Component Segmentation (ns-1): Handled by appCentral.
+- Access Restrictions on CSP Resources Outside Virtual Network (ns-2): Handled by appCentral.
+- Deny by Default - Allow by Exception (ns-3): Handled by appCentral.
+- Inter-Private Network Connectivity (ns-4): Handled by appCentral.
+- Network and Application Layer Filtering (ns-5): Handled by appCentral.
+- Valid and Trusted SSL/TLS Certificates (ns-6): Handled by appCentral.
+- Secure Inter-Service Communication (ns-7): Handled by appCentral.
+- Secure Cloud and On-Premises Connectivity (ns-8): Handled by appCentral.
+- Backup (br-1): Handled by appCentral.
+- Backup Retention (br-3): Handled by appCentral.
+- Separate Log Storage (lm-1): Handled by appCentral.
+- Tamper-Resistant Log Storage (lm-2): Handled by appCentral.
+- Network Flow Logging (lm-3): Handled by appCentral.
+- Audit Logging (lm-4): Handled by appCentral.
+- Access Logging (lm-6): Handled by appCentral.
+- Host Security Event Logging (lm-7): Handled by appCentral.
+- Security Log Retention (lm-8): Handled by appCentral.
+- Security Monitoring and Alerting (lm-9): Handled by appCentral.
+- Resource Usage Monitoring and Alerting (lm-10): Handled by appCentral.
+- Central Security Log Management and Monitoring (lm-12): Handled by appCentral.
+- Container Image Scanning (cs-7): Handled by appCentral.
+- Container Orchestrator API Access Control (cs-9): Handled by appCentral.
+- Container Workload Segmentation (cs-10): Handled by appCentral.
+- Push Protection for Secrets (sd-1): Handled by appCentral.
+- Default Branch Push Permissions (sd-2): Handled by appCentral.
+- Static Analysis (sd-4): Handled by appCentral.
+- Dependency Scanning (sd-5): Handled by appCentral.
+- Secret Detection (sd-6): Handled by appCentral.
+- CI Environment Variable Secrets Management (sd-7): Handled by appCentral.
+- Deployment Environment Segregation (sd-8): Handled by appCentral.
+
+### DBaaS
+- Data Residency (dp-1): Handled by DBaaS. (not yet verified)
+- Data at Rest Encryption (dp-2): Handled by DBaaS. (not yet verified)
+- Data in Transit Encryption (dp-3): Handled by DBaaS. (not yet verified)
+- Central Cloud Tenant Management (dp-4): Handled by DBaaS. (not yet verified)
+
+### IGA
+- Principle of Least Privilege (ac-1): Handled by IGA. (not yet verified)
+- Multi-Factor Authentication (MFA) (ac-2): Handled by IGA. (not yet verified)
+- Inactive and Expired Accounts (ac-3): Handled by IGA. (not yet verified)
+- Access Review (ac-4): Handled by IGA. (not yet verified)
+- Endpoint Device Hardening (ac-5): Handled by IGA. (not yet verified)
+- Default Credentials (ac-6): Handled by IGA. (not yet verified)
+- Singpass/Corppass for Public Users (ac-7): Handled by IGA. (not yet verified)
+- Automated Account Lifecycle Management (ac-8): Handled by IGA. (not yet verified)
+- Endpoint Device Management (ac-9): Handled by IGA. (not yet verified)
+- Single Sign-On (SSO) for Internal Services and Accounts (ac-12): Handled by IGA. (not yet verified)
+- Inventory of Accounts (ac-14): Handled by IGA. (not yet verified)
+
+### Doesn't apply on your platform
+- Management Agents (is-1): appCentral does not have hosts (EC2).
+- Automated Patch Management Tools (is-2): appCentral does not have hosts (EC2).
+- Restricted Administrator Privileges (is-3): appCentral does not have hosts (EC2).
+- Least Functionality (is-4): appCentral does not have hosts (EC2).
+- Host System Hardening (is-5): appCentral does not have hosts (EC2).
+- Remote Administration (is-6): appCentral does not have hosts (EC2).
+- Malware Protection (is-7): appCentral does not have hosts (EC2).
+- End-of-Support (EOS) Assets (is-9): appCentral does not have hosts (EC2).
+- Synchronise time clocks (is-10): appCentral does not have hosts (EC2).
+"
+`;
