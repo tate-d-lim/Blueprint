@@ -37,8 +37,7 @@ test('seeding twice replaces the data instead of duplicating it', async () => {
 test('a second version with the same (tool, profile, version) is rejected by the unique index', async () => {
   const db = await getDb();
   const original = await db.collection('toolVersions').findOne({ _id: 'appcentral:low-risk-cloud:v1' as never });
-  const { _id, ...rest } = original!;
-  await expect(db.collection('toolVersions').insertOne({ ...rest, _id: 'duplicate' as never })).rejects.toMatchObject({
+  await expect(db.collection('toolVersions').insertOne({ ...original!, _id: 'duplicate' as never })).rejects.toMatchObject({
     code: 11000,
   });
 });

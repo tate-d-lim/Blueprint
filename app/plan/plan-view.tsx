@@ -124,6 +124,17 @@ export function PlanView({
             </a>
           </div>
           {!project && <SaveDialog answers={answers} toolIds={toolIds} />}
+          <details className="w-full text-sm">
+            <summary className="cursor-pointer text-muted">For security reviewers: machine-readable files</summary>
+            <p className="mt-2 flex flex-wrap gap-4">
+              <a href={`/api/export/oscal?kind=ssp&${query}`} className="text-accent underline">
+                Security plan (JSON)
+              </a>
+              <a href={`/api/export/oscal?kind=component-definition&${query}`} className="text-accent underline">
+                Tool coverage (JSON)
+              </a>
+            </p>
+          </details>
           <AgentSnippet />
         </div>
 
