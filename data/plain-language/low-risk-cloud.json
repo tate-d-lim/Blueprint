@@ -1,0 +1,601 @@
+{
+  "as-1": {
+    "title": "Check every input before you use it",
+    "task": "Validate every input your app receives against the type, format and length you expect, and reject anything else.",
+    "why": "Unchecked input is how attackers inject code or crash your app, which can lead to unauthorised access or an outage."
+  },
+  "as-2": {
+    "title": "Use parameterised queries, never string-built ones",
+    "task": "Pass user values to the database and to system commands as parameters (for example through an ORM), never by joining strings together.",
+    "why": "Joining user input into a query lets an attacker change what the query does, which can expose or alter your data."
+  },
+  "as-3": {
+    "title": "Escape output before it reaches the browser",
+    "task": "Sanitise or escape every value you put into an HTML page so the browser shows it as text and never runs it as code.",
+    "why": "Unescaped output lets an attacker run their own script in your users' browsers (cross-site scripting)."
+  },
+  "as-4": {
+    "title": "Slow down repeated sign-in attempts",
+    "task": "Rate-limit every sign-in mechanism so repeated attempts are delayed or blocked.",
+    "why": "Without limits, attackers can guess passwords at high speed until one works."
+  },
+  "as-5": {
+    "title": "Set strong password rules",
+    "task": "If you can't use single sign-on, require long passwords and block weak or commonly used ones.",
+    "why": "Short or common passwords are guessed quickly and lead to hijacked accounts."
+  },
+  "as-6": {
+    "title": "Store passwords as salted hashes",
+    "task": "Store passwords only as salted hashes made with a slow password-hashing scheme, never as plain text.",
+    "why": "If your data leaks, properly hashed passwords can't simply be read out and reused."
+  },
+  "as-7": {
+    "title": "Check permissions on every request",
+    "task": "Check on the server that the signed-in user is allowed to do what each request asks, using a shared filter or middleware.",
+    "why": "Skipping these checks lets one user read or change another user's data."
+  },
+  "as-8": {
+    "title": "Keep secrets in a secrets manager",
+    "task": "Store passwords, keys and tokens in a secrets manager, never in code or config files.",
+    "why": "Secrets left in code are easy to leak and hand attackers direct access to your systems."
+  },
+  "as-9": {
+    "title": "Set a Content Security Policy",
+    "task": "Send a strict Content Security Policy header that allows only the scripts, styles and images your app needs.",
+    "why": "A strict policy stops injected scripts from loading, which limits the damage from cross-site scripting."
+  },
+  "as-10": {
+    "title": "Force HTTPS with HSTS",
+    "task": "Send an HSTS header with a max age of at least one year.",
+    "why": "It stops browsers being tricked into using an unencrypted connection."
+  },
+  "as-11": {
+    "title": "Make users sign in again after a while",
+    "task": "Require users to sign in again after your session time limit, or end the session.",
+    "why": "A forgotten open session would otherwise let anyone using that device act as the user."
+  },
+  "as-12": {
+    "title": "Scan uploaded files for malware",
+    "task": "Scan every uploaded file for malware before your app processes or shares it.",
+    "why": "Uploaded files can carry malware that infects whoever opens them."
+  },
+  "as-13": {
+    "title": "Don't expose internal details in errors",
+    "task": "Show users generic error messages and keep stack traces and version details in your logs.",
+    "why": "Debug details help attackers find weaknesses in your system."
+  },
+  "as-14": {
+    "title": "Use trusted cryptography libraries",
+    "task": "Use well-known, maintained cryptographic libraries instead of writing your own.",
+    "why": "Home-made or outdated encryption is often broken in ways you won't notice."
+  },
+  "as-15": {
+    "title": "Force a password change after a suspected break-in",
+    "task": "Make users change their password when you suspect their account was compromised.",
+    "why": "Otherwise an attacker who has the password can stay in the account."
+  },
+  "sc-1": {
+    "title": "Keep your code in a central repository",
+    "task": "Keep all your code in one central repository with version history.",
+    "why": "It records who changed what and lets you undo a bad change."
+  },
+  "sc-2": {
+    "title": "Require signed commits",
+    "task": "Configure the repository to reject commits that aren't signed.",
+    "why": "Signatures make it harder to slip in changes while pretending to be a teammate."
+  },
+  "sc-3": {
+    "title": "Get a second pair of eyes on every change",
+    "task": "Require review and approval from a designated reviewer before merging to the main branch.",
+    "why": "A second reviewer catches mistakes and malicious changes before they ship."
+  },
+  "sc-4": {
+    "title": "Pin your dependency versions",
+    "task": "Pin exact versions of your direct and indirect dependencies in the manifest, and commit the lock file.",
+    "why": "Unpinned versions can change silently and bring in bugs or malicious code."
+  },
+  "sc-5": {
+    "title": "Build and release the same way every time",
+    "task": "Use one repeatable build and release process that records how each release was built and deployed.",
+    "why": "Ad-hoc releases drift and break, and make it hard to trace what is running."
+  },
+  "sc-6": {
+    "title": "Install only pinned versions when you deploy",
+    "task": "Make your deployment install exactly the versions pinned in your lock file, nothing newer.",
+    "why": "A deploy that picks the latest version can pull in changes nobody reviewed."
+  },
+  "sc-7": {
+    "title": "Sign your build outputs",
+    "task": "Sign code and container images during the build with a trusted key.",
+    "why": "A signature proves an artefact is yours and hasn't been tampered with."
+  },
+  "sc-8": {
+    "title": "Verify signatures before deploying",
+    "task": "Verify the signatures of code and images before you deploy or run them.",
+    "why": "It stops tampered or fake artefacts reaching production."
+  },
+  "sc-9": {
+    "title": "Share your code inside government",
+    "task": "Share your source code internally so others can review and reuse it.",
+    "why": "Shared code gets more review and avoids duplicated work."
+  },
+  "st-1": {
+    "title": "Scan your hosts for vulnerabilities regularly",
+    "task": "Run vulnerability scans on your hosts at least every 90 days.",
+    "why": "Regular scans find known weaknesses before attackers do."
+  },
+  "st-2": {
+    "title": "Watch your cloud settings for mistakes",
+    "task": "Set up continuous scanning of your cloud configuration to catch misconfigurations.",
+    "why": "A single wrong setting, such as a public storage bucket, can expose your data."
+  },
+  "st-3": {
+    "title": "Offer a way to report vulnerabilities",
+    "task": "Publish a public channel, such as the Government Vulnerability Disclosure Programme, for reporting vulnerabilities.",
+    "why": "Outsiders often spot problems first and need somewhere safe to tell you."
+  },
+  "st-4": {
+    "title": "Get your app security-tested every year",
+    "task": "Have your app penetration-tested, or put it through a bug bounty, by an internal or independent team at least every 365 days, and keep the report.",
+    "why": "Testers find weaknesses that normal reviews miss."
+  },
+  "st-5": {
+    "title": "Fix vulnerabilities within the deadlines",
+    "task": "Triage every vulnerability and fix it, or formally accept the risk, within the deadline for its severity.",
+    "why": "Known weaknesses left unfixed are the easiest way into your system."
+  },
+  "ns-1": {
+    "title": "Separate public and private network zones",
+    "task": "Place components in separate networks or environments based on how sensitive they are.",
+    "why": "If one part is compromised, separation stops the problem spreading."
+  },
+  "ns-2": {
+    "title": "Restrict access to cloud services outside your network",
+    "task": "Limit who can reach cloud resources that sit outside your virtual network, such as storage and API gateways.",
+    "why": "Open cloud services are a common way data gets exposed."
+  },
+  "ns-3": {
+    "title": "Block network traffic unless it's allowed",
+    "task": "Deny all network traffic by default and allow only what is needed.",
+    "why": "Fewer open doors means fewer ways in."
+  },
+  "ns-4": {
+    "title": "Keep private network traffic off the internet",
+    "task": "Route traffic between private networks without going over the public internet.",
+    "why": "Traffic over the internet can be intercepted or spoofed."
+  },
+  "ns-5": {
+    "title": "Filter traffic coming from the internet",
+    "task": "Filter direct internet traffic to protect against network and application attacks.",
+    "why": "Filtering blocks common attacks before they reach your app."
+  },
+  "ns-6": {
+    "title": "Use valid HTTPS certificates",
+    "task": "Make sure certificates come from a trusted authority, match your domain, and are neither expired nor revoked.",
+    "why": "A bad certificate breaks encryption and lets attackers sit in the middle."
+  },
+  "ns-7": {
+    "title": "Secure how your services talk to each other",
+    "task": "Make service-to-service calls authenticated, authorised and encrypted.",
+    "why": "Unprotected internal calls let an attacker move around freely once they are in."
+  },
+  "ns-8": {
+    "title": "Connect cloud and on-premises systems securely",
+    "task": "Route traffic between on-premises and cloud systems through a secure intermediary.",
+    "why": "Insecure links between environments can expose both."
+  },
+  "br-1": {
+    "title": "Back up your important data",
+    "task": "Back up important data and systems at least every 7 days and store the backups in a separate, secure place.",
+    "why": "Without backups, a failure or an attack can mean permanent data loss."
+  },
+  "br-2": {
+    "title": "Test that you can restore from backup",
+    "task": "Test your recovery process at least once a year.",
+    "why": "A backup you haven't tested may not work when you need it."
+  },
+  "br-3": {
+    "title": "Protect backups from being changed or deleted",
+    "task": "Make backups impossible to change or delete for 365 days, or as your data retention policy says.",
+    "why": "Attackers often delete backups first so you can't recover."
+  },
+  "dp-1": {
+    "title": "Keep your data in Singapore",
+    "task": "Keep restricted and classified data in Singapore, in line with the rules for your classification.",
+    "why": "Data stored abroad can break legal and privacy requirements."
+  },
+  "dp-2": {
+    "title": "Encrypt stored data",
+    "task": "Encrypt data at rest.",
+    "why": "Encryption protects data if disks or backups are stolen."
+  },
+  "dp-3": {
+    "title": "Encrypt data as it moves",
+    "task": "Encrypt data whenever it moves between systems or to users.",
+    "why": "Unencrypted traffic can be read or changed on the way."
+  },
+  "dp-4": {
+    "title": "Manage your cloud accounts centrally",
+    "task": "Use the central cloud tenant management structure for systems at your classification.",
+    "why": "Central management gives consistent security rules and visibility."
+  },
+  "lm-1": {
+    "title": "Store logs away from the system that made them",
+    "task": "Send logs to a different system from the one that generated them.",
+    "why": "Attackers who break in can't easily erase their tracks."
+  },
+  "lm-2": {
+    "title": "Protect logs from tampering",
+    "task": "Restrict who can read, change or delete logs.",
+    "why": "Tampered logs hide what really happened."
+  },
+  "lm-3": {
+    "title": "Log network traffic",
+    "task": "Record the traffic going to and from your network interfaces.",
+    "why": "Traffic logs show suspicious activity you would otherwise miss."
+  },
+  "lm-4": {
+    "title": "Log security-relevant events",
+    "task": "Log management and audit events, such as sign-ins and permission changes.",
+    "why": "Without an audit trail you can't tell who did what."
+  },
+  "lm-5": {
+    "title": "Log database activity",
+    "task": "Log database audit events.",
+    "why": "It shows who touched your data and when."
+  },
+  "lm-6": {
+    "title": "Log requests to your web front door",
+    "task": "Log access requests reaching your firewalls, load balancers, proxies and web servers.",
+    "why": "These logs show attacks as they happen."
+  },
+  "lm-7": {
+    "title": "Log security events on your hosts",
+    "task": "Log security events on your servers.",
+    "why": "Host logs are key evidence when you investigate an incident."
+  },
+  "lm-8": {
+    "title": "Keep security logs for a year",
+    "task": "Keep security logs for at least 365 days.",
+    "why": "Incidents are often found months late, and you need the history to investigate."
+  },
+  "lm-9": {
+    "title": "Get alerts about security problems",
+    "task": "Set up security monitoring that raises automatic alerts, and respond to them.",
+    "why": "Alerts let you act in minutes instead of finding a breach weeks later."
+  },
+  "lm-10": {
+    "title": "Get alerts on unusual resource use",
+    "task": "Monitor resource usage and alert on abnormal patterns.",
+    "why": "Sudden spikes can mean misuse, such as crypto-mining or an attack."
+  },
+  "lm-11": {
+    "title": "Track your service levels",
+    "task": "Monitor and alert on your service-level objectives and indicators.",
+    "why": "You find out about slowdowns before your users complain."
+  },
+  "lm-12": {
+    "title": "Send security logs to the central security team",
+    "task": "Centralise security logs and monitoring with the Government Cyber Security Operations Centre (GCSOC).",
+    "why": "The central team can spot patterns across government that you can't see alone."
+  },
+  "lm-13": {
+    "title": "Watch for unusual database activity",
+    "task": "Monitor databases for unusual behaviour.",
+    "why": "Odd queries can be the first sign of data theft."
+  },
+  "lm-14": {
+    "title": "Detect and recover from website defacement",
+    "task": "Plan for, detect and recover from defacement of your website.",
+    "why": "A defaced site harms trust, and quick recovery limits the damage."
+  },
+  "lm-15": {
+    "title": "Use a structured log format",
+    "task": "Write logs in a consistent, structured format such as JSON.",
+    "why": "Structured logs are much easier to search and analyse."
+  },
+  "lm-16": {
+    "title": "Monitor the signals your users feel",
+    "task": "Monitor latency, traffic, errors and saturation.",
+    "why": "These show service problems early."
+  },
+  "lm-17": {
+    "title": "Measure how well you deliver software",
+    "task": "Measure and analyse your software delivery performance.",
+    "why": "It shows where your process is slow or error-prone."
+  },
+  "lm-19": {
+    "title": "Keep sensitive data out of logs",
+    "task": "Remove or mask classified and sensitive data before it is logged or shared.",
+    "why": "Logs get copied widely, so secrets in them leak."
+  },
+  "ac-1": {
+    "title": "Give people only the access they need",
+    "task": "Deny access by default and grant each account only the minimum permissions it needs.",
+    "why": "Over-broad access makes any single compromised account far more damaging."
+  },
+  "ac-2": {
+    "title": "Require multi-factor sign-in for admins",
+    "task": "Require multi-factor authentication for privileged accounts at sign-in.",
+    "why": "A stolen password alone is no longer enough to take over an admin account."
+  },
+  "ac-3": {
+    "title": "Remove unused admin accounts",
+    "task": "Disable or remove privileged accounts within 7 days of last authorised use, or after 90 days unused.",
+    "why": "Dormant accounts are easy to take over without anyone noticing."
+  },
+  "ac-4": {
+    "title": "Review who has access every year",
+    "task": "Review access at least yearly and remove unneeded access within 7 days.",
+    "why": "People change roles and leave, and old access builds up."
+  },
+  "ac-5": {
+    "title": "Use hardened devices for remote admin work",
+    "task": "Require hardened devices for developers and administrators who work remotely.",
+    "why": "A compromised laptop can hand an attacker your admin access."
+  },
+  "ac-6": {
+    "title": "Change default passwords before first use",
+    "task": "Change default credentials before anything is first used.",
+    "why": "Default passwords are published and tried first by attackers."
+  },
+  "ac-7": {
+    "title": "Use Singpass or Corppass for public users",
+    "task": "Use Singpass or Corppass sign-in for services that need a high level of identity assurance.",
+    "why": "It saves effort and gives users a familiar, trusted sign-in."
+  },
+  "ac-8": {
+    "title": "Automate removing leavers' access",
+    "task": "Use an account lifecycle tool to automate removal of accounts when people leave.",
+    "why": "Manual processes miss people and leave old accounts open."
+  },
+  "ac-9": {
+    "title": "Manage the devices your team uses",
+    "task": "Run an endpoint device management solution for the devices your team uses.",
+    "why": "Unmanaged devices are an easy route for malware and data loss."
+  },
+  "ac-10": {
+    "title": "Use identity-based remote access",
+    "task": "Use identity- and device-aware access to private resources instead of plain VPNs.",
+    "why": "It checks who and what is connecting, not just where from."
+  },
+  "ac-11": {
+    "title": "Assign each device to one person",
+    "task": "Assign each endpoint device to a single designated user.",
+    "why": "Shared devices make it hard to trace actions and protect data."
+  },
+  "ac-12": {
+    "title": "Use single sign-on for internal services",
+    "task": "Use single sign-on for internal services and accounts.",
+    "why": "Fewer passwords means fewer weak or reused ones."
+  },
+  "ac-13": {
+    "title": "Rotate long-lived keys and tokens",
+    "task": "Rotate API keys, access keys and tokens every 90 days, or use short-lived ones.",
+    "why": "Old keys are more likely to have leaked."
+  },
+  "ac-14": {
+    "title": "Keep a list of all accounts",
+    "task": "Maintain an inventory of all accounts and what each can access.",
+    "why": "You can't protect or review accounts you don't know exist."
+  },
+  "cs-1": {
+    "title": "Pin base container image versions",
+    "task": "Use specific base image tags instead of rolling ones such as latest.",
+    "why": "Rolling tags change underneath you without warning."
+  },
+  "cs-2": {
+    "title": "Use minimal base images",
+    "task": "Build container images from minimal base images.",
+    "why": "Less software in the image means fewer things to attack."
+  },
+  "cs-3": {
+    "title": "Pass secrets to containers at run time",
+    "task": "Provide secrets to the container when it runs, and never bake them into the image at build time.",
+    "why": "Secrets baked into an image can be pulled out by anyone who has the image."
+  },
+  "cs-4": {
+    "title": "Don't run containers as root",
+    "task": "Create a non-root user in the image and make it the default user.",
+    "why": "If the app is compromised, a non-root user limits what the attacker can do."
+  },
+  "cs-5": {
+    "title": "Lint your Dockerfiles",
+    "task": "Lint Dockerfiles before building images.",
+    "why": "Linting catches mistakes and risky settings early."
+  },
+  "cs-6": {
+    "title": "Make the container filesystem read-only",
+    "task": "Make the container's root filesystem read-only, except for designated writable locations.",
+    "why": "It stops attackers modifying the running container."
+  },
+  "cs-7": {
+    "title": "Scan container images for known vulnerabilities",
+    "task": "Scan images in the container registry for known vulnerabilities.",
+    "why": "It stops you shipping images with known holes."
+  },
+  "cs-8": {
+    "title": "Keep images in a private registry",
+    "task": "Host your built images in a private registry.",
+    "why": "Public images expose details about your system."
+  },
+  "cs-9": {
+    "title": "Keep the cluster API off the internet",
+    "task": "Disable public internet access to the container orchestrator's API.",
+    "why": "An exposed cluster API is a direct way to take over your workloads."
+  },
+  "cs-10": {
+    "title": "Separate container workloads",
+    "task": "Isolate container workloads from each other, for example in separate namespaces.",
+    "why": "Isolation contains an attack to one workload."
+  },
+  "cs-11": {
+    "title": "Detect changes to running containers",
+    "task": "Use runtime protection tools to detect and fix changes to running containers.",
+    "why": "Unexpected changes in a running container often mean an attack."
+  },
+  "pm-1": {
+    "title": "Have a plan for cyber incidents",
+    "task": "Have a documented cybersecurity incident plan for your organisation and share it with the team.",
+    "why": "When something goes wrong, a ready plan saves hours.",
+    "question": "Does your organisation already have a cybersecurity incident plan that covers this app?"
+  },
+  "pm-2": {
+    "title": "Assess the risks before launch",
+    "task": "Document a risk assessment for the system and get it approved before the first full release.",
+    "why": "It surfaces risks while they are cheap to fix.",
+    "question": "Has a risk assessment been written and approved for this app, and by whom?"
+  },
+  "pm-3": {
+    "title": "Write your security plan",
+    "task": "Write, and keep up to date, a plan describing the system and the protections in place.",
+    "why": "It is the record that reviewers and future teammates rely on.",
+    "question": "Is someone already writing the security plan for this app, or is it on you?"
+  },
+  "pm-4": {
+    "title": "Get leftover risks formally accepted",
+    "task": "Get the remaining risks accepted and approved by the right authority, and review that regularly.",
+    "why": "Someone with authority must own the risks you can't remove.",
+    "question": "Who in your organisation has to accept the leftover risks for this app, and have they?"
+  },
+  "pm-5": {
+    "title": "Submit the approved security plan centrally",
+    "task": "Submit the approved security plan to the central repository.",
+    "why": "It gives government a view of security across all systems.",
+    "question": "Has the approved security plan been submitted to the central repository, and who does that?"
+  },
+  "pm-6": {
+    "title": "Keep your system documentation up to date",
+    "task": "Keep detailed, current documentation of the system, its architecture and its parts.",
+    "why": "Good documentation is essential for running and securing the system.",
+    "question": "Is the documentation for this app kept up to date, and where does it live?"
+  },
+  "is-1": {
+    "title": "Install cloud management agents on hosts",
+    "task": "Install the cloud provider's management agents on your hosts.",
+    "why": "They let you manage configuration remotely and consistently."
+  },
+  "is-2": {
+    "title": "Automate security patching",
+    "task": "Use automated patch management for operating systems and the software bundled with them.",
+    "why": "Missed patches are a top cause of breaches."
+  },
+  "is-3": {
+    "title": "Restrict administrator privileges on hosts",
+    "task": "Disable remote login for root and administrator users and limit sudo and admin group membership.",
+    "why": "Fewer powerful accounts means fewer ways to escalate an attack."
+  },
+  "is-4": {
+    "title": "Turn off what you don't need",
+    "task": "Disable or remove unused functions, ports, protocols, software and services on hosts.",
+    "why": "Everything that is running is something an attacker can try."
+  },
+  "is-5": {
+    "title": "Harden your hosts",
+    "task": "Harden host configuration against an industry standard.",
+    "why": "Default settings are rarely secure."
+  },
+  "is-6": {
+    "title": "Manage remote administration safely",
+    "task": "Use remote administration tools that manage and log remote access.",
+    "why": "Audited access reduces misuse and gives you a trail."
+  },
+  "is-7": {
+    "title": "Protect hosts against malware",
+    "task": "Run anti-malware tools that detect and quarantine malware on hosts.",
+    "why": "Malware you don't detect can steal data for months."
+  },
+  "is-8": {
+    "title": "Monitor hosts with an EDR tool",
+    "task": "Monitor hosts for threats with an endpoint detection and response (EDR) tool.",
+    "why": "It spots attacks that anti-malware misses."
+  },
+  "is-9": {
+    "title": "Don't run unsupported software",
+    "task": "Make sure deployed software hasn't reached end of support, and get risk approval if it has.",
+    "why": "Unsupported software no longer gets security fixes."
+  },
+  "is-10": {
+    "title": "Keep clocks in sync",
+    "task": "Synchronise clocks to a common time source.",
+    "why": "Out-of-sync clocks make logs useless for investigations."
+  },
+  "is-11": {
+    "title": "Register your domain through GovTech",
+    "task": "Register .gov.sg and .edu.sg domain names with GovTech as the only registrar.",
+    "why": "Properly registered domains are harder to hijack or fake.",
+    "question": "Does your app use a .gov.sg or .edu.sg domain, and is it registered with GovTech?"
+  },
+  "is-12": {
+    "title": "Enable DNSSEC",
+    "task": "Enable DNSSEC for your public DNS records and servers.",
+    "why": "It stops attackers redirecting users with fake DNS answers."
+  },
+  "is-13": {
+    "title": "Register look-alike domains",
+    "task": "Register the .sg and common third-level variants of your main domain.",
+    "why": "It stops others using similar-looking domains for phishing."
+  },
+  "is-14": {
+    "title": "Register your SMS sender ID",
+    "task": "Register and use whitelisted SMS Sender IDs for any SMS you send to the public.",
+    "why": "It stops scammers spoofing government SMS.",
+    "question": "Will your app send SMS to members of the public? If so, is your sender ID registered?"
+  },
+  "is-15": {
+    "title": "Use only go.gov.sg for short links",
+    "task": "Use only the go.gov.sg URL shortener to shorten links.",
+    "why": "Official short links tell people a link is genuine.",
+    "question": "Will your app share shortened links? If so, are you using go.gov.sg?"
+  },
+  "sd-1": {
+    "title": "Block secrets from being pushed to the repository",
+    "task": "Configure the repository to reject pushes that contain secrets.",
+    "why": "Secrets pushed to a repository are hard to fully remove and easy to leak."
+  },
+  "sd-2": {
+    "title": "Block direct pushes to the main branch",
+    "task": "Configure the repository to prevent pushes, including force pushes, to the default branch.",
+    "why": "Every change then goes through review."
+  },
+  "sd-3": {
+    "title": "Require passing tests before merging",
+    "task": "Require continuous integration tests to pass before merging to the default branch.",
+    "why": "It stops broken or unsafe changes reaching main."
+  },
+  "sd-4": {
+    "title": "Run static analysis on every change",
+    "task": "Run static analysis in your CI/CD pipeline, and fix or formally accept the real findings before production.",
+    "why": "It finds common vulnerabilities before they ship."
+  },
+  "sd-5": {
+    "title": "Scan your dependencies every week",
+    "task": "Scan for vulnerable libraries in your repository at least every 7 days.",
+    "why": "New vulnerabilities in libraries appear constantly."
+  },
+  "sd-6": {
+    "title": "Detect secrets in your code",
+    "task": "Set up secret detection in the repository and fix real findings within 1 day.",
+    "why": "Exposed secrets are abused quickly."
+  },
+  "sd-7": {
+    "title": "Protect secrets used in CI jobs",
+    "task": "Limit CI secrets to protected pipelines and mask them in job logs.",
+    "why": "CI logs and unprotected branches are common leak points."
+  },
+  "sd-8": {
+    "title": "Separate production from test environments",
+    "task": "Keep production and non-production environments apart: applications, data, secrets, roles and networks.",
+    "why": "A mistake or breach in test shouldn't touch real data."
+  },
+  "ck-1": {
+    "title": "Use standard key-establishment methods",
+    "task": "Use industry-standard key establishment and key derivation methods.",
+    "why": "Weak key setup breaks encryption."
+  },
+  "ck-2": {
+    "title": "Rotate encryption keys every year",
+    "task": "Rotate cryptographic keys every 365 days.",
+    "why": "Regular rotation limits the damage if a key leaks."
+  }
+}
