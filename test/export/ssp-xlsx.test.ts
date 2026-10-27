@@ -1,0 +1,86 @@
+import ExcelJS from 'exceljs';
+import { MissingTemplateRowError, fillSspWorkbook } from '@/lib/export/ssp-xlsx';
+import { slugify, sspFileName } from '@/lib/export/filename';
+import { cellText } from '@/lib/data/xlsx';
+import { buildPlan, type PlanData } from '@/lib/plan/engine';
+import { pairVersions, selectPlanInput } from '@/lib/plan/select';
+import { makeItem } from '../helpers/factories';
+import { loadSeed } from '../helpers/seed';
+
+const TEMPLATE = 'data/source/low-risk-cloud-ssp.xlsx';
+
+async function demoPlan(toolIds = ['appcentral', 'dbaas', 'iga']) {
+  const seed = await loadSeed();
+  const data: PlanData = { profiles: seed.profiles, tools: seed.tools, versions: pairVersions(seed.toolVersions) };
+  return buildPlan(selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds }));
+}
+
+async function readBack(buffer: Buffer): Promise<ExcelJS.Worksheet> {
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(buffer as unknown as ArrayBuffer);
+  return wb.getWorksheet('ssp')!;
+}
+
+const rowOf = (sheet: ExcelJS.Worksheet, id: string) => {
+  let found: ExcelJS.Row | undefined;
+  sheet.eachRow(row => {
+    if (cellText(row.getCell(1)) === id) found = row;
+  });
+  return found!;
+};
+
+test('fills Implemented (H) and Explanation (I) for the demo plan', async () => {
+  const sheet = await readBack(await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE }));
+  const h = (id: string) => cellText(rowOf(sheet, id).getCell(8));
+  const i = (id: string) => cellText(rowOf(sheet, id).getCell(9));
+  expect(h('as-4')).toBe('Y');
+  expect(i('as-4')).toMatch(/^Provided by appCentral/);
+  expect(h('dp-1')).toBe('Y');
+  expect(i('dp-1')).toMatch(/^\[Not yet verified\] Provided by DBaaS/);
+  expect(h('as-1')).toBe('N');
+  expect(i('as-1')).toBe("App builder's responsibility. Status: To do (self-declared).");
+  expect(h('is-1')).toBe('N/A');
+  expect(h('pm-1')).toBe('');
+  expect(i('pm-1')).toBe('');
+});
+
+test('columns A to G are exactly the template’s, for all 118 rows', async () => {
+  const template = new ExcelJS.Workbook();
+  await template.xlsx.readFile(TEMPLATE);
+  const before = template.getWorksheet('ssp')!;
+  const after = await readBack(await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE }));
+  let checked = 0;
+  before.eachRow((row, n) => {
+    for (let c = 1; c <= 7; c++) expect(cellText(after.getRow(n).getCell(c)), `row ${n} col ${c}`).toBe(cellText(row.getCell(c)));
+    checked++;
+  });
+  expect(checked).toBe(119);
+});
+
+test('the two filled columns are wide enough to read, and no other column is resized', async () => {
+  const sheet = await readBack(await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE }));
+  expect(sheet.getColumn(8).width).toBeGreaterThanOrEqual(12);
+  expect(sheet.getColumn(9).width).toBeGreaterThanOrEqual(60);
+  for (const c of [1, 2, 3, 4, 5, 6, 7]) expect(sheet.getColumn(c).width, `column ${c}`).toBeUndefined();
+});
+
+test('a plan item with no row in the template fails and names the ID', async () => {
+  const plan = await demoPlan();
+  const broken = { ...plan, items: [...plan.items, makeItem({ id: 'zz-9', key: 'im8-reform:zz-9', profileId: 'low-risk-cloud' })] };
+  const attempt = fillSspWorkbook(broken, { templatePath: TEMPLATE });
+  await expect(attempt).rejects.toBeInstanceOf(MissingTemplateRowError);
+  await expect(attempt).rejects.toThrow(/zz-9/);
+});
+
+test('with nothing picked, builder defaults are N and everything else is blank', async () => {
+  const sheet = await readBack(await fillSspWorkbook(await demoPlan([]), { templatePath: TEMPLATE }));
+  expect(cellText(rowOf(sheet, 'as-1').getCell(8))).toBe('N');
+  expect(cellText(rowOf(sheet, 'as-4').getCell(8))).toBe('');
+});
+
+test('file names: plain, and with a project slug', () => {
+  expect(slugify("Member's app / v2")).toBe('member-s-app-v2');
+  expect(sspFileName()).toBe('low-risk-cloud-ssp.xlsx');
+  expect(sspFileName("Member's app")).toBe('low-risk-cloud-ssp-member-s-app.xlsx');
+  expect(sspFileName('!!!')).toBe('low-risk-cloud-ssp.xlsx');
+});
