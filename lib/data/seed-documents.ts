@@ -219,6 +219,7 @@ export async function buildSeedDocuments(
   const versionFiles = [
     ['appcentral-slide12.json', await readVersionFiles(path.join(dataDir, 'seed', 'appcentral-slide12.json'))],
     ['dbaas-iga-slide12.json', await readVersionFiles(path.join(dataDir, 'seed', 'dbaas-iga-slide12.json'))],
+    ['libraries.json', await readVersionFiles(path.join(dataDir, 'seed', 'libraries.json'))],
   ] as const;
   const toolVersions = versionFiles.flatMap(([name, seeds]) =>
     seeds.map(seed => {

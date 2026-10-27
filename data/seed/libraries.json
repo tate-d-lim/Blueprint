@@ -1,0 +1,36 @@
+[
+  {
+    "toolId": "zod",
+    "profileId": "low-risk-cloud",
+    "version": 1,
+    "source": "Sample, not confirmed by a CPFB team",
+    "writtenAgainst": "Sample for the demo",
+    "groups": [
+      {
+        "ids": [
+          "as-1"
+        ],
+        "value": "shared",
+        "explanation": "Zod checks data against a schema you define.",
+        "builderPart": "Define a Zod schema for every input and parse it before use."
+      }
+    ]
+  },
+  {
+    "toolId": "prisma",
+    "profileId": "low-risk-cloud",
+    "version": 1,
+    "source": "Sample, not confirmed by a CPFB team",
+    "writtenAgainst": "Sample for the demo",
+    "groups": [
+      {
+        "ids": [
+          "as-2"
+        ],
+        "value": "shared",
+        "explanation": "Prisma's query API sends parameterised queries.",
+        "builderPart": "Use Prisma's query API instead of building SQL strings, and don't use $queryRawUnsafe."
+      }
+    ]
+  }
+]

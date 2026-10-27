@@ -64,13 +64,26 @@ test('exactly the 11 defaults are app-builder', async () => {
   expect(builderIds.sort()).toEqual([...DEFAULT_BUILDER_IDS].sort());
 });
 
-test('tools: appCentral, DBaaS, IGA, genCentral (which activates the GenAI profile), then the GovTech tools', async () => {
+test('tools: appCentral, DBaaS, IGA, genCentral (which activates the GenAI profile), then sample libraries and the GovTech tools', async () => {
   const { tools, profiles, catalogs, requirements } = await loadSeed();
-  expect(tools.map(t => t._id)).toEqual(['appcentral', 'dbaas', 'iga', 'gencentral', 'websg', 'isomer']);
+  expect(tools.map(t => t._id)).toEqual(['appcentral', 'dbaas', 'iga', 'gencentral', 'zod', 'prisma', 'websg', 'isomer']);
   expect(tools.find(t => t._id === 'gencentral')).toMatchObject({ isSample: true, activatesProfiles: ['generative-ai'] });
   expect(profiles.map(p => p._id)).toEqual(['low-risk-cloud', 'generative-ai']);
   expect(catalogs.map(c => c._id)).toEqual(['im8-reform', 'genai']);
   expect(requirements).toHaveLength(149 + 8);
+});
+
+test('Zod and Prisma are sample code components with one shared row each, not approved', async () => {
+  const { tools, toolVersions } = await loadSeed();
+  for (const [id, requirement] of [['zod', 'as-1'], ['prisma', 'as-2']] as const) {
+    expect(tools.find(t => t._id === id)).toMatchObject({ section: 'code', oscalType: 'software', isSample: true });
+    const v = toolVersions.find(v => v._id === `${id}:low-risk-cloud:v1`)!;
+    expect(v.approval).toBeUndefined();
+    expect(v.source).toBe('Sample, not confirmed by a CPFB team');
+    expect(v.entries).toHaveLength(1);
+    expect(v.entries[0]).toMatchObject({ key: `im8-reform:${requirement}`, value: 'shared' });
+    expect(v.entries[0].builderPart).toBeTruthy();
+  }
 });
 
 test('WebSG and Isomer are seeded from their published guides, approved as GovTech-published', async () => {

@@ -33,5 +33,21 @@
     "activatesProfiles": [
       "generative-ai"
     ]
+  },
+  {
+    "_id": "zod",
+    "name": "Zod",
+    "description": "TypeScript schema validation library",
+    "section": "code",
+    "oscalType": "software",
+    "isSample": true
+  },
+  {
+    "_id": "prisma",
+    "name": "Prisma",
+    "description": "Database toolkit with a query builder",
+    "section": "code",
+    "oscalType": "software",
+    "isSample": true
   }
 ]

@@ -50,6 +50,15 @@ test('the whole document for the demo case', async () => {
   expect(await demo()).toMatchSnapshot();
 });
 
+test('with the real seed, Zod is named in the plan only when picked', async () => {
+  const without = await demo(['appcentral']);
+  expect(without).not.toContain('Zod');
+  const withZod = await demo(['appcentral', 'zod']);
+  expect(withZod).toContain('Define a Zod schema for every input and parse it before use.');
+  expect(withZod).toContain("Platform's part: Zod checks data against a schema you define.");
+  expect(withZod).toContain('Tools: appCentral (verified), Zod (not yet verified).');
+});
+
 test('a library is named only when it was picked', () => {
   const profile = makeProfile('low-risk-cloud', [{ id: 'as-1' }]);
   const zod = makeTool('zod', { name: 'Zod', section: 'code', oscalType: 'software', isSample: true });

@@ -14,9 +14,9 @@ const newAppcentralVersion = async () =>
     entries: [{ key: 'im8-reform:as-4', value: 'provided', explanation: 'Clarified.' }], createdByRole: 'admin',
   });
 
-test('after seeding, DBaaS and IGA await approval and appCentral does not', async () => {
+test('after seeding, DBaaS, IGA and the sample libraries await approval; appCentral and the GovTech guides do not', async () => {
   const waiting = await listAwaitingApproval(await getDb());
-  expect(waiting.map(w => w.tool._id).sort()).toEqual(['dbaas', 'iga']);
+  expect(waiting.map(w => w.tool._id).sort()).toEqual(['dbaas', 'iga', 'prisma', 'zod']);
 });
 
 test('a new appCentral version joins the list, and approving the old one is refused', async () => {
