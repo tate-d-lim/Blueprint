@@ -10,11 +10,13 @@ export function PlanItemView({
   entry,
   compact = false,
   controls,
+  onOpen,
 }: {
   item: PlanItem;
   entry?: ProfileEntry;
   compact?: boolean;
   controls?: ItemControls;
+  onOpen?: () => void;
 }) {
   const verification = itemVerification(item);
   const title = item.plain?.title ?? item.title;
@@ -26,7 +28,15 @@ export function PlanItemView({
   return (
     <li className="rounded-lg border border-line bg-surface p-4">
       <div className="flex items-start justify-between gap-3">
-        <h3 className="font-medium leading-snug">{title}</h3>
+        <h3 className="font-medium leading-snug">
+          {onOpen ? (
+            <button type="button" onClick={onOpen} className="text-left hover:text-accent hover:underline">
+              {title}
+            </button>
+          ) : (
+            title
+          )}
+        </h3>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
           {item.level === 2 && <Chip>{GOOD_TO_HAVE_LABEL[item.placement]}</Chip>}
           {verification && <Badge verification={verification} />}

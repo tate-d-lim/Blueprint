@@ -12,6 +12,7 @@ import { versionVerification, type Verification } from "@/lib/plan/verification"
 import { assessRisk, type RiskAnswers } from "@/lib/risk/assess";
 import { AgentSnippet } from "./agent-snippet";
 import type { ItemControls } from "./item-controls";
+import { ItemDetail } from "./item-detail";
 import { PlanItemView } from "./plan-item";
 import { SaveDialog } from "./save-dialog";
 import { ToolPicker } from "./tool-picker";
@@ -37,6 +38,7 @@ export function PlanView({
   project?: Project;
 }) {
   const [toolIds, setToolIds] = useState(initialToolIds);
+  const [openKey, setOpenKey] = useState<string | null>(null);
   const [overlay, setOverlay] = useState<ProjectOverlay | undefined>(
     project && { taskStatus: project.taskStatus, questionAnswers: project.questionAnswers },
   );
@@ -82,11 +84,12 @@ export function PlanView({
     },
   };
 
+  const openItem = openKey ? plan.items.find(i => i.key === openKey) : undefined;
   const query = project ? `project=${encodeURIComponent(project._id)}` : planQuery(answers, toolIds);
   const byHeading = (h: Heading) => plan.items.filter(i => i.heading === h);
   const platformGroups = groupPlatform(byHeading("platform"));
   const view = (item: PlanItem, compact = false) => (
-    <PlanItemView key={`${item.profileId}:${item.key}`} item={item} entry={entries.get(item.key)} compact={compact} controls={controls} />
+    <PlanItemView key={`${item.profileId}:${item.key}`} item={item} entry={entries.get(item.key)} compact={compact} controls={controls} onOpen={() => setOpenKey(item.key)} />
   );
 
   return (
@@ -152,6 +155,7 @@ export function PlanView({
           </details>
         </Section>
       </div>
+      {openItem && <ItemDetail item={openItem} entry={entries.get(openItem.key)} onClose={() => setOpenKey(null)} />}
     </div>
   );
 }
