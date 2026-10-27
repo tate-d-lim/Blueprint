@@ -1,5 +1,6 @@
 import ExcelJS from 'exceljs';
 import { cellText } from '../data/xlsx';
+import type { Profile } from '../domain/types';
 import type { Plan } from '../plan/engine';
 import { sspValues } from './ssp-values';
 
@@ -18,7 +19,10 @@ export class MissingTemplateRowError extends Error {
  * Opens the real Low-Risk Cloud template and fills only Implemented (H) and Explanation (I),
  * leaving every other cell, style and width as it was.
  */
-export async function fillSspWorkbook(plan: Plan, opts: { templatePath: string }): Promise<Buffer> {
+export async function fillSspWorkbook(
+  plan: Plan,
+  opts: { templatePath: string; genai?: { profile: Profile } },
+): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(opts.templatePath);
   const sheet = workbook.getWorksheet('ssp');
@@ -45,5 +49,24 @@ export async function fillSspWorkbook(plan: Plan, opts: { templatePath: string }
       cell.alignment = { ...cell.alignment, wrapText: true, vertical: 'top' };
     }
   }
+  if (opts.genai) addGenAiSheet(workbook, plan, opts.genai.profile);
   return Buffer.from(await workbook.xlsx.writeBuffer());
+}
+
+const GENAI_HEADER = ['ID', 'Title', 'Statement', 'Recommendations', 'Risk/Rationale', 'Profile Level', 'References', 'Implemented', 'Explanation'];
+
+/** A second sheet with the same columns as the template, for the Generative AI requirements. */
+function addGenAiSheet(workbook: ExcelJS.Workbook, plan: Plan, profile: Profile): void {
+  const sheet = workbook.addWorksheet('genai');
+  sheet.addRow(GENAI_HEADER).font = { bold: true };
+  for (const entry of profile.entries) {
+    const item = plan.items.find(i => i.profileId === profile._id && i.key === entry.key);
+    const { implemented, explanation } = item ? sspValues(item) : { implemented: '', explanation: '' };
+    const row = sheet.addRow([
+      entry.id, entry.title, entry.statement, entry.recommendations, entry.rationale,
+      String(entry.level), entry.references, implemented, explanation,
+    ]);
+    row.alignment = { vertical: 'top', wrapText: true };
+  }
+  [10, 30, 60, 60, 60, 14, 30, 14, 80].forEach((width, i) => (sheet.getColumn(i + 1).width = width));
 }
