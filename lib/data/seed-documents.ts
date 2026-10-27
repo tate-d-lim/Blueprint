@@ -1,0 +1,140 @@
+import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import type {
+  Approval,
+  Catalog,
+  CoverageEntry,
+  CoverageValue,
+  PlainText,
+  Profile,
+  Project,
+  Requirement,
+  Tool,
+  ToolVersion,
+} from '../domain/types';
+import { UnknownRequirementError, loadGenAi, loadIm8Catalog, loadLowRiskCloudProfile } from './load-sources';
+
+export interface SeedDocuments {
+  catalogs: Catalog[];
+  requirements: Requirement[];
+  profiles: Profile[];
+  tools: Tool[];
+  toolVersions: ToolVersion[];
+  projects: Project[];
+}
+
+/** Hand-entered coverage, grouped by value so the JSON stays short. */
+export interface SeedVersionFile {
+  toolId: string;
+  profileId: string;
+  version: number;
+  source: string;
+  writtenAgainst: string;
+  approval?: { by: string; kind: Approval['kind'] };
+  groups: {
+    ids: string[];
+    value: CoverageValue;
+    otherToolId?: string;
+    explanation?: string;
+    builderPart?: string;
+  }[];
+}
+
+export function expandSeedVersion(
+  file: string,
+  seed: SeedVersionFile,
+  profile: Profile,
+  toolIds: Set<string>,
+  now: string,
+): ToolVersion {
+  if (!toolIds.has(seed.toolId)) throw new Error(`Unknown tool ${seed.toolId} in ${file}`);
+  const keyOf = new Map(profile.entries.map(e => [e.id, e.key]));
+  const seen = new Set<string>();
+  const entries: CoverageEntry[] = [];
+  for (const group of seed.groups) {
+    if (group.otherToolId !== undefined && !toolIds.has(group.otherToolId)) {
+      throw new Error(`Unknown tool ${group.otherToolId} in ${file}`);
+    }
+    for (const id of group.ids) {
+      const key = keyOf.get(id);
+      if (!key) throw new UnknownRequirementError(id, file);
+      if (seen.has(id)) throw new Error(`Requirement ${id} is listed twice in ${file}`);
+      seen.add(id);
+      const entry: CoverageEntry = { key, value: group.value };
+      if (group.otherToolId !== undefined) entry.otherToolId = group.otherToolId;
+      if (group.explanation !== undefined) entry.explanation = group.explanation;
+      if (group.builderPart !== undefined) entry.builderPart = group.builderPart;
+      entries.push(entry);
+    }
+  }
+  const version: ToolVersion = {
+    _id: `${seed.toolId}:${seed.profileId}:v${seed.version}`,
+    toolId: seed.toolId,
+    profileId: seed.profileId,
+    version: seed.version,
+    writtenAgainst: seed.writtenAgainst,
+    source: seed.source,
+    createdAt: now,
+    createdByRole: 'seed',
+    entries,
+  };
+  if (seed.approval) version.approval = { at: now, by: seed.approval.by, kind: seed.approval.kind };
+  return version;
+}
+
+async function readJson<T>(file: string): Promise<T> {
+  return JSON.parse(await readFile(file, 'utf8')) as T;
+}
+
+async function readVersionFiles(file: string): Promise<SeedVersionFile[]> {
+  const parsed = await readJson<SeedVersionFile | SeedVersionFile[]>(file);
+  return Array.isArray(parsed) ? parsed : [parsed];
+}
+
+export async function buildSeedDocuments(
+  dataDir = 'data',
+  now = new Date().toISOString(),
+): Promise<SeedDocuments> {
+  const im8 = await loadIm8Catalog(dataDir);
+  const profile = await loadLowRiskCloudProfile(dataDir, new Map(im8.requirements.map(r => [r._id, r])));
+  const genai = await loadGenAi(dataDir);
+  const profiles = [profile, genai.profile];
+
+  const defaults = await readJson<Record<string, string[]>>(path.join(dataDir, 'seed', 'defaults.json'));
+  for (const p of profiles) {
+    for (const id of defaults[p._id] ?? []) {
+      const entry = p.entries.find(e => e.id === id);
+      if (!entry) throw new UnknownRequirementError(id, 'defaults.json');
+      entry.ifUncovered = 'app-builder';
+    }
+    const plainFile = path.join(dataDir, 'plain-language', `${p._id}.json`);
+    if (existsSync(plainFile)) {
+      const plain = await readJson<Record<string, PlainText>>(plainFile);
+      for (const entry of p.entries) if (plain[entry.id]) entry.plain = plain[entry.id];
+    }
+  }
+
+  const tools = await readJson<Tool[]>(path.join(dataDir, 'seed', 'tools.json'));
+  const toolIds = new Set(tools.map(t => t._id));
+  const versionFiles = [
+    ['appcentral-slide12.json', await readVersionFiles(path.join(dataDir, 'seed', 'appcentral-slide12.json'))],
+    ['dbaas-iga-slide12.json', await readVersionFiles(path.join(dataDir, 'seed', 'dbaas-iga-slide12.json'))],
+  ] as const;
+  const toolVersions = versionFiles.flatMap(([name, seeds]) =>
+    seeds.map(seed => {
+      const target = profiles.find(p => p._id === seed.profileId);
+      if (!target) throw new Error(`Unknown profile ${seed.profileId} in ${name}`);
+      return expandSeedVersion(name, seed, target, toolIds, now);
+    }),
+  );
+
+  return {
+    catalogs: [im8.catalog, genai.catalog],
+    requirements: [...im8.requirements, ...genai.requirements],
+    profiles,
+    tools,
+    toolVersions,
+    projects: [],
+  };
+}

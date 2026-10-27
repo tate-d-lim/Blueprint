@@ -1,0 +1,37 @@
+[
+  {
+    "_id": "appcentral",
+    "name": "appCentral",
+    "description": "Hosting platform for CPFB apps",
+    "section": "cpf",
+    "oscalType": "service",
+    "isSample": false
+  },
+  {
+    "_id": "dbaas",
+    "name": "DBaaS",
+    "description": "Managed database service",
+    "section": "cpf",
+    "oscalType": "service",
+    "isSample": false
+  },
+  {
+    "_id": "iga",
+    "name": "IGA",
+    "description": "Identity and access governance",
+    "section": "cpf",
+    "oscalType": "service",
+    "isSample": false
+  },
+  {
+    "_id": "gencentral",
+    "name": "genCentral",
+    "description": "Generative AI service",
+    "section": "cpf",
+    "oscalType": "service",
+    "isSample": true,
+    "activatesProfiles": [
+      "generative-ai"
+    ]
+  }
+]

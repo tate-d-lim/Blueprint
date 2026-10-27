@@ -1,0 +1,118 @@
+{
+  "toolId": "appcentral",
+  "profileId": "low-risk-cloud",
+  "version": 1,
+  "source": "AEO TPC slide 12 (28 Oct 2026)",
+  "writtenAgainst": "AEO TPC slide 12 (28 Oct 2026)",
+  "approval": {
+    "by": "AEO TPC slide 12 (28 Oct 2026)",
+    "kind": "verifier"
+  },
+  "groups": [
+    {
+      "ids": [
+        "as-4",
+        "as-5",
+        "as-6",
+        "as-8",
+        "as-11",
+        "as-15",
+        "sc-1",
+        "sc-3",
+        "sc-5",
+        "st-1",
+        "st-2",
+        "st-3",
+        "cs-7",
+        "cs-9",
+        "cs-10",
+        "ns-1",
+        "ns-2",
+        "ns-3",
+        "ns-4",
+        "ns-5",
+        "ns-6",
+        "ns-7",
+        "ns-8",
+        "br-1",
+        "br-3",
+        "lm-1",
+        "lm-2",
+        "lm-3",
+        "lm-4",
+        "lm-6",
+        "lm-7",
+        "lm-8",
+        "lm-9",
+        "lm-10",
+        "lm-12",
+        "sd-1",
+        "sd-2",
+        "sd-4",
+        "sd-5",
+        "sd-6",
+        "sd-7",
+        "sd-8"
+      ],
+      "value": "provided"
+    },
+    {
+      "ids": [
+        "is-1",
+        "is-2",
+        "is-3",
+        "is-4",
+        "is-5",
+        "is-6",
+        "is-7",
+        "is-9",
+        "is-10"
+      ],
+      "value": "not-applicable",
+      "explanation": "appCentral does not have hosts (EC2)."
+    },
+    {
+      "ids": [
+        "as-1",
+        "as-2",
+        "as-3",
+        "as-7",
+        "as-9",
+        "sc-4",
+        "sc-6",
+        "st-4",
+        "st-5",
+        "cs-3",
+        "cs-4"
+      ],
+      "value": "app-builder"
+    },
+    {
+      "ids": [
+        "dp-1",
+        "dp-2",
+        "dp-3",
+        "dp-4"
+      ],
+      "value": "other-tool",
+      "otherToolId": "dbaas"
+    },
+    {
+      "ids": [
+        "ac-1",
+        "ac-2",
+        "ac-3",
+        "ac-4",
+        "ac-5",
+        "ac-6",
+        "ac-7",
+        "ac-8",
+        "ac-9",
+        "ac-12",
+        "ac-14"
+      ],
+      "value": "other-tool",
+      "otherToolId": "iga"
+    }
+  ]
+}
