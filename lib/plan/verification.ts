@@ -35,3 +35,12 @@ export function rowVerification(key: RequirementKey, pair: VersionPair): Verific
 export function versionVerification(pair: VersionPair): Verification {
   return pair.current.approval ? forApproval(pair.current.approval) : 'not-yet-verified';
 }
+
+/** One badge for a whole item: the weakest of its decisive claims, or null when no tool decided it. */
+export function itemVerification(item: { decisive: { verification: Verification }[] }): Verification | null {
+  const states = item.decisive.map(c => c.verification);
+  if (states.length === 0) return null;
+  if (states.includes('not-yet-verified')) return 'not-yet-verified';
+  if (states.includes('govtech-published')) return 'govtech-published';
+  return 'verified';
+}
