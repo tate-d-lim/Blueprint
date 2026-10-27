@@ -4,7 +4,7 @@ exports[`the whole document for the demo case 1`] = `
 "# Build plan: Your app
 
 App type: Low-risk app on the cloud (IM8 Low-Risk Cloud).
-Tools: appCentral (verified), DBaaS (not yet verified), IGA (not yet verified).
+Tools: appCentral v1 (verified), DBaaS v1 (not yet verified), IGA v1 (not yet verified).
 Generated 2026-10-27 by the CPFB build plan app. IDs in brackets are IM8 requirement IDs.
 
 ## How to use this plan

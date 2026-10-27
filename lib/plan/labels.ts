@@ -32,6 +32,9 @@ export const BADGE_TEXT: Record<Verification, string> = {
 
 export const SAMPLE_BADGE = 'Sample';
 
+export const LOCALLY_DERIVED = 'Locally derived from GovTech files received 2026-10-22; not an official GovTech release.';
+export const SELF_DECLARED_NOTE = 'Statuses are self-declared by the app builder.';
+
 /** Sub-labels under "Good to have". */
 export const GOOD_TO_HAVE_LABEL: Record<Placement, string> = {
   provided: 'Handled for you',

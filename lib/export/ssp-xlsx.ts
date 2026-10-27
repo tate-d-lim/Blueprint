@@ -2,6 +2,8 @@ import ExcelJS from 'exceljs';
 import { cellText } from '../data/xlsx';
 import type { Profile } from '../domain/types';
 import type { Plan } from '../plan/engine';
+import { BADGE_TEXT, LOCALLY_DERIVED, SELF_DECLARED_NOTE } from '../plan/labels';
+import type { AboutInfo } from './about';
 import { sspValues } from './ssp-values';
 
 const PROFILE_ID = 'low-risk-cloud';
@@ -21,7 +23,7 @@ export class MissingTemplateRowError extends Error {
  */
 export async function fillSspWorkbook(
   plan: Plan,
-  opts: { templatePath: string; genai?: { profile: Profile } },
+  opts: { templatePath: string; genai?: { profile: Profile }; about?: AboutInfo },
 ): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(opts.templatePath);
@@ -50,6 +52,7 @@ export async function fillSspWorkbook(
     }
   }
   if (opts.genai) addGenAiSheet(workbook, plan, opts.genai.profile);
+  if (opts.about) addAboutSheet(workbook, opts.about);
   return Buffer.from(await workbook.xlsx.writeBuffer());
 }
 
@@ -69,4 +72,24 @@ function addGenAiSheet(workbook: ExcelJS.Workbook, plan: Plan, profile: Profile)
     row.alignment = { vertical: 'top', wrapText: true };
   }
   [10, 30, 60, 60, 60, 14, 30, 14, 80].forEach((width, i) => (sheet.getColumn(i + 1).width = width));
+}
+
+/** What this export was built from, so a reviewer can tell which versions of what they are reading. */
+function addAboutSheet(workbook: ExcelJS.Workbook, about: AboutInfo): void {
+  const sheet = workbook.addWorksheet('About this file');
+  const rows: string[][] = [['Generated', about.generatedAt.slice(0, 10)]];
+  if (about.projectName) rows.push(['Project', about.projectName]);
+  rows.push(
+    ['App type', about.appType],
+    ['Profile', `${about.profile.title}, version ${about.profile.version}`],
+    [],
+    ['Tool', 'Coverage version', 'Verification'],
+  );
+  for (const t of about.tools) {
+    rows.push([t.name, t.version === 0 ? 'No coverage recorded' : `v${t.version}`, BADGE_TEXT[t.verification]]);
+  }
+  rows.push([], [LOCALLY_DERIVED], [SELF_DECLARED_NOTE]);
+  for (const row of rows) sheet.addRow(row);
+  sheet.getRow(rows.findIndex(r => r[0] === 'Tool') + 1).font = { bold: true };
+  [28, 28, 22].forEach((width, i) => (sheet.getColumn(i + 1).width = width));
 }

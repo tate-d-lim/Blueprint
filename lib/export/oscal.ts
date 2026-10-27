@@ -1,6 +1,7 @@
 import { v5 as uuidv5 } from 'uuid';
 import type { CoverageEntry, Profile, TaskStatus, Tool } from '../domain/types';
 import type { Plan, PlanItem } from '../plan/engine';
+import { LOCALLY_DERIVED } from '../plan/labels';
 import { rowVerification, type VersionPair } from '../plan/verification';
 import { OPTION_LABELS, type RiskAnswers } from '../risk/assess';
 import { sspValues } from './ssp-values';
@@ -27,8 +28,7 @@ function profileResource(profile: Profile): Json {
     uuid: uuid(`profile|${profile._id}|${profile.version}`),
     title: `${profile.title} (locally derived)`,
     description:
-      `Locally derived ${profile.title} profile, version ${profile.version}. ` +
-      'Locally derived from GovTech files received 2026-10-22; not an official GovTech release.',
+      `Locally derived ${profile.title} profile, version ${profile.version}. ${LOCALLY_DERIVED}`,
   };
 }
 

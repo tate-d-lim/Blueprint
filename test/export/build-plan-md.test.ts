@@ -27,7 +27,7 @@ test('the three sections, their counts and the platform groups', async () => {
   expect(md).toContain("## 3. Don't build this: your platform already does it (66)");
   expect(md).toContain('### appCentral\n');
   expect(md).toContain("### Doesn't apply on your platform\n");
-  expect(md).toContain('Tools: appCentral (verified), DBaaS (not yet verified), IGA (not yet verified).');
+  expect(md).toContain('Tools: appCentral v1 (verified), DBaaS v1 (not yet verified), IGA v1 (not yet verified).');
 });
 
 test('claims from tools that are not yet verified say so at the end of the line', async () => {
@@ -56,7 +56,7 @@ test('with the real seed, Zod is named in the plan only when picked', async () =
   const withZod = await demo(['appcentral', 'zod']);
   expect(withZod).toContain('Define a Zod schema for every input and parse it before use.');
   expect(withZod).toContain("Platform's part: Zod checks data against a schema you define.");
-  expect(withZod).toContain('Tools: appCentral (verified), Zod (not yet verified).');
+  expect(withZod).toContain('Tools: appCentral v1 (verified), Zod v1 (not yet verified).');
 });
 
 test('a library is named only when it was picked', () => {

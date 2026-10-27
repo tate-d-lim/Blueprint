@@ -44,7 +44,7 @@ const flag = (item: PlanItem) => (itemVerification(item) === 'not-yet-verified' 
 
 function toolsLine(tools: BuildPlanMeta['tools']): string {
   if (tools.length === 0) return 'Tools: none picked.';
-  const parts = tools.map(t => (t.version === 0 ? `${t.name} (no coverage recorded)` : `${t.name} (${VERIFICATION_WORDS[t.verification]})`));
+  const parts = tools.map(t => (t.version === 0 ? `${t.name} (no coverage recorded)` : `${t.name} v${t.version} (${VERIFICATION_WORDS[t.verification]})`));
   return `Tools: ${parts.join(', ')}.`;
 }
 

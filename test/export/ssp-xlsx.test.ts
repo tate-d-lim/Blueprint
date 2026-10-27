@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { buildAboutInfo, type AboutInfo } from '@/lib/export/about';
 import { MissingTemplateRowError, fillSspWorkbook } from '@/lib/export/ssp-xlsx';
 import { slugify, sspFileName } from '@/lib/export/filename';
 import { cellText } from '@/lib/data/xlsx';
@@ -76,6 +77,51 @@ test('with nothing picked, builder defaults are N and everything else is blank',
   const sheet = await readBack(await fillSspWorkbook(await demoPlan([]), { templatePath: TEMPLATE }));
   expect(cellText(rowOf(sheet, 'as-1').getCell(8))).toBe('N');
   expect(cellText(rowOf(sheet, 'as-4').getCell(8))).toBe('');
+});
+
+const ABOUT: AboutInfo = {
+  generatedAt: '2026-10-27T09:00:00.000Z',
+  projectName: 'Member portal',
+  appType: 'Low-risk app on the cloud',
+  profile: { title: 'Low-Risk Cloud', version: '2026-10-22 (local copy)' },
+  tools: [
+    { name: 'appCentral', version: 1, verification: 'verified' },
+    { name: 'DBaaS', version: 1, verification: 'not-yet-verified' },
+    { name: 'genCentral', version: 0, verification: 'not-yet-verified' },
+  ],
+};
+
+test('an "About this file" sheet lists the date, profile, each tool version and the standing notes', async () => {
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load((await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE, about: ABOUT })) as unknown as ArrayBuffer);
+  const sheet = wb.getWorksheet('About this file')!;
+  const rows: string[][] = [];
+  sheet.eachRow(row => rows.push((row.values as unknown[]).slice(1).map(v => String(v ?? ''))));
+  expect(rows).toContainEqual(['appCentral', 'v1', 'Verified']);
+  expect(rows).toContainEqual(['DBaaS', 'v1', 'Not yet verified']);
+  expect(rows).toContainEqual(['genCentral', 'No coverage recorded', 'Not yet verified']);
+  expect(rows).toContainEqual(['Generated', '2026-10-27']);
+  expect(rows).toContainEqual(['Project', 'Member portal']);
+  expect(rows).toContainEqual(['Profile', 'Low-Risk Cloud, version 2026-10-22 (local copy)']);
+  const everything = rows.flat().join('\n');
+  expect(everything).toContain('Locally derived from GovTech files received 2026-10-22; not an official GovTech release.');
+  expect(everything).toContain('Statuses are self-declared by the app builder.');
+  expect(wb.worksheets[0].name).toBe('ssp');
+});
+
+test('without the option there is no "About this file" sheet', async () => {
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load((await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE })) as unknown as ArrayBuffer);
+  expect(wb.getWorksheet('About this file')).toBeUndefined();
+});
+
+test('buildAboutInfo copies the header facts', () => {
+  const about = buildAboutInfo(
+    { title: 'Member portal', appType: 'Low-risk app on the cloud', profileTitle: 'Low-Risk Cloud', tools: ABOUT.tools, generatedAt: ABOUT.generatedAt },
+    { _id: 'low-risk-cloud', title: 'Low-Risk Cloud', plainTitle: 'x', version: '2026-10-22 (local copy)', sourceFile: 'f', entries: [] },
+    'Member portal',
+  );
+  expect(about).toEqual(ABOUT);
 });
 
 test('file names: plain, and with a project slug', () => {
