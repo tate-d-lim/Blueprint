@@ -1,7 +1,19 @@
 "use client";
 
+import {
+  SgdsAccordion,
+  SgdsAccordionItem,
+  SgdsAlert,
+  SgdsBadge,
+  SgdsButton,
+  SgdsCheckbox,
+  SgdsInput,
+  SgdsSelect,
+  SgdsTextarea,
+} from "@govtechsg/sgds-web-component/react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
+import { checkedOf, valueOf } from "@/app/components/sgds-events";
 import type { DraftRow } from "@/lib/admin/new-version";
 import type { CoverageValue, Level, RequirementKey } from "@/lib/domain/types";
 import { VALUE_LABEL } from "@/lib/plan/labels";
@@ -16,7 +28,26 @@ interface Requirement {
 }
 
 const VALUES: CoverageValue[] = ["provided", "shared", "app-builder", "not-applicable", "other-tool"];
-const INPUT = "w-full rounded-md border border-line bg-surface px-2 py-1.5 text-sm";
+
+const BADGE_VARIANT = {
+  provided: "success",
+  shared: "info",
+  "app-builder": "neutral",
+  "not-applicable": "neutral",
+  "other-tool": "cyan",
+} as const satisfies Record<CoverageValue, string>;
+
+
+/** The select components can't hold an empty value, so "no statement" and "all" travel as words. */
+const NONE = "none";
+const ALL = "all";
+
+const LEVEL_OPTIONS = [
+  { label: "All levels", value: ALL },
+  { label: "Level 0", value: "0" },
+  { label: "Level 1", value: "1" },
+  { label: "Level 2", value: "2" },
+];
 
 export function CoverageEditor({
   toolId,
@@ -39,8 +70,8 @@ export function CoverageEditor({
   const [pending, startTransition] = useTransition();
   const initial = useMemo(() => new Map(initialRows.map(r => [r.key, r])), [initialRows]);
   const [rows, setRows] = useState(() => new Map(requirements.map(r => [r.key, initial.get(r.key) ?? { key: r.key, value: "" as const }])));
-  const [family, setFamily] = useState("");
-  const [level, setLevel] = useState("");
+  const [family, setFamily] = useState(ALL);
+  const [level, setLevel] = useState(ALL);
   const [coveredOnly, setCoveredOnly] = useState(false);
   const [saving, setSaving] = useState(false);
   // Starts empty on purpose: a changed row is credited to the source typed here, never to the previous one.
@@ -49,15 +80,51 @@ export function CoverageEditor({
   const [errors, setErrors] = useState<{ key?: string; message: string }[]>([]);
   const [savedVersion, setSavedVersion] = useState<number | null>(null);
 
-  const families = [...new Set(requirements.map(r => r.family))];
   const update = (key: RequirementKey, patch: Partial<DraftRow>) =>
     setRows(prev => new Map(prev).set(key, { ...prev.get(key)!, ...patch }));
   const visible = requirements.filter(
-    r => (!family || r.family === family) && (!level || String(r.level) === level) && (!coveredOnly || rows.get(r.key)!.value),
+    r => (family === ALL || r.family === family) && (level === ALL || String(r.level) === level) && (!coveredOnly || rows.get(r.key)!.value),
   );
   const covered = [...rows.values()].filter(r => r.value).length;
   const errorFor = (key: RequirementKey) => errors.find(e => e.key === key)?.message;
   const changed = (key: RequirementKey) => JSON.stringify(strip(rows.get(key)!)) !== JSON.stringify(strip(initial.get(key) ?? { key, value: "" }));
+  const toolNameOf = (id?: string) => otherTools.find(t => t.id === id)?.name;
+  const familyOptions = useMemo(
+    () => [{ label: "All families", value: ALL }, ...[...new Set(requirements.map(r => r.family))].map(f => ({ label: f.toUpperCase(), value: f }))],
+    [requirements],
+  );
+  const valueOptions = useMemo(
+    () => [
+      { label: "No statement", value: NONE },
+      ...VALUES.map(v => ({ label: v === "other-tool" ? "Handled by another tool…" : VALUE_LABEL(v, toolName), value: v })),
+    ],
+    [toolName],
+  );
+  const otherToolOptions = useMemo(() => otherTools.map(t => ({ label: t.name, value: t.id })), [otherTools]);
+
+  const statusBadges = (row: DraftRow, hasError: boolean, isChanged: boolean) => (
+    <>
+      {isChanged && (
+        <SgdsBadge show variant="warning">
+          Changed
+        </SgdsBadge>
+      )}
+      {hasError && (
+        <SgdsBadge show variant="danger">
+          Needs attention
+        </SgdsBadge>
+      )}
+      {row.value ? (
+        <SgdsBadge show variant={BADGE_VARIANT[row.value]}>
+          {VALUE_LABEL(row.value, toolName, toolNameOf(row.otherToolId))}
+        </SgdsBadge>
+      ) : (
+        <SgdsBadge show variant="neutral" outlined>
+          No statement
+        </SgdsBadge>
+      )}
+    </>
+  );
 
   const save = () =>
     startTransition(async () => {
@@ -73,159 +140,151 @@ export function CoverageEditor({
     });
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <select aria-label="Family" value={family} onChange={e => setFamily(e.target.value)} className={`${INPUT} w-auto`}>
-          <option value="">All families</option>
-          {families.map(f => (
-            <option key={f} value={f}>
-              {f.toUpperCase()}
-            </option>
-          ))}
-        </select>
-        <select aria-label="Level" value={level} onChange={e => setLevel(e.target.value)} className={`${INPUT} w-auto`}>
-          <option value="">All levels</option>
-          <option value="0">Level 0</option>
-          <option value="1">Level 1</option>
-          <option value="2">Level 2</option>
-        </select>
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={coveredOnly} onChange={e => setCoveredOnly(e.target.checked)} className="size-4 accent-[var(--accent)]" />
+    <div className="sgds:flex sgds:flex-col sgds:gap-sm">
+      <div className="sgds:grid sgds:items-end sgds:gap-sm sgds:md:grid-cols-[12rem_12rem_auto_1fr]">
+        <SgdsSelect label="Family" name="family" value={family} menuList={familyOptions} onSgdsChange={e => setFamily(valueOf(e))} />
+        <SgdsSelect label="Level" name="level" value={level} menuList={LEVEL_OPTIONS} onSgdsChange={e => setLevel(valueOf(e))} />
+        <SgdsCheckbox name="coveredOnly" value="yes" checked={coveredOnly} onSgdsChange={e => setCoveredOnly(checkedOf(e))}>
           Rows with coverage only
-        </label>
-        <span className="text-muted">
+        </SgdsCheckbox>
+        <p className="sgds:text-body-sm sgds:text-subtle">
           {visible.length} shown · {covered} with coverage
-        </span>
+        </p>
       </div>
 
       {savedVersion !== null && (
-        <p className="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm">
+        <SgdsAlert show outlined variant="success">
           Saved version {savedVersion}. It is not yet verified: a verifier needs to approve it before builders see it as verified.
-        </p>
+        </SgdsAlert>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-line bg-surface">
-        <table className="w-full min-w-[60rem] text-left text-sm">
-          <thead className="border-b border-line text-muted">
-            <tr>
-              <th className="px-3 py-2 font-medium">Requirement</th>
-              <th className="px-3 py-2 font-medium">Who handles it</th>
-              <th className="px-3 py-2 font-medium">Explanation</th>
-              <th className="px-3 py-2 font-medium">App Builder&apos;s part</th>
-              <th className="px-3 py-2 font-medium">Source</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map(req => {
-              const row = rows.get(req.key)!;
-              const error = errorFor(req.key);
-              return (
-                <tr key={req.key} className={`border-b border-line align-top last:border-0 ${changed(req.key) ? "bg-accent-soft/60" : ""}`}>
-                  <td className="w-64 px-3 py-2">
-                    <div className="font-medium">{req.title}</div>
-                    <div className="font-mono text-xs text-muted">
-                      {req.id} · Level {req.level}
-                    </div>
-                  </td>
-                  <td className="w-56 px-3 py-2">
-                    <select
-                      aria-label={`Who handles ${req.id}`}
-                      value={row.value}
-                      onChange={e => update(req.key, { value: e.target.value as DraftRow["value"] })}
-                      className={INPUT}
-                    >
-                      <option value="">No statement</option>
-                      {VALUES.map(v => (
-                        <option key={v} value={v}>
-                          {v === "other-tool" ? "Handled by another tool…" : VALUE_LABEL(v, toolName)}
-                        </option>
-                      ))}
-                    </select>
-                    {row.value === "other-tool" && (
-                      <select
-                        aria-label={`Which tool handles ${req.id}`}
-                        value={row.otherToolId ?? ""}
-                        onChange={e => update(req.key, { otherToolId: e.target.value })}
-                        className={`${INPUT} mt-1`}
-                      >
-                        <option value="">Pick a tool</option>
-                        {otherTools.map(t => (
-                          <option key={t.id} value={t.id}>
-                            {t.name}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                    {error && <p className="mt-1 text-xs font-medium text-red-700">{error}</p>}
-                  </td>
-                  <td className="px-3 py-2">
-                    <textarea
-                      aria-label={`Explanation for ${req.id}`}
-                      rows={2}
-                      value={row.explanation ?? ""}
-                      onChange={e => update(req.key, { explanation: e.target.value })}
-                      className={INPUT}
+      <SgdsAccordion allowMultiple>
+        {visible.map(req => {
+          const row = rows.get(req.key)!;
+          const error = errorFor(req.key);
+          return (
+            <SgdsAccordionItem key={req.key}>
+              <div slot="header" className="sgds:flex sgds:flex-col sgds:gap-text-xs">
+                <span>{req.title}</span>
+                <span className="sgds:font-code sgds:text-caption-md sgds:font-regular sgds:text-subtle">
+                  {req.id} · Level {req.level}
+                </span>
+                {/* Small screens have no room beside the title, so the badges go underneath it. */}
+                <span className="sgds:flex sgds:flex-wrap sgds:items-center sgds:gap-text-xs sgds:md:hidden">{statusBadges(row, !!error, changed(req.key))}</span>
+              </div>
+              <span slot="badge" className="sgds:hidden sgds:flex-wrap sgds:items-center sgds:gap-text-xs sgds:md:flex">
+                {statusBadges(row, !!error, changed(req.key))}
+              </span>
+              <div slot="content" className="sgds:flex sgds:flex-col sgds:gap-sm">
+                {error && (
+                  <SgdsAlert show outlined variant="danger">
+                    {error}
+                  </SgdsAlert>
+                )}
+                <div className="sgds:grid sgds:gap-sm sgds:md:grid-cols-2">
+                  <SgdsSelect
+                    label="Who handles it"
+                    name={`value-${req.id}`}
+                    value={row.value || NONE}
+                    menuList={valueOptions}
+                    onSgdsChange={e => update(req.key, { value: (valueOf(e) === NONE ? "" : valueOf(e)) as DraftRow["value"] })}
+                  />
+                  {row.value === "other-tool" && (
+                    <SgdsSelect
+                      label="Which tool handles it"
+                      name={`other-${req.id}`}
+                      placeholder="Pick a tool"
+                      value={row.otherToolId ?? ""}
+                      menuList={otherToolOptions}
+                      onSgdsChange={e => update(req.key, { otherToolId: valueOf(e) })}
                     />
-                  </td>
-                  <td className="px-3 py-2">
-                    {(row.value === "shared" || row.value === "app-builder") && (
-                      <textarea
-                        aria-label={`App Builder's part for ${req.id}`}
-                        rows={2}
-                        value={row.builderPart ?? ""}
-                        onChange={e => update(req.key, { builderPart: e.target.value })}
-                        className={INPUT}
-                      />
-                    )}
-                  </td>
-                  <td className="w-48 px-3 py-2">
-                    <input
-                      aria-label={`Source for ${req.id}`}
-                      value={row.source ?? ""}
-                      onChange={e => update(req.key, { source: e.target.value })}
-                      placeholder="Same as before"
-                      className={INPUT}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                  )}
+                </div>
+                <SgdsTextarea
+                  label="Explanation"
+                  placeholder="What the tool does for this requirement"
+                  name={`explanation-${req.id}`}
+                  rows={2}
+                  value={row.explanation ?? ""}
+                  onSgdsInput={e => update(req.key, { explanation: valueOf(e) })}
+                />
+                {(row.value === "shared" || row.value === "app-builder") && (
+                  <SgdsTextarea
+                    label="App Builder's part"
+                    placeholder="What the App Builder still has to do"
+                    name={`builder-part-${req.id}`}
+                    rows={2}
+                    value={row.builderPart ?? ""}
+                    onSgdsInput={e => update(req.key, { builderPart: valueOf(e) })}
+                  />
+                )}
+                <SgdsInput
+                  label="Source"
+                  name={`source-${req.id}`}
+                  placeholder="Same as before"
+                  value={row.source ?? ""}
+                  onSgdsInput={e => update(req.key, { source: valueOf(e) })}
+                />
+              </div>
+            </SgdsAccordionItem>
+          );
+        })}
+      </SgdsAccordion>
 
-      <div className="sticky bottom-0 -mx-6 border-t border-line bg-surface px-6 py-3">
+      <div className="sgds:sticky sgds:bottom-0 sgds:z-10 sgds:border-t sgds:border-muted sgds:bg-surface-default sgds:py-sm sgds:shadow-edge-top">
         {!saving ? (
-          <button type="button" onClick={() => { setSaving(true); setSavedVersion(null); }} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90">
+          <SgdsButton
+            onClick={() => {
+              setSaving(true);
+              setSavedVersion(null);
+            }}
+          >
             Save new version
-          </button>
+          </SgdsButton>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-            <label className="text-sm font-medium">
-              Source for this version
-              <input
+          <div className="sgds:flex sgds:flex-col sgds:gap-sm">
+            <div className="sgds:grid sgds:items-end sgds:gap-sm sgds:md:grid-cols-[1fr_1fr_auto]">
+              <SgdsInput
+                label="Source for this version"
+                name="version-source"
                 value={source}
-                onChange={e => setSource(e.target.value)}
                 placeholder={defaultSource ? `Where the changes come from (before: ${defaultSource})` : "Where this coverage comes from"}
-                className={`${INPUT} mt-1`}
+                onSgdsInput={e => setSource(valueOf(e))}
               />
-            </label>
-            <label className="text-sm font-medium">
-              What changed
-              <input value={changeNote} onChange={e => setChangeNote(e.target.value)} placeholder="Optional" className={`${INPUT} mt-1`} />
-            </label>
-            <div className="flex gap-2">
-              <button type="button" disabled={pending} onClick={save} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50">
-                {pending ? "Saving…" : "Save"}
-              </button>
-              <button type="button" onClick={() => { setSaving(false); setErrors([]); }} className="rounded-lg border border-line px-4 py-2 text-sm">
-                Cancel
-              </button>
+              <SgdsInput
+                label="What changed"
+                name="version-note"
+                value={changeNote}
+                placeholder="Optional"
+                onSgdsInput={e => setChangeNote(valueOf(e))}
+              />
+              <div className="sgds:flex sgds:gap-sm">
+                <SgdsButton disabled={pending} onClick={save}>
+                  {pending ? "Saving…" : "Save"}
+                </SgdsButton>
+                <SgdsButton
+                  variant="outline"
+                  onClick={() => {
+                    setSaving(false);
+                    setErrors([]);
+                  }}
+                >
+                  Cancel
+                </SgdsButton>
+              </div>
             </div>
-            {errors.filter(e => !e.key).map(e => (
-              <p key={e.message} className="text-sm font-medium text-red-700 sm:col-span-3">{e.message}</p>
-            ))}
-            {errors.some(e => e.key) && <p className="text-sm font-medium text-red-700 sm:col-span-3">Fix the highlighted rows and save again.</p>}
+            {errors
+              .filter(e => !e.key)
+              .map(e => (
+                <SgdsAlert key={e.message} show outlined variant="danger">
+                  {e.message}
+                </SgdsAlert>
+              ))}
+            {errors.some(e => e.key) && (
+              <SgdsAlert show outlined variant="danger">
+                Fix the highlighted rows and save again.
+              </SgdsAlert>
+            )}
           </div>
         )}
       </div>
@@ -235,5 +294,12 @@ export function CoverageEditor({
 
 /** Compares rows ignoring blank strings. */
 function strip(row: DraftRow) {
-  return { key: row.key, value: row.value, otherToolId: row.otherToolId || undefined, explanation: row.explanation || undefined, builderPart: row.builderPart || undefined, source: row.source || undefined };
+  return {
+    key: row.key,
+    value: row.value,
+    otherToolId: row.otherToolId || undefined,
+    explanation: row.explanation || undefined,
+    builderPart: row.builderPart || undefined,
+    source: row.source || undefined,
+  };
 }

@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { SgdsAlert, SgdsButton, SgdsTable, SgdsTableCell, SgdsTableHead, SgdsTableRow } from "@govtechsg/sgds-web-component/react";
+import { PageHeader } from "@/app/components/page-header";
 import { RoleGate } from "@/app/components/role-gate";
 import { withDb } from "@/lib/data/db";
 import { listAwaitingApproval } from "@/lib/data/repos/tool-versions";
@@ -18,29 +19,48 @@ async function Awaiting() {
     profiles: (await db.collection("profiles").find().toArray()) as unknown as Profile[],
   }));
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Waiting for approval</h1>
-        <p className="mt-1 text-muted">Check what changed, then approve. Builders see the badge flip straight away.</p>
-      </div>
-      {awaiting.length === 0 && <p className="rounded-xl border border-line bg-surface p-5">Nothing is waiting for approval.</p>}
-      <ul className="space-y-3">
-        {awaiting.map(({ tool, current }) => (
-          <li key={current._id} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-line bg-surface p-4">
-            <div>
-              <div className="font-medium">
-                {tool.name} <span className="font-normal text-muted">· {profiles.find(p => p._id === current.profileId)?.title} · version {current.version}</span>
-              </div>
-              <div className="text-sm text-muted">
-                Saved {current.createdAt.slice(0, 10)} · {current.changeNote ? `“${current.changeNote}”` : "no note"} · Source: {current.source}
-              </div>
-            </div>
-            <Link href={`/verify/${tool._id}?profile=${current.profileId}`} className="rounded-lg border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-accent-soft">
-              Review
-            </Link>
-          </li>
-        ))}
-      </ul>
+    <div className="sgds:mx-auto sgds:flex sgds:max-w-container-xl sgds:flex-col sgds:gap-layout-md">
+      <PageHeader title="Waiting for approval">Check what changed, then approve. Builders see the badge flip straight away.</PageHeader>
+      {awaiting.length === 0 ? (
+        <SgdsAlert show outlined variant="info">
+          Nothing is waiting for approval.
+        </SgdsAlert>
+      ) : (
+        <SgdsTable>
+          <SgdsTableRow>
+            <SgdsTableHead>Tool</SgdsTableHead>
+            <SgdsTableHead>Version</SgdsTableHead>
+            <SgdsTableHead>Saved</SgdsTableHead>
+            <SgdsTableHead>What changed</SgdsTableHead>
+            <SgdsTableHead>Source</SgdsTableHead>
+            <SgdsTableHead>
+              <span className="sgds:sr-only">Action</span>
+            </SgdsTableHead>
+          </SgdsTableRow>
+          {awaiting.map(({ tool, current }) => (
+            <SgdsTableRow key={current._id}>
+              <SgdsTableCell>
+                <strong>{tool.name}</strong>
+              </SgdsTableCell>
+              <SgdsTableCell>
+                <span className="sgds:whitespace-nowrap">
+                  {profiles.find(p => p._id === current.profileId)?.title} · version {current.version}
+                </span>
+              </SgdsTableCell>
+              <SgdsTableCell>
+                <span className="sgds:whitespace-nowrap">{current.createdAt.slice(0, 10)}</span>
+              </SgdsTableCell>
+              <SgdsTableCell>{current.changeNote ? `“${current.changeNote}”` : "No note"}</SgdsTableCell>
+              <SgdsTableCell>{current.source}</SgdsTableCell>
+              <SgdsTableCell>
+                <SgdsButton size="sm" variant="outline" href={`/verify/${tool._id}?profile=${current.profileId}`}>
+                  Review
+                </SgdsButton>
+              </SgdsTableCell>
+            </SgdsTableRow>
+          ))}
+        </SgdsTable>
+      )}
     </div>
   );
 }

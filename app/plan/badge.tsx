@@ -1,22 +1,33 @@
+import { SgdsBadge } from "@govtechsg/sgds-web-component/react";
 import { BADGE_TEXT, SAMPLE_BADGE } from "@/lib/plan/labels";
 import type { Verification } from "@/lib/plan/verification";
 
-const STYLES: Record<Verification, string> = {
-  verified: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  "govtech-published": "border-sky-200 bg-sky-50 text-sky-800",
-  "not-yet-verified": "border-amber-300 bg-amber-50 text-amber-900",
-};
-
-const PILL = "inline-flex items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-medium";
+const VARIANTS = {
+  verified: "success",
+  "govtech-published": "info",
+  "not-yet-verified": "warning",
+} as const satisfies Record<Verification, string>;
 
 export function Badge({ verification }: { verification: Verification }) {
-  return <span className={`${PILL} ${STYLES[verification]}`}>{BADGE_TEXT[verification]}</span>;
+  return (
+    <SgdsBadge show variant={VARIANTS[verification]}>
+      {BADGE_TEXT[verification]}
+    </SgdsBadge>
+  );
 }
 
 export function SampleTag() {
-  return <span className={`${PILL} border-line bg-background text-muted`}>{SAMPLE_BADGE}</span>;
+  return (
+    <SgdsBadge show variant="neutral">
+      {SAMPLE_BADGE}
+    </SgdsBadge>
+  );
 }
 
 export function Chip({ children }: { children: React.ReactNode }) {
-  return <span className={`${PILL} border-line bg-background text-muted`}>{children}</span>;
+  return (
+    <SgdsBadge show variant="neutral">
+      {children}
+    </SgdsBadge>
+  );
 }

@@ -47,3 +47,7 @@ next-env.d.ts
 # playwright
 /test-results/
 /playwright-report/
+
+# Impeccable: working files, not source
+.impeccable/review/
+.impeccable/hook.cache.json

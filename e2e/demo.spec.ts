@@ -13,8 +13,10 @@ test("the demo path: answer, pick tools, watch the counts move, download both fi
   await page.getByRole("button", { name: "Work out my app type" }).click();
   await expect(page.getByRole("heading", { name: "Low-risk app on the cloud" })).toBeVisible();
 
+  // SGDS draws a link styled as a button with role "button", so these navigations are found as buttons.
+
   // 2. Pick your tools
-  await page.getByRole("link", { name: "See your build plan" }).click();
+  await page.getByRole("button", { name: "See your build plan" }).click();
   const countOf = (heading: string) =>
     page.locator("section", { has: page.getByRole("heading", { name: heading, exact: true }) }).locator("span").first();
   await page.getByRole("checkbox", { name: /appCentral/ }).check();
@@ -32,13 +34,13 @@ test("the demo path: answer, pick tools, watch the counts move, download both fi
 
   // 3. Hand it to your agent
   const plan = page.waitForEvent("download");
-  await page.getByRole("link", { name: "Build plan for your agent" }).click();
+  await page.getByRole("button", { name: "Build plan for your agent" }).click();
   const planDownload = await plan;
   expect(planDownload.suggestedFilename()).toBe("BUILD-PLAN.md");
   expect(readFileSync((await planDownload.path())!, "utf8")).toContain("## 1. What you need to do (11)");
 
   // 4. The security review spreadsheet
   const sheet = page.waitForEvent("download");
-  await page.getByRole("link", { name: "Security review spreadsheet" }).click();
+  await page.getByRole("button", { name: "Security review spreadsheet" }).click();
   expect((await sheet).suggestedFilename()).toBe("low-risk-cloud-ssp.xlsx");
 });

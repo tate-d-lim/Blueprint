@@ -1,18 +1,35 @@
 "use client";
 
+import {
+  SgdsAlert,
+  SgdsButton,
+  SgdsFileUpload,
+  SgdsInput,
+  SgdsSelect,
+  SgdsTable,
+  SgdsTableCell,
+  SgdsTableHead,
+  SgdsTableRow,
+} from "@govtechsg/sgds-web-component/react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { filesOf, valueOf } from "@/app/components/sgds-events";
 import type { CoverageValue } from "@/lib/domain/types";
 import { VALUE_LABEL } from "@/lib/plan/labels";
 import { createImportAction, previewImportAction, type CreateResult, type PreviewResult } from "./actions";
 
-const FIELD = "mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm";
 const CHOICES: CoverageValue[] = ["provided", "shared", "app-builder", "not-applicable"];
+const NEW_TOOL = "new";
+const SECTION_OPTIONS = [
+  { label: "CPF tools", value: "cpf" },
+  { label: "Whole-of-government tools", value: "wog" },
+  { label: "Code components", value: "code" },
+];
 
 export function ImportForm({ tools, profiles }: { tools: { id: string; name: string }[]; profiles: { id: string; title: string }[] }) {
   const [file, setFile] = useState<File | null>(null);
   const [profileId, setProfileId] = useState(profiles[0]?.id ?? "");
-  const [tool, setTool] = useState(tools[0]?.id ?? "new");
+  const [tool, setTool] = useState(tools[0]?.id ?? NEW_TOOL);
   const [newToolName, setNewToolName] = useState("");
   const [newToolSection, setNewToolSection] = useState("cpf");
   const [pending, start] = useTransition();
@@ -22,7 +39,10 @@ export function ImportForm({ tools, profiles }: { tools: { id: string; name: str
   const [changeNote, setChangeNote] = useState("");
   const [created, setCreated] = useState<CreateResult | null>(null);
 
-  const toolName = tool === "new" ? newToolName || "the tool" : tools.find(t => t.id === tool)?.name ?? "the tool";
+  const toolName = tool === NEW_TOOL ? newToolName || "the tool" : tools.find(t => t.id === tool)?.name ?? "the tool";
+  const profileOptions = profiles.map(p => ({ label: p.title, value: p.id }));
+  const toolOptions = [...tools.map(t => ({ label: t.name, value: t.id })), { label: "A new tool…", value: NEW_TOOL }];
+  const choiceOptions = CHOICES.map(v => ({ label: VALUE_LABEL(v, toolName), value: v }));
   const base = () => {
     const form = new FormData();
     if (file) form.set("file", file);
@@ -57,147 +77,125 @@ export function ImportForm({ tools, profiles }: { tools: { id: string; name: str
   const allMapped = checked?.ok && checked.preview.pairs.every(p => mapping[p.pairKey]);
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 rounded-xl border border-line bg-surface p-5 sm:grid-cols-2">
-        <label className="text-sm font-medium sm:col-span-2">
-          Component Guide file (.xlsx)
-          <input
-            type="file"
-            accept=".xlsx"
-            onChange={e => {
-              setFile(e.target.files?.[0] ?? null);
+    <div className="sgds:flex sgds:flex-col sgds:gap-layout-sm">
+      <div className="sgds:flex sgds:flex-col sgds:gap-sm sgds:rounded-surface sgds:border sgds:border-muted sgds:bg-surface-default sgds:p-layout-md">
+        <SgdsFileUpload
+          label="Component Guide file (.xlsx)"
+          name="file"
+          accept=".xlsx"
+          onSgdsChange={e => {
+            setFile(filesOf(e)[0] ?? null);
+            setChecked(null);
+            setCreated(null);
+          }}
+        />
+        <div className="sgds:grid sgds:gap-sm sgds:md:grid-cols-2">
+          <SgdsSelect
+            label="Profile it is written for"
+            name="profile"
+            value={profileId}
+            menuList={profileOptions}
+            onSgdsChange={e => {
+              if (valueOf(e) === profileId) return;
+              setProfileId(valueOf(e));
               setChecked(null);
-              setCreated(null);
             }}
-            className={FIELD}
           />
-        </label>
-        <label className="text-sm font-medium">
-          Profile it is written for
-          <select value={profileId} onChange={e => { setProfileId(e.target.value); setChecked(null); }} className={FIELD}>
-            {profiles.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.title}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="text-sm font-medium">
-          Which tool is this for?
-          <select value={tool} onChange={e => setTool(e.target.value)} className={FIELD}>
-            {tools.map(t => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-            <option value="new">A new tool…</option>
-          </select>
-        </label>
-        {tool === "new" && (
-          <>
-            <label className="text-sm font-medium">
-              New tool name
-              <input value={newToolName} onChange={e => setNewToolName(e.target.value)} className={FIELD} />
-            </label>
-            <label className="text-sm font-medium">
-              Section
-              <select value={newToolSection} onChange={e => setNewToolSection(e.target.value)} className={FIELD}>
-                <option value="cpf">CPF tools</option>
-                <option value="wog">Whole-of-government tools</option>
-                <option value="code">Code components</option>
-              </select>
-            </label>
-          </>
-        )}
-        <div className="sm:col-span-2">
-          <button type="button" disabled={!file || pending} onClick={check} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-40">
+          <SgdsSelect label="Which tool is this for?" name="tool" value={tool} menuList={toolOptions} onSgdsChange={e => setTool(valueOf(e))} />
+          {tool === NEW_TOOL && (
+            <>
+              <SgdsInput label="New tool name" name="newToolName" placeholder="" value={newToolName} onSgdsInput={e => setNewToolName(valueOf(e))} />
+              <SgdsSelect label="Section" name="newToolSection" value={newToolSection} menuList={SECTION_OPTIONS} onSgdsChange={e => setNewToolSection(valueOf(e))} />
+            </>
+          )}
+        </div>
+        <div>
+          <SgdsButton disabled={!file || pending} onClick={check}>
             {pending && !checked ? "Checking…" : "Check the file"}
-          </button>
+          </SgdsButton>
         </div>
       </div>
 
-      {checked && !checked.ok && <p className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm font-medium text-red-800">{checked.error}</p>}
+      {checked && !checked.ok && (
+        <SgdsAlert show outlined variant="danger">
+          {checked.error}
+        </SgdsAlert>
+      )}
 
       {checked?.ok && checked.preview.unknownIds.length > 0 && (
-        <p className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm font-medium text-red-800">
+        <SgdsAlert show outlined variant="danger">
           This guide doesn&apos;t match {checked.profileTitle}: {checked.preview.unknownIds.length} requirement IDs aren&apos;t in it (first five:{" "}
           {checked.preview.unknownIds.slice(0, 5).join(", ")}). It was probably written for a different standard.
-        </p>
+        </SgdsAlert>
       )}
 
       {ready && checked.ok && (
-        <div className="space-y-5 rounded-xl border border-line bg-surface p-5">
-          <p className="text-sm">
+        <div className="sgds:flex sgds:flex-col sgds:gap-sm sgds:rounded-surface sgds:border sgds:border-muted sgds:bg-surface-default sgds:p-layout-md">
+          <p>
             Read {checked.rowCount} requirements from sheet &ldquo;{checked.sheetName}&rdquo; of {checked.fileName}. Written against:{" "}
             {checked.preview.writtenAgainst}
           </p>
           {checked.preview.missingKeys.length > 0 && (
-            <p className="rounded-lg bg-amber-50 p-3 text-sm">
+            <SgdsAlert show outlined variant="warning">
               This guide predates {checked.preview.missingKeys.length} requirements, so it says nothing about them:{" "}
               {checked.preview.missingKeys.map(k => k.split(":")[1]).join(", ")}.
-            </p>
+            </SgdsAlert>
           )}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-line text-muted">
-                <tr>
-                  <th className="py-2 pr-4 font-medium">&ldquo;Who is responsible?&rdquo; says</th>
-                  <th className="py-2 pr-4 font-medium">Rows</th>
-                  <th className="py-2 font-medium">Treat as</th>
-                </tr>
-              </thead>
-              <tbody>
-                {checked.preview.pairs.map(p => (
-                  <tr key={p.pairKey} className="border-b border-line align-top last:border-0">
-                    <td className="max-w-md py-2 pr-4 whitespace-pre-line">
-                      {p.owner || "(blank)"}
-                      {p.agencyInputs && <span className="block text-xs text-muted">For agency inputs: {p.agencyInputs}</span>}
-                    </td>
-                    <td className="py-2 pr-4">{p.count}</td>
-                    <td className="py-2">
-                      <select aria-label={`Treat "${p.owner}" as`} value={mapping[p.pairKey] ?? ""} onChange={e => setMapping(m => ({ ...m, [p.pairKey]: e.target.value }))} className={`${FIELD} mt-0`}>
-                        <option value="">Choose…</option>
-                        {CHOICES.map(v => (
-                          <option key={v} value={v}>
-                            {VALUE_LABEL(v, toolName)}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <SgdsTable>
+            <SgdsTableRow>
+              <SgdsTableHead>&ldquo;Who is responsible?&rdquo; says</SgdsTableHead>
+              <SgdsTableHead>Rows</SgdsTableHead>
+              <SgdsTableHead>Treat as</SgdsTableHead>
+            </SgdsTableRow>
+            {checked.preview.pairs.map(p => (
+              <SgdsTableRow key={p.pairKey}>
+                <SgdsTableCell>
+                  <span className="sgds:whitespace-pre-line">{p.owner || "(blank)"}</span>
+                  {p.agencyInputs && <span className="sgds:block sgds:text-caption-md sgds:text-subtle">For agency inputs: {p.agencyInputs}</span>}
+                </SgdsTableCell>
+                <SgdsTableCell>{p.count}</SgdsTableCell>
+                <SgdsTableCell>
+                  <SgdsSelect
+                    label={`Treat "${p.owner}" as`}
+                    name={`mapping-${p.pairKey}`}
+                    placeholder="Choose…"
+                    value={mapping[p.pairKey] ?? ""}
+                    menuList={choiceOptions}
+                    onSgdsChange={e => setMapping(m => ({ ...m, [p.pairKey]: valueOf(e) }))}
+                  />
+                </SgdsTableCell>
+              </SgdsTableRow>
+            ))}
+          </SgdsTable>
+          <div className="sgds:grid sgds:gap-sm sgds:md:grid-cols-2">
+            <SgdsInput label="Source for this version" name="source" value={source} onSgdsInput={e => setSource(valueOf(e))} />
+            <SgdsInput label="What changed" name="changeNote" placeholder="Optional" value={changeNote} onSgdsInput={e => setChangeNote(valueOf(e))} />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-medium">
-              Source for this version
-              <input value={source} onChange={e => setSource(e.target.value)} className={FIELD} />
-            </label>
-            <label className="text-sm font-medium">
-              What changed
-              <input value={changeNote} onChange={e => setChangeNote(e.target.value)} placeholder="Optional" className={FIELD} />
-            </label>
+          <div>
+            <SgdsButton disabled={pending || !allMapped || !source.trim() || (tool === NEW_TOOL && !newToolName.trim())} onClick={create}>
+              {pending ? "Creating…" : "Create version"}
+            </SgdsButton>
           </div>
-          <button type="button" disabled={pending || !allMapped || !source.trim() || (tool === "new" && !newToolName.trim())} onClick={create} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-40">
-            {pending ? "Creating…" : "Create version"}
-          </button>
         </div>
       )}
 
-      {created?.ok === false && <p className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm font-medium text-red-800">{created.error}</p>}
+      {created?.ok === false && (
+        <SgdsAlert show outlined variant="danger">
+          {created.error}
+        </SgdsAlert>
+      )}
       {created?.ok && (
-        <p className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm">
+        <SgdsAlert show outlined variant="success">
           Created version {created.version}. It is not yet verified.{" "}
-          <Link href={`/admin/tools/${created.toolId}`} className="underline">
+          <Link href={`/admin/tools/${created.toolId}`} suppressHydrationWarning>
             Open it in the editor
           </Link>{" "}
           or{" "}
-          <Link href="/verify" className="underline">
+          <Link href="/verify" suppressHydrationWarning>
             go to the verifier
           </Link>
           .
-        </p>
+        </SgdsAlert>
       )}
     </div>
   );

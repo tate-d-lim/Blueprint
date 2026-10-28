@@ -1,3 +1,4 @@
+import { SgdsBreadcrumb, SgdsBreadcrumbItem } from "@govtechsg/sgds-web-component/react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PlanView } from "@/app/plan/plan-view";
@@ -10,12 +11,19 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
   const { project, data } = await withDb(async db => ({ project: await getProject(db, id), data: await loadPlanData(db) }));
   if (!project) notFound();
   return (
-    <div className="space-y-6">
-      <div className="text-sm text-muted">
-        <Link href="/projects" className="hover:underline">
-          ← Saved projects
-        </Link>{" "}
-        · {project.name} · Owner: {project.ownerName} · Updated {project.updatedAt.slice(0, 10)}
+    <div className="sgds:flex sgds:flex-col sgds:gap-layout-sm">
+      <div className="sgds:flex sgds:flex-col sgds:gap-text-xs">
+        <SgdsBreadcrumb>
+          <SgdsBreadcrumbItem>
+            <Link href="/projects" suppressHydrationWarning>
+              Saved projects
+            </Link>
+          </SgdsBreadcrumbItem>
+          <SgdsBreadcrumbItem active>{project.name}</SgdsBreadcrumbItem>
+        </SgdsBreadcrumb>
+        <p className="sgds:text-body-sm sgds:text-subtle">
+          Owner: {project.ownerName} · Updated {project.updatedAt.slice(0, 10)}
+        </p>
       </div>
       <PlanView data={data} answers={project.riskAnswers} initialToolIds={project.toolIds} project={project} />
     </div>

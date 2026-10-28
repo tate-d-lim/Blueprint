@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-28T00:00:00Z",
+  "title": "Design System: Build plan for CPFB app builders",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "SGDS Violet", "canonical": "#523abc", "tonalRamp": ["#2b1d63", "#3b2a8c", "#523abc", "#6b4feb", "#9a86f2", "#c4b8f7", "#e1dbfb", "#f4f2fe"] },
+      "ground": { "role": "neutral", "displayName": "Gray Ground", "canonical": "#f7f7f7", "tonalRamp": ["#1a1a1a", "#525252", "#6b6b6b", "#868686", "#b5b5b5", "#dfdfdf", "#f3f3f3", "#f7f7f7"] },
+      "success": { "role": "semantic", "displayName": "Verified Green", "canonical": "#0e7c3d", "tonalRamp": ["#0b5e2f", "#0e7c3d", "#e3f9ed"] },
+      "warning-text": { "role": "semantic", "displayName": "Unverified Amber", "canonical": "#7e6917", "tonalRamp": ["#7e6917", "#fcde63", "#fef4cb"] },
+      "info": { "role": "semantic", "displayName": "Published Blue", "canonical": "#0269d0", "tonalRamp": ["#0151a0", "#0269d0", "#ecf5fe"] }
+    },
+    "typographyMeta": {
+      "heading-lg": { "displayName": "Page title", "purpose": "One per screen in PageHeader (sgds:text-heading-lg, 600)." },
+      "subtitle-md": { "displayName": "Section title", "purpose": "Panel and group headings." },
+      "body-md": { "displayName": "Body", "purpose": "Paragraphs, rows, cells." },
+      "code": { "displayName": "Code", "purpose": "Ids and the agent snippet (sgds:font-code, Roboto Mono)." }
+    },
+    "shadows": [
+      { "name": "edge-top", "value": "0 -2px 4px 0 rgba(14, 14, 14, 0.08)", "purpose": "Sticky save bar over scrolling coverage rows only (sgds:shadow-edge-top)." }
+    ],
+    "motion": [],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Flat Panel",
+      "kind": "card",
+      "refersTo": "surface-panel",
+      "description": "White bordered panel on the gray ground; the hand-built container pattern.",
+      "html": "<div class=\"ds-panel\"><strong>Add a tool</strong><p>Panels carry no shadow.</p></div>",
+      "css": ".ds-panel { display: flex; flex-direction: column; gap: 12px; background: #fff; color: #1a1a1a; border: 1px solid #dfdfdf; border-radius: 12px; padding: 24px; font-family: Inter, system-ui, sans-serif; } .ds-panel p { margin: 0; color: #525252; font-size: 14px; }"
+    },
+    {
+      "name": "Verified Badge",
+      "kind": "chip",
+      "refersTo": "badge-verified",
+      "description": "Success badge for a platform claim a verifier approved.",
+      "html": "<span class=\"ds-badge ds-badge-ok\">Verified</span>",
+      "css": ".ds-badge { display: inline-block; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; } .ds-badge-ok { background: #e3f9ed; color: #0b5e2f; }"
+    },
+    {
+      "name": "Not Yet Verified Badge",
+      "kind": "chip",
+      "refersTo": "badge-not-yet-verified",
+      "description": "Warning badge for an unapproved claim.",
+      "html": "<span class=\"ds-badge ds-badge-warn\">Not yet verified</span>",
+      "css": ".ds-badge { display: inline-block; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; } .ds-badge-warn { background: #fef4cb; color: #7e6917; }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "primary",
+      "description": "SGDS primary button, small size; the one main action.",
+      "html": "<button class=\"ds-btn-primary\">Save this plan</button>",
+      "css": ".ds-btn-primary { background: #523abc; color: #fff; border: 1px solid #523abc; border-radius: 8px; padding: 8px 16px; font: 600 14px Inter, system-ui, sans-serif; cursor: pointer; } .ds-btn-primary:hover { background: #3b2a8c; } .ds-btn-primary:focus-visible { outline: 2px solid #6b4feb; outline-offset: 2px; }"
+    },
+    {
+      "name": "Main Nav",
+      "kind": "nav",
+      "refersTo": "surface-panel",
+      "description": "White SGDS main nav with a purple underline on the active item.",
+      "html": "<nav class=\"ds-nav\"><span class=\"ds-nav-brand\">Build plan</span><a class=\"ds-nav-item ds-nav-active\" href=\"#\">New plan</a><a class=\"ds-nav-item\" href=\"#\">Saved projects</a></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 24px; background: #fff; border-bottom: 1px solid #dfdfdf; padding: 0 24px; font-family: Inter, system-ui, sans-serif; } .ds-nav-brand { font-weight: 600; font-size: 16px; } .ds-nav-item { padding: 16px 0; color: #1a1a1a; text-decoration: none; font-size: 16px; border-bottom: 3px solid transparent; } .ds-nav-item:hover { color: #523abc; } .ds-nav-active { border-bottom-color: #523abc; }"
+    },
+    {
+      "name": "Code Block",
+      "kind": "custom",
+      "refersTo": "code-block",
+      "description": "Agent snippet: mono on the raised gray surface.",
+      "html": "<pre class=\"ds-code\">Read BUILD-PLAN.md first.</pre>",
+      "css": ".ds-code { margin: 0; white-space: pre-wrap; background: #f7f7f7; color: #1a1a1a; border-radius: 12px; padding: 12px; font: 400 14px 'Roboto Mono', ui-monospace, monospace; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Government Form Desk",
+    "overview": "The whole app is the Singapore Government Design System (SGDS v3), used as shipped. Nothing is restyled: colour, type, spacing and radius all arrive from SGDS theme tokens and its sgds: Tailwind v4 utilities. The app's own stylesheet adds only base resets and two font-family overrides, so the look of a new screen is decided by which SGDS component and which SGDS utility is chosen, not by new CSS.",
+    "keyCharacteristics": [
+      "SGDS web components for every control, container and overlay; no hand-built look-alikes.",
+      "White surfaces on a gray alternate ground; borders and flatness do the layering.",
+      "Purple is for action and \"you are here\"; green, yellow, blue and gray badges carry verification state.",
+      "Type and spacing from sgds: utilities only; Inter for text, Roboto Mono for code and ids."
+    ],
+    "rules": [
+      { "name": "The Token Only Rule", "body": "Colour is named by SGDS token or sgds: utility. A raw hex in a component is a defect.", "section": "colors" },
+      { "name": "The Verification Colour Rule", "body": "Green, yellow and blue mean verification state and nothing else; purple never marks state.", "section": "colors" },
+      { "name": "The Real Utility Rule", "body": "Only SGDS utilities that exist work (text-heading-lg/sm, text-subtitle-md, text-body-*, text-caption-md, font-regular, font-semibold, font-code, gap-2-xs, z-10). z-raised, text-heading-xs, font-mono and text-body-xs are not real.", "section": "typography" },
+      { "name": "The Flat Panel Rule", "body": "Panels are bg-surface-default, border-muted, rounded-surface, no shadow. Only a sticky bar over scrolling content may carry the edge shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do reach for the SGDS component first and check node_modules/@govtechsg/sgds-web-component before building anything custom.",
+      "Do take type and spacing only from sgds: utilities; headings, paragraphs and lists have zero margin, so spacing comes from gap-* on the parent.",
+      "Do use sgds:font-code for code and ids and sgds:text-subtle for secondary copy.",
+      "Do pass select options as menuList data and keep control accessible names stable.",
+      "Do map verification state to badge variants exactly as in app/plan/badge.tsx."
+    ],
+    "donts": [
+      "Don't use z-raised, text-heading-xs, font-mono or text-body-xs; they do not exist (use z-10, text-subtitle-md, font-code, text-caption-md).",
+      "Don't add raw hex colours, pixel spacing, custom shadows or new fonts, or put component styling in globals.css.",
+      "Don't use purple for state, or green/yellow/blue for decoration.",
+      "Don't add a government masthead or GovTech/agency logos; this is a local prototype.",
+      "Don't restyle away SGDS focus rings or contrast."
+    ]
+  }
+}

@@ -1,47 +1,47 @@
 "use client";
 
+import { SgdsAlert, SgdsButton, SgdsCheckbox, SgdsInput, SgdsSelect } from "@govtechsg/sgds-web-component/react";
 import { useActionState } from "react";
 import { createToolAction } from "./actions";
 
-const FIELD = "mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm";
+const SECTION_OPTIONS = [
+  { label: "CPF tools", value: "cpf" },
+  { label: "Whole-of-government tools", value: "wog" },
+  { label: "Code components", value: "code" },
+];
+const KIND_OPTIONS = [
+  { label: "Service or platform", value: "service" },
+  { label: "Software or library", value: "software" },
+];
 
 export function NewToolForm() {
   const [state, action, pending] = useActionState(createToolAction, null);
   return (
-    <form action={action} className="grid gap-4 rounded-xl border border-line bg-surface p-5 sm:grid-cols-2">
-      <h2 className="text-lg font-semibold sm:col-span-2">New tool</h2>
-      <label className="text-sm font-medium">
-        Name
-        <input name="name" required className={FIELD} />
-      </label>
-      <label className="text-sm font-medium">
-        Section
-        <select name="section" className={FIELD} defaultValue="cpf">
-          <option value="cpf">CPF tools</option>
-          <option value="wog">Whole-of-government tools</option>
-          <option value="code">Code components</option>
-        </select>
-      </label>
-      <label className="text-sm font-medium sm:col-span-2">
-        What it is, in one line
-        <input name="description" className={FIELD} />
-      </label>
-      <label className="text-sm font-medium">
-        Kind
-        <select name="oscalType" className={FIELD} defaultValue="service">
-          <option value="service">Service or platform</option>
-          <option value="software">Software or library</option>
-        </select>
-      </label>
-      <label className="flex items-center gap-2 self-end text-sm">
-        <input type="checkbox" name="isSample" className="size-4 accent-[var(--accent)]" />
-        Mark as a sample (not confirmed by the tool&apos;s team)
-      </label>
-      {state?.error && <p className="text-sm font-medium text-red-700 sm:col-span-2">{state.error}</p>}
-      <div className="sm:col-span-2">
-        <button disabled={pending} className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50">
+    <form
+      action={action}
+      className="sgds:flex sgds:flex-col sgds:gap-sm sgds:rounded-surface sgds:border sgds:border-muted sgds:bg-surface-default sgds:p-layout-md"
+    >
+      <h2 className="sgds:text-heading-sm sgds:font-semibold">New tool</h2>
+      <div className="sgds:grid sgds:gap-sm sgds:md:grid-cols-2">
+        <SgdsInput placeholder="" label="Name" name="name" required />
+        <SgdsSelect label="Section" name="section" value="cpf" menuList={SECTION_OPTIONS} />
+      </div>
+      <SgdsInput placeholder="" label="What it is, in one line" name="description" />
+      <div className="sgds:grid sgds:items-end sgds:gap-sm sgds:md:grid-cols-2">
+        <SgdsSelect label="Kind" name="oscalType" value="service" menuList={KIND_OPTIONS} />
+        <SgdsCheckbox name="isSample" value="on">
+          Mark as a sample (not confirmed by the tool&apos;s team)
+        </SgdsCheckbox>
+      </div>
+      {state?.error && (
+        <SgdsAlert show outlined variant="danger">
+          {state.error}
+        </SgdsAlert>
+      )}
+      <div>
+        <SgdsButton type="submit" disabled={pending}>
           Create tool
-        </button>
+        </SgdsButton>
       </div>
     </form>
   );

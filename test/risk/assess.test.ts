@@ -21,7 +21,7 @@ test('a restricted, sensitive-normal, slight-impact app is low risk on the Low-R
 
 test.each([
   [{ impact: 'critical' }, 'The worst impact is Critical.'],
-  [{ cii: true }, 'The system is CII.'],
+  [{ cii: true }, 'The system is Critical Information Infrastructure (CII).'],
   [{ classification: 's-class' }, 'The data is S-class.'],
 ] as const)('high-risk trigger %j', (over, reason) => {
   const r = assess(over as Partial<RiskAnswers>);
@@ -46,7 +46,7 @@ test.each([
 test('high beats medium, and only the high triggers are listed', () => {
   const r = assess({ impact: 'critical', sii: true, sensitivity: 'sensitive-high', cii: true });
   expect(r.level).toBe('high');
-  expect(r.reasons).toEqual(['The worst impact is Critical.', 'The system is CII.']);
+  expect(r.reasons).toEqual(['The worst impact is Critical.', 'The system is Critical Information Infrastructure (CII).']);
 });
 
 test('several medium triggers are all listed, in a fixed order', () => {

@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { SgdsAlert, SgdsButton, SgdsCard, SgdsCheckbox, SgdsLink, SgdsRadio, SgdsRadioGroup } from "@govtechsg/sgds-web-component/react";
+import { checkedOf, valueOf } from "@/app/components/sgds-events";
 import { useState } from "react";
 import { planQuery } from "@/lib/plan/url-state";
 import { OPTION_LABELS, RISK_SOURCE_URL, assessRisk, type RiskAnswers, type RiskResult } from "@/lib/risk/assess";
@@ -13,6 +14,18 @@ const QUESTIONS = [
   { field: "sensitivity", legend: "How sensitive is it?", labels: OPTION_LABELS.sensitivity },
   { field: "impact", legend: "If the app failed or leaked, what's the worst impact in any area?", labels: OPTION_LABELS.impact },
   { field: "downstream", legend: "What's the impact on systems that depend on it?", labels: OPTION_LABELS.downstream },
+] as const;
+
+/** Two columns of about the same height: the long data questions on the left, the impact questions on the right. */
+const QUESTION_COLUMNS = [QUESTIONS.slice(0, 2), QUESTIONS.slice(2)];
+
+const SYSTEM_FLAGS = [
+  {
+    field: "cii",
+    label: "The system is Critical Information Infrastructure (CII)",
+    hint: "A computer system the Commissioner of Cybersecurity has formally designated as necessary for delivering an essential service, such as banking, energy or healthcare. If it has been designated, you will have been told.",
+  },
+  { field: "sii", label: "The system is SII", hint: undefined },
 ] as const;
 
 export function StartForm() {
@@ -33,54 +46,58 @@ export function StartForm() {
   };
 
   return (
-    <form onSubmit={submit} className="mt-8 space-y-8">
-      {QUESTIONS.map(q => (
-        <fieldset key={q.field}>
-          <legend className="mb-3 font-medium">{q.legend}</legend>
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(q.labels).map(([value, label]) => (
-              <label key={value}>
-                <input
-                  type="radio"
-                  name={q.field}
-                  value={value}
-                  checked={draft[q.field] === value}
-                  onChange={() => change({ [q.field]: value } as Partial<Draft>)}
-                  className="peer sr-only"
-                />
-                <span className="block cursor-pointer rounded-lg border border-line bg-surface px-3.5 py-2 text-sm transition peer-checked:border-accent peer-checked:bg-accent-soft peer-checked:font-medium peer-checked:text-accent peer-focus-visible:ring-2 peer-focus-visible:ring-accent hover:border-accent/50">
-                  {label}
-                </span>
-              </label>
+    <form onSubmit={submit} className="sgds:flex sgds:flex-col sgds:gap-layout-md">
+      <SgdsCard>
+        <div className="sgds:flex sgds:flex-col sgds:gap-layout-md">
+          <div className="sgds:grid sgds:gap-layout-md sgds:md:grid-cols-2">
+            {QUESTION_COLUMNS.map((column, i) => (
+              <div key={i} className="sgds:flex sgds:flex-col sgds:gap-layout-md">
+                {column.map(q => (
+                  <SgdsRadioGroup
+                    key={q.field}
+                    label={q.legend}
+                    name={q.field}
+                    value={draft[q.field] ?? ""}
+                    onSgdsChange={e => change({ [q.field]: valueOf(e) } as Partial<Draft>)}
+                  >
+                    {Object.entries(q.labels).map(([value, label]) => (
+                      <SgdsRadio key={value} value={value}>
+                        {label}
+                      </SgdsRadio>
+                    ))}
+                  </SgdsRadioGroup>
+                ))}
+              </div>
             ))}
           </div>
-        </fieldset>
-      ))}
 
-      <fieldset>
-        <legend className="mb-3 font-medium">Does either of these apply?</legend>
-        <div className="space-y-2">
-          {(["cii", "sii"] as const).map(field => (
-            <label key={field} className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={draft[field]}
-                onChange={e => change({ [field]: e.target.checked })}
-                className="size-4 accent-[var(--accent)]"
-              />
-              The system is {field.toUpperCase()}
-            </label>
-          ))}
+          <div role="group" aria-labelledby="flags-label" className="sgds:flex sgds:flex-col sgds:gap-sm">
+            <span id="flags-label" className="sgds:text-label-md sgds:font-semibold">
+              Does either of these apply?
+            </span>
+            {SYSTEM_FLAGS.map(flag => (
+              <div key={flag.field} className="sgds:flex sgds:flex-col sgds:gap-text-xs">
+                <SgdsCheckbox
+                  name={flag.field}
+                  value={flag.field}
+                  checked={draft[flag.field]}
+                  onSgdsChange={e => change({ [flag.field]: checkedOf(e) })}
+                >
+                  {flag.label}
+                </SgdsCheckbox>
+                {flag.hint && <p className="sgds:max-w-container-md sgds:pl-layout-md sgds:text-body-sm sgds:text-subtle">{flag.hint}</p>}
+              </div>
+            ))}
+          </div>
+
+          <div className="sgds:flex sgds:flex-wrap sgds:items-center sgds:gap-sm">
+            <SgdsButton type="submit" disabled={!complete}>
+              Work out my app type
+            </SgdsButton>
+            {!complete && <span className="sgds:text-body-sm sgds:text-subtle">Answer all four questions to continue.</span>}
+          </div>
         </div>
-      </fieldset>
-
-      <button
-        type="submit"
-        disabled={!complete}
-        className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        Work out my app type
-      </button>
+      </SgdsCard>
 
       {shown && <Outcome answers={shown.answers} result={shown.result} />}
     </form>
@@ -90,33 +107,31 @@ export function StartForm() {
 function Outcome({ answers, result }: { answers: RiskAnswers; result: RiskResult }) {
   const supported = result.profileId !== null;
   return (
-    <section
-      aria-live="polite"
-      className={`rounded-xl border p-5 ${supported ? "border-emerald-300 bg-emerald-50" : "border-amber-300 bg-amber-50"}`}
-    >
-      <h2 className="text-lg font-semibold">{result.appType}</h2>
-      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
-        {result.reasons.map(r => (
-          <li key={r}>{r}</li>
-        ))}
-      </ul>
-      <p className="mt-3 text-sm text-muted">
-        Based on{" "}
-        <a href={RISK_SOURCE_URL} target="_blank" rel="noreferrer" className="underline">
-          GovTech&apos;s risk materiality levels
-        </a>
-        .
-      </p>
-      {supported ? (
-        <Link
-          href={`/plan?${planQuery(answers, [])}`}
-          className="mt-4 inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
-        >
-          See your build plan
-        </Link>
-      ) : (
-        <p className="mt-4 text-sm font-medium">We don&apos;t support this type of app yet.</p>
-      )}
-    </section>
+    <SgdsAlert show outlined variant={supported ? "success" : "warning"}>
+      <div className="sgds:flex sgds:flex-col sgds:gap-text-sm">
+        <h2 className="sgds:text-heading-sm sgds:font-semibold">{result.appType}</h2>
+        <ul className="sgds:list-disc sgds:pl-layout-sm">
+          {result.reasons.map(r => (
+            <li key={r}>{r}</li>
+          ))}
+        </ul>
+        <p>
+          Based on{" "}
+          <SgdsLink size="sm">
+            <a href={RISK_SOURCE_URL} target="_blank" rel="noreferrer" suppressHydrationWarning>
+              GovTech&apos;s risk materiality levels
+            </a>
+          </SgdsLink>
+          .
+        </p>
+        {supported ? (
+          <div>
+            <SgdsButton href={`/plan?${planQuery(answers, [])}`}>See your build plan</SgdsButton>
+          </div>
+        ) : (
+          <p className="sgds:font-semibold">We don&apos;t support this type of app yet.</p>
+        )}
+      </div>
+    </SgdsAlert>
   );
 }

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/roboto-mono";
 import "./globals.css";
 import { DbStatus } from "./components/db-status";
 import { Header } from "./components/header";
@@ -10,11 +12,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">
+    <html lang="en">
+      <body>
         <Header />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
-          <DbStatus />
+        <DbStatus />
+        <main className="sgds:mx-auto sgds:w-full sgds:max-w-container-xl sgds:flex-1 sgds:px-layout-md sgds:py-layout-md">
           {children}
         </main>
       </body>

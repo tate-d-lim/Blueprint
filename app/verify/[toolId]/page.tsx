@@ -1,5 +1,7 @@
+import { SgdsAlert, SgdsBadge, SgdsBreadcrumb, SgdsBreadcrumbItem, SgdsTable, SgdsTableCell, SgdsTableHead, SgdsTableRow } from "@govtechsg/sgds-web-component/react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PageHeader } from "@/app/components/page-header";
 import { RoleGate } from "@/app/components/role-gate";
 import { withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
@@ -37,53 +39,53 @@ async function Review({ params, searchParams }: Props) {
   const diff = diffVersions(current, lastApproved);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <Link href="/verify" className="text-sm text-muted hover:underline">
-          ← Waiting for approval
-        </Link>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-          {tool.name}, version {current.version}
-        </h1>
-        <p className="mt-1 text-muted">
+    <div className="sgds:mx-auto sgds:flex sgds:max-w-container-xl sgds:flex-col sgds:gap-layout-md">
+      <div className="sgds:flex sgds:flex-col sgds:gap-sm">
+        <SgdsBreadcrumb>
+          <SgdsBreadcrumbItem>
+            <Link href="/verify" suppressHydrationWarning>
+              Waiting for approval
+            </Link>
+          </SgdsBreadcrumbItem>
+          <SgdsBreadcrumbItem active>{tool.name}</SgdsBreadcrumbItem>
+        </SgdsBreadcrumb>
+        <PageHeader title={`${tool.name}, version ${current.version}`}>
           {profile.title} · saved {current.createdAt.slice(0, 10)} · written against {current.writtenAgainst} · Source: {current.source}
-        </p>
-        {current.changeNote && <p className="mt-2 rounded-lg bg-accent-soft px-4 py-3 text-sm">What changed: {current.changeNote}</p>}
+        </PageHeader>
+        {current.changeNote && (
+          <SgdsAlert show outlined variant="info">
+            What changed: {current.changeNote}
+          </SgdsAlert>
+        )}
       </div>
 
       {current.approval ? (
-        <p className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm">
+        <SgdsAlert show outlined variant="success">
           This version is already approved ({current.approval.by}, {current.approval.at.slice(0, 10)}).
-        </p>
+        </SgdsAlert>
       ) : (
         <>
-          <p className="text-sm text-muted">
+          <p className="sgds:text-subtle">
             {lastApproved ? `Compared with approved version ${lastApproved.version}: ` : "Nothing has been approved before, so every row is new: "}
             {diff.added.length} added, {diff.changed.length} changed, {diff.removed.length} removed.
           </p>
 
-          <div className="overflow-x-auto rounded-xl border border-line bg-surface">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-line text-muted">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Requirement</th>
-                  <th className="px-4 py-2 font-medium">Before</th>
-                  <th className="px-4 py-2 font-medium">Now</th>
-                </tr>
-              </thead>
-              <tbody>
-                {diff.added.map(e => (
-                  <Row key={e.key} id={idOf(e.key)} title={titleOf(e.key)} kind="Added" before="—" after={describe(e)} />
-                ))}
-                {diff.changed.map(c => (
-                  <Row key={c.after.key} id={idOf(c.after.key)} title={titleOf(c.after.key)} kind="Changed" before={describe(c.before)} after={describe(c.after)} />
-                ))}
-                {diff.removed.map(e => (
-                  <Row key={e.key} id={idOf(e.key)} title={titleOf(e.key)} kind="Removed" before={describe(e)} after="—" />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <SgdsTable>
+            <SgdsTableRow>
+              <SgdsTableHead>Requirement</SgdsTableHead>
+              <SgdsTableHead>Before</SgdsTableHead>
+              <SgdsTableHead>Now</SgdsTableHead>
+            </SgdsTableRow>
+            {diff.added.map(e => (
+              <Row key={e.key} id={idOf(e.key)} title={titleOf(e.key)} kind="Added" before="—" after={describe(e)} />
+            ))}
+            {diff.changed.map(c => (
+              <Row key={c.after.key} id={idOf(c.after.key)} title={titleOf(c.after.key)} kind="Changed" before={describe(c.before)} after={describe(c.after)} />
+            ))}
+            {diff.removed.map(e => (
+              <Row key={e.key} id={idOf(e.key)} title={titleOf(e.key)} kind="Removed" before={describe(e)} after="—" />
+            ))}
+          </SgdsTable>
 
           <ApproveButton versionId={current._id} />
         </>
@@ -92,17 +94,26 @@ async function Review({ params, searchParams }: Props) {
   );
 }
 
-function Row({ id, title, kind, before, after }: { id: string; title: string; kind: string; before: string; after: string }) {
+const KIND_VARIANT = { Added: "success", Changed: "warning", Removed: "danger" } as const;
+
+function Row({ id, title, kind, before, after }: { id: string; title: string; kind: keyof typeof KIND_VARIANT; before: string; after: string }) {
   return (
-    <tr className="border-b border-line align-top last:border-0">
-      <td className="w-72 px-4 py-2">
-        <div className="font-medium">{title}</div>
-        <div className="font-mono text-xs text-muted">
-          {id} · {kind}
+    <SgdsTableRow>
+      <SgdsTableCell>
+        <div className="sgds:flex sgds:flex-col sgds:gap-text-xs">
+          <strong>{title}</strong>
+          <span className="sgds:flex sgds:items-center sgds:gap-text-sm">
+            <span className="sgds:font-code sgds:text-caption-md sgds:text-subtle">{id}</span>
+            <SgdsBadge show variant={KIND_VARIANT[kind]}>
+              {kind}
+            </SgdsBadge>
+          </span>
         </div>
-      </td>
-      <td className="px-4 py-2 text-muted">{before}</td>
-      <td className="px-4 py-2">{after}</td>
-    </tr>
+      </SgdsTableCell>
+      <SgdsTableCell>
+        <span className="sgds:text-subtle">{before}</span>
+      </SgdsTableCell>
+      <SgdsTableCell>{after}</SgdsTableCell>
+    </SgdsTableRow>
   );
 }

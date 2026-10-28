@@ -1,3 +1,4 @@
+import { SgdsCard, SgdsLink } from "@govtechsg/sgds-web-component/react";
 import type { ProfileEntry } from "@/lib/domain/types";
 import type { PlanItem } from "@/lib/plan/engine";
 import { GOOD_TO_HAVE_LABEL } from "@/lib/plan/labels";
@@ -29,57 +30,103 @@ export function PlanItemView({
   const yourPart = ours.map(c => c.builderPart).find(Boolean) ?? item.plain?.task;
   const explanations = ours.filter(c => c.explanation);
 
-  return (
-    <li className="rounded-lg border border-line bg-surface p-4">
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="font-medium leading-snug">
-          {onOpen ? (
-            <button type="button" onClick={onOpen} className="text-left hover:text-accent hover:underline">
+  const heading = (
+    <div className="sgds:flex sgds:flex-wrap sgds:items-start sgds:justify-between sgds:gap-sm">
+      <h3 className="sgds:text-subtitle-md sgds:font-semibold">
+        {onOpen ? (
+          <SgdsLink size="lg">
+            <a
+              href={`#${item.id}`}
+              role="button"
+              suppressHydrationWarning
+              onClick={e => {
+                e.preventDefault();
+                onOpen();
+              }}
+              onKeyDown={e => {
+                if (e.key === " ") {
+                  e.preventDefault();
+                  onOpen();
+                }
+              }}
+            >
               {title}
-            </button>
-          ) : (
-            title
-          )}
-        </h3>
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-          {item.level === 2 && <Chip>{GOOD_TO_HAVE_LABEL[item.placement]}</Chip>}
-          {verification && <Badge verification={verification} />}
-        </div>
+            </a>
+          </SgdsLink>
+        ) : (
+          title
+        )}
+      </h3>
+      <div className="sgds:flex sgds:flex-wrap sgds:items-center sgds:gap-text-xs">
+        {item.level === 2 && <Chip>{GOOD_TO_HAVE_LABEL[item.placement]}</Chip>}
+        {verification && <Badge verification={verification} />}
       </div>
+    </div>
+  );
 
+  const body = (
+    <>
       {!compact && (
-        <div className="mt-2 space-y-1.5 text-sm">
+        <div className="sgds:flex sgds:flex-col sgds:gap-text-sm sgds:text-body-sm">
           {item.heading !== "platform" && yourPart && (
             <p>
-              <span className="font-medium">{shared.length ? "Your part: " : "What to do: "}</span>
+              <strong>{shared.length ? "Your part: " : "What to do: "}</strong>
               {yourPart}
             </p>
           )}
           {shared.map(c => (
             <p key={c.toolId}>
-              <span className="font-medium">{c.toolName}&apos;s part: </span>
+              <strong>{c.toolName}&apos;s part: </strong>
               {c.explanation ?? "Handled by the platform."}
             </p>
           ))}
           {why && (
-            <p className="text-muted">
-              <span className="font-medium text-foreground">Why it matters: </span>
+            <p className="sgds:text-subtle">
+              <strong className="sgds:text-default">Why it matters: </strong>
               {why}
             </p>
           )}
-          <p className="text-muted">{item.reason}</p>
+          <p className="sgds:text-subtle">{item.reason}</p>
         </div>
       )}
 
       {compact && explanations.length > 0 && (
-        <p className="mt-1 text-sm text-muted">{explanations.map(c => c.explanation).join(" ")}</p>
+        <p className="sgds:text-body-sm sgds:text-subtle">{explanations.map(c => c.explanation).join(" ")}</p>
       )}
-      {hasGovTechText && <p className="mt-1 text-xs text-muted">GovTech&apos;s own notes are in the details: open this item to read them.</p>}
+      {hasGovTechText && (
+        <p className="sgds:text-caption-md sgds:text-subtle">GovTech&apos;s own notes are in the details: open this item to read them.</p>
+      )}
+    </>
+  );
 
-      {controls && item.heading === "you" && <TaskControls item={item} controls={controls} />}
-      {controls && item.heading === "questions" && <QuestionControls item={item} controls={controls} />}
+  const controlsView =
+    controls && item.heading === "you" ? (
+      <TaskControls item={item} controls={controls} />
+    ) : controls && item.heading === "questions" ? (
+      <QuestionControls item={item} controls={controls} />
+    ) : null;
 
-      <p className="mt-2 font-mono text-xs text-muted">{item.id}</p>
+  // Compact rows (the long "platform already does this" lists) stay light; the items a builder acts on are cards.
+  if (compact) {
+    return (
+      <li className="sgds:flex sgds:flex-col sgds:gap-text-sm sgds:border-b sgds:border-muted sgds:py-sm sgds:last:border-b-0">
+        {heading}
+        {body}
+        <p className="sgds:font-code sgds:text-caption-md sgds:text-subtle">{item.id}</p>
+      </li>
+    );
+  }
+  // A card whose select is open rises above the cards below it, so the menu isn't painted over.
+  return (
+    <li className="sgds:relative sgds:focus-within:z-10">
+      <SgdsCard>
+        <div slot="title">{heading}</div>
+        <div className="sgds:flex sgds:flex-col sgds:gap-sm">
+          {body}
+          {controlsView}
+          <p className="sgds:font-code sgds:text-caption-md sgds:text-subtle">{item.id}</p>
+        </div>
+      </SgdsCard>
     </li>
   );
 }

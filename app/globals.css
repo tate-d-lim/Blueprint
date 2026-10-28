@@ -1,29 +1,69 @@
-@import "tailwindcss";
+/* SGDS: theme tokens first, then foundation styles, then the sgds: utility classes (Tailwind v4, prefixed). */
+@import "@govtechsg/sgds-web-component/themes/day.css";
+@import "@govtechsg/sgds-web-component/themes/night.css";
+@import "@govtechsg/sgds-web-component/css/sgds.css";
+@import "@govtechsg/sgds-web-component/css/utility.css";
+/* Hide components until they are defined, so the server-rendered page never flashes unstyled. */
+@import "@govtechsg/sgds-web-component/css/fouc.css";
 
+/* Inter and Roboto Mono (SGDS's code face) are self-hosted so the demo works offline; SGDS expects the families "Inter" and "Roboto Mono". */
 :root {
-  --background: #f5f6f8;
-  --surface: #ffffff;
-  --foreground: #172033;
-  --muted: #5b6577;
-  --line: #dde1e8;
-  --accent: #3730a3;
-  --accent-soft: #eef0ff;
+  --sgds-font-family-sans: "Inter Variable", "Inter", system-ui, sans-serif;
+  --sgds-font-family-code: "Roboto Mono Variable", "Roboto Mono", ui-monospace, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-line: var(--line);
-  --color-accent: var(--accent);
-  --color-accent-soft: var(--accent-soft);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+/* Spacing comes from the sgds: gap and padding utilities, so drop the reboot's default margins and list styling. */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  ul,
+  ol,
+  dl,
+  dd,
+  pre {
+    margin: 0;
+  }
+
+  ul,
+  ol {
+    padding: 0;
+    list-style: none;
+  }
+
+  button {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+  }
+
+  pre,
+  code {
+    font-family: var(--sgds-font-family-code);
+  }
+}
+
+html {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--sgds-bg-alternate);
+  color: var(--sgds-body-color-default);
+  font-family: var(--sgds-font-family-body);
 }

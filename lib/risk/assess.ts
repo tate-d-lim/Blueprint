@@ -66,7 +66,7 @@ const LOW_REASON =
 export function assessRisk(a: RiskAnswers): RiskResult {
   const high: string[] = [];
   if (a.impact === 'critical') high.push('The worst impact is Critical.');
-  if (a.cii) high.push('The system is CII.');
+  if (a.cii) high.push('The system is Critical Information Infrastructure (CII).');
   if (a.classification === 's-class') high.push('The data is S-class.');
   if (high.length) {
     return { level: 'high', appType: 'High-risk app on the cloud', reasons: high, profileId: null };

@@ -1,5 +1,6 @@
 "use client";
 
+import { SgdsAccordion, SgdsAccordionItem, SgdsAlert, SgdsBadge, SgdsButton, SgdsLink } from "@govtechsg/sgds-web-component/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -12,12 +13,12 @@ import { selectPlanInput } from "@/lib/plan/select";
 import { parsePlanQuery, planQuery } from "@/lib/plan/url-state";
 import { versionVerification, type Verification } from "@/lib/plan/verification";
 import { assessRisk, type RiskAnswers } from "@/lib/risk/assess";
-import { AgentSnippet } from "./agent-snippet";
+import { AgentSnippetItem } from "./agent-snippet";
 import type { ItemControls } from "./item-controls";
 import { ItemDetail } from "./item-detail";
 import { PlanItemView } from "./plan-item";
 import { SaveDialog } from "./save-dialog";
-import { ToolPicker } from "./tool-picker";
+import { ToolHints, ToolPicker } from "./tool-picker";
 
 const PROFILE_ID = "low-risk-cloud";
 
@@ -46,7 +47,8 @@ export function PlanView({
     project ? initialToolIds : (parsePlanQuery(Object.fromEntries(params), data.tools.map(t => t._id))?.toolIds ?? initialToolIds),
   );
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [openKey, setOpenKey] = useState<string | null>(null);
+  const [detailKey, setDetailKey] = useState<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [overlay, setOverlay] = useState<ProjectOverlay | undefined>(
     project && { taskStatus: project.taskStatus, questionAnswers: project.questionAnswers },
   );
@@ -106,109 +108,133 @@ export function PlanView({
     },
   };
 
-  const openItem = openKey ? plan.items.find(i => i.key === openKey) : undefined;
+  const detailItem = detailKey ? plan.items.find(i => i.key === detailKey) : undefined;
   const query = project ? `project=${encodeURIComponent(project._id)}` : planQuery(answers, toolIds);
   const byHeading = (h: Heading) => plan.items.filter(i => i.heading === h);
   const platformGroups = groupPlatform(byHeading("platform"));
   const view = (item: PlanItem, compact = false) => (
-    <PlanItemView key={`${item.profileId}:${item.key}`} item={item} entry={entries.get(item.key)} compact={compact} controls={controls} onOpen={() => setOpenKey(item.key)} />
+    <PlanItemView key={`${item.profileId}:${item.key}`} item={item} entry={entries.get(item.key)} compact={compact} controls={controls} onOpen={() => {
+        setDetailKey(item.key);
+        setDetailOpen(true);
+      }} />
   );
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[19rem_1fr]">
-      <aside className="lg:sticky lg:top-6 lg:self-start">
-        <ToolPicker tools={data.tools} picked={toolIds} verification={verification} hints={plan.hints} onToggle={toggle} />
-      </aside>
-
-      <div className="min-w-0 space-y-10">
+    <div className="sgds:grid sgds:gap-layout-md sgds:lg:grid-cols-[20rem_1fr] sgds:lg:grid-rows-[auto_1fr]">
+      {/* The page title and downloads come first on every screen size; on wide screens the picker sits beside them. */}
+      <div className="sgds:flex sgds:min-w-0 sgds:flex-col sgds:gap-sm sgds:lg:col-start-2 sgds:lg:row-start-1">
         {saveError && (
-          <div role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm">
-            <span className="font-medium">{saveError}</span>
-            <button type="button" onClick={() => setSaveError(null)} className="ml-3 underline">
-              Dismiss
-            </button>
-          </div>
+          <SgdsAlert show outlined dismissible variant="danger" onSgdsHide={() => setSaveError(null)}>
+            {saveError}
+          </SgdsAlert>
         )}
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Your build plan</h1>
-            <p className="mt-1 text-muted">
-              {assessRisk(answers).appType}.{" "}
-              <Link href="/start" className="underline">
+        <div className="sgds:flex sgds:flex-col sgds:gap-text-xs">
+          <h1 className="sgds:text-heading-lg sgds:font-semibold">Your build plan</h1>
+          <p className="sgds:text-body-lg sgds:text-subtle">
+            {assessRisk(answers).appType}.{" "}
+            <SgdsLink>
+              <Link href="/start" suppressHydrationWarning>
                 Change your answers
               </Link>
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <a
-              href={`/api/export/build-plan?${query}`}
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-            >
-              Build plan for your agent
-            </a>
-            <a
-              href={`/api/export/ssp?${query}`}
-              className="rounded-lg border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-accent-soft"
-            >
-              Security review spreadsheet
-            </a>
-          </div>
-          {!project && <SaveDialog answers={answers} toolIds={toolIds} />}
-          <details className="w-full text-sm">
-            <summary className="cursor-pointer text-muted">For security reviewers: machine-readable files</summary>
-            <p className="mt-2 flex flex-wrap gap-4">
-              <a href={`/api/export/oscal?kind=ssp&${query}`} className="text-accent underline">
-                Security plan (JSON)
-              </a>
-              <a href={`/api/export/oscal?kind=component-definition&${query}`} className="text-accent underline">
-                Tool coverage (JSON)
-              </a>
-            </p>
-          </details>
-          <AgentSnippet />
+            </SgdsLink>
+          </p>
         </div>
+        <div className="sgds:flex sgds:flex-wrap sgds:gap-sm">
+          <SgdsButton href={`/api/export/build-plan?${query}`}>Build plan for your agent</SgdsButton>
+          <SgdsButton variant="outline" href={`/api/export/ssp?${query}`}>
+            Security review spreadsheet
+          </SgdsButton>
+          {!project && <SaveDialog answers={answers} toolIds={toolIds} />}
+        </div>
+        <SgdsAccordion density="compact">
+          <AgentSnippetItem />
+          <SgdsAccordionItem>
+            <span slot="header" className="sgds:text-body-md sgds:font-regular">
+              For security reviewers: machine-readable files
+            </span>
+            <div slot="content" className="sgds:flex sgds:flex-wrap sgds:gap-sm">
+              <SgdsLink>
+                <a href={`/api/export/oscal?kind=ssp&${query}`} suppressHydrationWarning>
+                  Security plan (JSON)
+                </a>
+              </SgdsLink>
+              <SgdsLink>
+                <a href={`/api/export/oscal?kind=component-definition&${query}`} suppressHydrationWarning>
+                  Tool coverage (JSON)
+                </a>
+              </SgdsLink>
+            </div>
+          </SgdsAccordionItem>
+        </SgdsAccordion>
+      </div>
 
+      <aside className="sgds:lg:col-start-1 sgds:lg:row-span-2 sgds:lg:row-start-1 sgds:lg:sticky sgds:lg:top-layout-sm sgds:lg:max-h-[calc(100vh-6rem)] sgds:lg:self-start sgds:lg:overflow-y-auto">
+        <div className="sgds:flex sgds:flex-col sgds:gap-sm">
+          <ToolHints tools={data.tools} hints={plan.hints} onToggle={toggle} />
+          <div className="sgds:hidden sgds:lg:block">
+            <ToolPicker tools={data.tools} picked={toolIds} verification={verification} onToggle={toggle} />
+          </div>
+          <div className="sgds:lg:hidden">
+            <ToolPicker collapsed tools={data.tools} picked={toolIds} verification={verification} onToggle={toggle} />
+          </div>
+        </div>
+      </aside>
+
+      <div className="sgds:flex sgds:min-w-0 sgds:flex-col sgds:gap-layout-lg sgds:lg:col-start-2 sgds:lg:row-start-2">
         <Section heading="you" count={plan.counts.you}>
-          <ul className="space-y-3">{byHeading("you").map(i => view(i))}</ul>
+          <ul className="sgds:flex sgds:flex-col sgds:gap-sm">{byHeading("you").map(i => view(i))}</ul>
         </Section>
 
         <Section heading="platform" count={plan.counts.platform}>
-          <div className="space-y-3">
+          <SgdsAccordion allowMultiple>
             {platformGroups.map(g => (
-              <details key={g.title} className="rounded-lg border border-line bg-surface">
-                <summary className="cursor-pointer px-4 py-3 font-medium">
-                  {g.title} <span className="font-normal text-muted">· {g.items.length}</span>
-                </summary>
-                <ul className="space-y-2 border-t border-line p-3">{g.items.map(i => view(i, true))}</ul>
-              </details>
+              <SgdsAccordionItem key={g.title}>
+                <span slot="header">{g.title}</span>
+                <SgdsBadge slot="badge" show variant="neutral">
+                  {g.items.length}
+                </SgdsBadge>
+                <ul slot="content" className="sgds:flex sgds:flex-col">
+                  {g.items.map(i => view(i, true))}
+                </ul>
+              </SgdsAccordionItem>
             ))}
-          </div>
+          </SgdsAccordion>
         </Section>
 
         <Section heading="questions" count={plan.counts.questions}>
-          <ul className="space-y-3">{byHeading("questions").map(i => view(i))}</ul>
+          <ul className="sgds:flex sgds:flex-col sgds:gap-sm">{byHeading("questions").map(i => view(i))}</ul>
         </Section>
 
         <Section heading="good-to-have" count={plan.counts["good-to-have"]}>
-          <details className="rounded-lg border border-line bg-surface">
-            <summary className="cursor-pointer px-4 py-3 font-medium">Show all {plan.counts["good-to-have"]}</summary>
-            <ul className="space-y-2 border-t border-line p-3">{byHeading("good-to-have").map(i => view(i))}</ul>
-          </details>
+          <SgdsAccordion>
+            <SgdsAccordionItem>
+              <span slot="header">Show all {plan.counts["good-to-have"]}</span>
+              <ul slot="content" className="sgds:flex sgds:flex-col">
+                {byHeading("good-to-have").map(i => view(i, true))}
+              </ul>
+            </SgdsAccordionItem>
+          </SgdsAccordion>
         </Section>
       </div>
-      {openItem && <ItemDetail item={openItem} entry={entries.get(openItem.key)} onClose={() => setOpenKey(null)} />}
+      {detailItem && (
+        <ItemDetail item={detailItem} entry={entries.get(detailItem.key)} open={detailOpen} onClose={() => setDetailOpen(false)} />
+      )}
     </div>
   );
 }
 
 function Section({ heading, count, children }: { heading: Heading; count: number; children: React.ReactNode }) {
   return (
-    <section>
-      <div className="mb-3 flex items-baseline gap-3">
-        <h2 className="text-xl font-semibold tracking-tight">{HEADING_TITLES[heading]}</h2>
-        <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-sm font-medium text-accent">{count}</span>
+    <section className="sgds:flex sgds:flex-col sgds:gap-sm">
+      <div className="sgds:flex sgds:flex-col sgds:gap-text-xs">
+        <div className="sgds:flex sgds:items-center sgds:gap-sm">
+          <h2 className="sgds:text-heading-sm sgds:font-semibold">{HEADING_TITLES[heading]}</h2>
+          <SgdsBadge show variant="primary">
+            <span>{count}</span>
+          </SgdsBadge>
+        </div>
+        <p className="sgds:text-body-md sgds:text-subtle">{BLURB[heading]}</p>
       </div>
-      <p className="mb-3 text-sm text-muted">{BLURB[heading]}</p>
       {children}
     </section>
   );

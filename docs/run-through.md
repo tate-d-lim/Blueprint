@@ -12,16 +12,16 @@ npm run build && npm start    # steadier than `npm run dev` for a live demo; ope
 
 The app and MongoDB listen on this Mac only (127.0.0.1), because the database has no password and the venue's Wi-Fi isn't yours. If a page shows a banner saying the database isn't running or is empty, follow it (`docker-compose up -d`, then `npm run seed`).
 
-- Role switcher on **Builder**. Browser at `http://localhost:3000/start`. Downloads folder empty.
+- Role buttons (top right) on **Builder**. Browser at `http://localhost:3000/start`. Downloads folder empty.
 - If a page ever shows an error about a missing function after you edited code, restart the server. Turbopack's dev server can serve a stale module.
-- `npm run e2e` checks moments 1 to 3 automatically (own port and database, so it never touches your demo data).
+- `npm run e2e` checks moments 1 to 3 and the platform cut-away (moment 5) automatically, on a production build with its own port and database, so it never touches your demo data. The screens are built from the Singapore Government Design System (SGDS) components; if the page ever looks unstyled after you edit code, stop the dev server, delete the `.next` folder and start it again.
 
 ## Moment 1: Tell us about your app (about 30 seconds)
 
 1. Choose **Restricted**, **Sensitive Normal**, **Slight**, **None or minimal**. Leave both tick boxes empty.
 2. Click **Work out my app type**.
 3. Expect **Low-risk app on the cloud**, the reason ("Data up to Restricted and Sensitive Normal, at most Slight impact…") and a link to GovTech's risk materiality levels.
-4. Optional aside: tick **The system is CII** and submit again. It becomes **High-risk app on the cloud** with "We don't support this type of app yet." Untick it before going on.
+4. Optional aside: tick **The system is Critical Information Infrastructure (CII)** and submit again. It becomes **High-risk app on the cloud** with "We don't support this type of app yet." Untick it before going on.
 5. Click **See your build plan**.
 
 ## Moment 2: Pick your tools (about 75 seconds)
@@ -68,9 +68,9 @@ The 86 requirements that must or should be done become **11 that are yours and 9
 
 ## Moment 5: The platform cut-away (about 30 seconds)
 
-1. Switch role to **Admin** → **Admin** → **appCentral** → **Edit coverage**. In the as-4 row, type an explanation ("appCentral rate-limits sign-ins at the gateway."). Click **Save new version**, type a source for this version (it is required and starts empty on purpose, for example "appCentral team, 2026-10-27"; only the row you changed is credited to it, every other row keeps its old source), add "What changed", **Save**. A green note says version 2 is not yet verified.
+1. Click the **Admin** role button → **Admin** in the navigation → **appCentral**: **Edit coverage**. Click the row **Authentication Mechanism Rate-Limiting** (as-4) to open it and type in **Explanation**: "appCentral rate-limits sign-ins at the gateway." Click **Save new version**, type a source for this version (it is required and starts empty on purpose, for example "appCentral team, 2026-10-27"; only the row you changed is credited to it, every other row keeps its old source), add "What changed", **Save**. A green note says version 2 is not yet verified.
 2. Open the plan for appCentral: **only as-4** shows **Not yet verified**, and so does appCentral in the picker.
-3. Switch role to **Verifier** → **Verify** → **Review** on appCentral. The table shows the one changed row. Click **Approve this version**.
+3. Click the **Verifier** role button → **Verify** → **Review** on appCentral. The table shows the one changed row. Click **Approve this version**.
 4. Reload the plan: as-4 and appCentral are **Verified** again.
 
 Optional: as Admin, **Import a Component Guide** and upload a published guide to show a platform team's spreadsheet becoming a not-yet-verified version. Real guides to try: `data/guides/WebSG-LowRiskCloud_2026-06-22.xlsx` (works), `data/guides/FormSG-Component-Guide-DSS.xlsx` (rejected: it is for a different standard).
@@ -78,6 +78,10 @@ Optional: as Admin, **Import a Component Guide** and upload a published guide to
 ## After a rehearsal
 
 Click **Reset demo data** (confirm) to put everything back. It reloads all the source files, so edits made in the admin screens are lost.
+
+## After the SGDS revamp (2026-10-28)
+
+Every screen was rebuilt with the Singapore Government Design System. Checked: all screens in the browser at 1440 and 390 wide (no sideways scrolling), and `npm run e2e` (7 tests on a production build: moments 1 to 3, the platform cut-away, adding a tool, and three regressions). Still **not** checked: one uninterrupted timed run, the exported `.xlsx` in Excel, and the agent clip.
 
 ## What was checked on 2026-10-27, and what wasn't
 

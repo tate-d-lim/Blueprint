@@ -1,33 +1,35 @@
 "use client";
 
+import { SgdsButton } from "@govtechsg/sgds-web-component/react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { setRole } from "@/app/actions/role";
 import { ROLES, type Role } from "@/lib/role";
 
+const LABELS: Record<Role, string> = { builder: "Builder", admin: "Admin", verifier: "Verifier" };
+
 export function RoleSwitcher({ role }: { role: Role }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   return (
-    <div role="group" aria-label="Role" className="inline-flex rounded-lg border border-line bg-background p-0.5 text-sm">
+    <div role="group" aria-label="Role" className="sgds:flex sgds:gap-2-xs">
       {ROLES.map(r => (
-        <button
+        <SgdsButton
           key={r}
-          type="button"
-          aria-pressed={r === role}
+          size="sm"
+          variant="outline"
+          active={r === role}
           disabled={pending}
+          ariaLabel={r === role ? `${LABELS[r]} (current role)` : LABELS[r]}
           onClick={() =>
             start(async () => {
               await setRole(r);
               router.refresh();
             })
           }
-          className={`rounded-md px-3 py-1 capitalize transition ${
-            r === role ? "bg-accent text-white" : "text-muted hover:text-foreground"
-          }`}
         >
-          {r}
-        </button>
+          {LABELS[r]}
+        </SgdsButton>
       ))}
     </div>
   );

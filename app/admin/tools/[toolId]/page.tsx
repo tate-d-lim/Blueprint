@@ -1,5 +1,8 @@
+import { SgdsBreadcrumb, SgdsBreadcrumbItem } from "@govtechsg/sgds-web-component/react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AppLink } from "@/app/components/app-link";
+import { PageHeader } from "@/app/components/page-header";
 import { RoleGate } from "@/app/components/role-gate";
 import { withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
@@ -47,25 +50,33 @@ async function ToolEditor({
   }));
 
   return (
-    <div className="space-y-6">
-      <div>
-        <Link href="/admin" className="text-sm text-muted hover:underline">
-          ← All tools
-        </Link>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">{tool.name}: what it covers</h1>
-        <p className="mt-1 text-muted">
+    <div className="sgds:flex sgds:flex-col sgds:gap-layout-md">
+      <div className="sgds:flex sgds:flex-col sgds:gap-sm">
+        <SgdsBreadcrumb>
+          <SgdsBreadcrumbItem>
+            <Link href="/admin" suppressHydrationWarning>
+              All tools
+            </Link>
+          </SgdsBreadcrumbItem>
+          <SgdsBreadcrumbItem active>{tool.name}</SgdsBreadcrumbItem>
+        </SgdsBreadcrumb>
+        <PageHeader title={`${tool.name}: what it covers`}>
           Profile: {profile.title}
           {current ? ` · editing from version ${current.version}` : " · no coverage recorded yet"}
-        </p>
+        </PageHeader>
         {new Set(withVersions).size > 1 && (
-          <p className="mt-2 flex gap-3 text-sm">
+          <p className="sgds:flex sgds:gap-sm">
             {data.profiles
               .filter(p => withVersions.includes(p._id))
-              .map(p => (
-                <Link key={p._id} href={`/admin/tools/${toolId}?profile=${p._id}`} className={p._id === profile._id ? "font-medium" : "text-accent underline"}>
-                  {p.title}
-                </Link>
-              ))}
+              .map(p =>
+                p._id === profile._id ? (
+                  <strong key={p._id}>{p.title}</strong>
+                ) : (
+                  <AppLink key={p._id} href={`/admin/tools/${toolId}?profile=${p._id}`}>
+                    {p.title}
+                  </AppLink>
+                ),
+              )}
           </p>
         )}
       </div>

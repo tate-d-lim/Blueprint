@@ -1,6 +1,8 @@
-import Link from "next/link";
-import { Badge, SampleTag } from "@/app/plan/badge";
+import { SgdsButton, SgdsTable, SgdsTableCell, SgdsTableHead, SgdsTableRow } from "@govtechsg/sgds-web-component/react";
+import { AppLink } from "@/app/components/app-link";
+import { PageHeader } from "@/app/components/page-header";
 import { RoleGate } from "@/app/components/role-gate";
+import { Badge, SampleTag } from "@/app/plan/badge";
 import { withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
 import { versionVerification } from "@/lib/plan/verification";
@@ -19,67 +21,62 @@ export default function AdminPage() {
 async function AdminTools() {
   const data = await withDb(loadPlanData);
   return (
-    <div className="space-y-10">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Tools and what they cover</h1>
-        <p className="mt-1 text-muted">
-          Edit what each tool covers. Every save creates a new version that a verifier has to approve.
-        </p>
-      </div>
+    <div className="sgds:mx-auto sgds:flex sgds:max-w-container-xl sgds:flex-col sgds:gap-layout-md">
+      <PageHeader title="Tools and what they cover">
+        Edit what each tool covers. Every save creates a new version that a verifier has to approve.
+      </PageHeader>
 
-      <div className="overflow-x-auto rounded-xl border border-line bg-surface">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-line text-muted">
-            <tr>
-              <th className="px-4 py-3 font-medium">Tool</th>
-              <th className="px-4 py-3 font-medium">Kind</th>
-              <th className="px-4 py-3 font-medium">Coverage versions</th>
-              <th className="px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {data.tools.map(tool => {
-              const pairs = data.versions.filter(v => v.current.toolId === tool._id);
-              return (
-                <tr key={tool._id} className="border-b border-line last:border-0">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2 font-medium">
-                      {tool.name} {tool.isSample && <SampleTag />}
-                    </div>
-                    <div className="text-muted">{tool.description}</div>
-                  </td>
-                  <td className="px-4 py-3 text-muted">{SECTION_TITLE[tool.section]}</td>
-                  <td className="px-4 py-3">
-                    {pairs.length === 0 && <span className="text-muted">None yet</span>}
-                    <ul className="space-y-1">
-                      {pairs.map(p => (
-                        <li key={p.current._id} className="flex flex-wrap items-center gap-2">
-                          <span>
-                            {data.profiles.find(pr => pr._id === p.current.profileId)?.title} v{p.current.version}
-                          </span>
-                          <Badge verification={versionVerification(p)} />
-                          <span className="text-muted">{p.current.createdAt.slice(0, 10)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link href={`/admin/tools/${tool._id}`} className="font-medium text-accent hover:underline">
-                      Edit coverage
-                    </Link>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <SgdsTable>
+        <SgdsTableRow>
+          <SgdsTableHead>Tool</SgdsTableHead>
+          <SgdsTableHead>Kind</SgdsTableHead>
+          <SgdsTableHead>Coverage versions</SgdsTableHead>
+          <SgdsTableHead>
+            <span className="sgds:sr-only">Action</span>
+          </SgdsTableHead>
+        </SgdsTableRow>
+        {data.tools.map(tool => {
+          const pairs = data.versions.filter(v => v.current.toolId === tool._id);
+          return (
+            <SgdsTableRow key={tool._id}>
+              <SgdsTableCell>
+                <div className="sgds:flex sgds:flex-col sgds:gap-text-xs">
+                  <div className="sgds:flex sgds:flex-wrap sgds:items-center sgds:gap-text-sm">
+                    <strong>{tool.name}</strong> {tool.isSample && <SampleTag />}
+                  </div>
+                  <span className="sgds:text-body-sm sgds:text-subtle">{tool.description}</span>
+                </div>
+              </SgdsTableCell>
+              <SgdsTableCell>{SECTION_TITLE[tool.section]}</SgdsTableCell>
+              <SgdsTableCell>
+                {pairs.length === 0 && <span className="sgds:text-subtle">None yet</span>}
+                <ul className="sgds:flex sgds:flex-col sgds:gap-text-sm">
+                  {pairs.map(p => (
+                    <li key={p.current._id} className="sgds:flex sgds:flex-col sgds:gap-text-xs">
+                      <span className="sgds:whitespace-nowrap">
+                        {data.profiles.find(pr => pr._id === p.current.profileId)?.title} v{p.current.version}
+                      </span>
+                      <span className="sgds:flex sgds:items-center sgds:gap-text-sm sgds:whitespace-nowrap">
+                        <Badge verification={versionVerification(p)} />
+                        <span className="sgds:text-body-sm sgds:text-subtle">{p.current.createdAt.slice(0, 10)}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </SgdsTableCell>
+              <SgdsTableCell>
+                <SgdsButton size="sm" variant="outline" href={`/admin/tools/${tool._id}`}>
+                  Edit coverage
+                </SgdsButton>
+              </SgdsTableCell>
+            </SgdsTableRow>
+          );
+        })}
+      </SgdsTable>
 
       <p>
-        <Link href="/admin/import" className="font-medium text-accent hover:underline">
-          Import a Component Guide
-        </Link>{" "}
-        <span className="text-muted">to create a version from a product team&apos;s published spreadsheet.</span>
+        <AppLink href="/admin/import">Import a Component Guide</AppLink>{" "}
+        <span className="sgds:text-subtle">to create a version from a product team&apos;s published spreadsheet.</span>
       </p>
 
       <NewToolForm />
