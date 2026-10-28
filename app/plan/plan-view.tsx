@@ -4,10 +4,11 @@ import { SgdsAccordion, SgdsAccordionItem, SgdsAlert, SgdsBadge, SgdsButton, Sgd
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import type { Project } from "@/lib/domain/types";
+import type { Project, TaskStatus } from "@/lib/domain/types";
 import { setProjectToolsAction, setQuestionAnswerAction, setTaskStatusAction } from "@/app/projects/actions";
 import { buildPlan, type Heading, type PlanData, type PlanItem, type ProjectOverlay } from "@/lib/plan/engine";
-import { HEADING_TITLES } from "@/lib/plan/labels";
+import { HEADING_TITLES, STATUS_LABEL } from "@/lib/plan/labels";
+import { planProgress, taskStatusOf } from "@/lib/plan/progress";
 import { runSave, type SaveOutcome } from "@/lib/plan/save";
 import { selectPlanInput } from "@/lib/plan/select";
 import { parsePlanQuery, planQuery } from "@/lib/plan/url-state";
@@ -17,6 +18,7 @@ import { AgentSnippetItem } from "./agent-snippet";
 import type { ItemControls } from "./item-controls";
 import { ItemDetail } from "./item-detail";
 import { PlanItemView } from "./plan-item";
+import { ProgressSummary } from "./progress-summary";
 import { SaveDialog } from "./save-dialog";
 import { ToolHints, ToolPicker } from "./tool-picker";
 
@@ -49,6 +51,7 @@ export function PlanView({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [detailKey, setDetailKey] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [taskFilter, setTaskFilter] = useState<TaskStatus | "all">("all");
   const [overlay, setOverlay] = useState<ProjectOverlay | undefined>(
     project && { taskStatus: project.taskStatus, questionAnswers: project.questionAnswers },
   );
@@ -111,6 +114,8 @@ export function PlanView({
   const detailItem = detailKey ? plan.items.find(i => i.key === detailKey) : undefined;
   const query = project ? `project=${encodeURIComponent(project._id)}` : planQuery(answers, toolIds);
   const byHeading = (h: Heading) => plan.items.filter(i => i.heading === h);
+  const progress = planProgress(plan.items);
+  const shownTasks = byHeading("you").filter(i => taskFilter === "all" || taskStatusOf(i) === taskFilter);
   const platformGroups = groupPlatform(byHeading("platform"));
   const view = (item: PlanItem, compact = false) => (
     <PlanItemView key={`${item.profileId}:${item.key}`} item={item} entry={entries.get(item.key)} compact={compact} controls={controls} onOpen={() => {
@@ -139,6 +144,7 @@ export function PlanView({
             </SgdsLink>
           </p>
         </div>
+        {project && <ProgressSummary progress={progress} />}
         <div className="sgds:flex sgds:flex-wrap sgds:gap-sm">
           <SgdsButton href={`/api/export/build-plan?${query}`}>Build plan for your agent</SgdsButton>
           <SgdsButton variant="outline" href={`/api/export/ssp?${query}`}>
@@ -182,7 +188,12 @@ export function PlanView({
 
       <div className="sgds:flex sgds:min-w-0 sgds:flex-col sgds:gap-layout-lg sgds:lg:col-start-2 sgds:lg:row-start-2">
         <Section heading="you" count={plan.counts.you}>
-          <ul className="sgds:flex sgds:flex-col sgds:gap-sm">{byHeading("you").map(i => view(i))}</ul>
+          {project && <TaskFilter progress={progress} value={taskFilter} onChange={setTaskFilter} />}
+          {shownTasks.length === 0 ? (
+            <p className="sgds:text-body-md sgds:text-subtle">No tasks are {STATUS_LABEL[taskFilter as TaskStatus].toLowerCase()} right now.</p>
+          ) : (
+            <ul className="sgds:flex sgds:flex-col sgds:gap-sm">{shownTasks.map(i => view(i))}</ul>
+          )}
         </Section>
 
         <Section heading="platform" count={plan.counts.platform}>
@@ -219,6 +230,40 @@ export function PlanView({
       {detailItem && (
         <ItemDetail item={detailItem} entry={entries.get(detailItem.key)} open={detailOpen} onClose={() => setDetailOpen(false)} />
       )}
+    </div>
+  );
+}
+
+const FILTERS: (TaskStatus | "all")[] = ["all", "todo", "in-progress", "done"];
+
+/** All / To do / In progress / Done, each with its count, for a saved project's task list. */
+function TaskFilter({
+  progress,
+  value,
+  onChange,
+}: {
+  progress: ReturnType<typeof planProgress>;
+  value: TaskStatus | "all";
+  onChange: (value: TaskStatus | "all") => void;
+}) {
+  const count = { all: progress.tasks.total, todo: progress.tasks.todo, "in-progress": progress.tasks.inProgress, done: progress.tasks.done };
+  return (
+    <div role="group" aria-label="Show tasks" className="sgds:flex sgds:flex-wrap sgds:gap-2-xs">
+      {FILTERS.map(f => {
+        const label = `${f === "all" ? "All" : STATUS_LABEL[f]} (${count[f]})`;
+        return (
+          <SgdsButton
+            key={f}
+            size="sm"
+            variant="outline"
+            active={f === value}
+            ariaLabel={f === value ? `${label}, shown` : label}
+            onClick={() => onChange(f)}
+          >
+            {label}
+          </SgdsButton>
+        );
+      })}
     </div>
   );
 }
