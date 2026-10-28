@@ -1,11 +1,12 @@
 "use client";
 
-import { SgdsAccordionItem, SgdsButton } from "@govtechsg/sgds-web-component/react";
 import { useState } from "react";
+import { Button } from "@/app/ui/button";
+import { Disclosure } from "@/app/ui/disclosure";
 import { AGENT_SNIPPET } from "@/lib/export/build-plan-md";
 
-/** One accordion row; it goes inside an SgdsAccordion. */
-export function AgentSnippetItem() {
+/** One disclosure row with the text to paste into AGENTS.md or CLAUDE.md. */
+export function AgentSnippet() {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -17,20 +18,17 @@ export function AgentSnippetItem() {
     }
   };
   return (
-    <SgdsAccordionItem>
-      <span slot="header" className="sgds:text-body-md sgds:font-regular">
-          Using a coding agent? Add this to AGENTS.md or CLAUDE.md
-        </span>
-      <div slot="content" className="sgds:flex sgds:flex-col sgds:gap-sm">
-        <pre className="sgds:whitespace-pre-wrap sgds:rounded-surface sgds:bg-surface-raised sgds:p-sm sgds:font-code sgds:text-caption-md">
+    <Disclosure summary={<span className="font-display text-lead font-semibold">Using a coding agent? Add this to AGENTS.md or CLAUDE.md</span>}>
+      <div className="flex flex-col gap-3">
+        <pre className="rounded-xs border border-rule bg-blueprint-wash/40 p-4 font-code text-small leading-relaxed whitespace-pre-wrap">
           {AGENT_SNIPPET}
         </pre>
         <div>
-          <SgdsButton size="sm" variant="outline" onClick={copy}>
+          <Button size="sm" variant="secondary" onClick={copy}>
             {copied ? "Copied" : "Copy"}
-          </SgdsButton>
+          </Button>
         </div>
       </div>
-    </SgdsAccordionItem>
+    </Disclosure>
   );
 }

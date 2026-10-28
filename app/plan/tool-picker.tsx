@@ -1,7 +1,9 @@
 "use client";
 
-import { SgdsAccordion, SgdsAccordionItem, SgdsAlert, SgdsBadge, SgdsButton, SgdsCard, SgdsCheckbox } from "@govtechsg/sgds-web-component/react";
-import { checkedOf } from "@/app/components/sgds-events";
+import { Button } from "@/app/ui/button";
+import { Checkbox } from "@/app/ui/field";
+import { Note } from "@/app/ui/note";
+import { Panel } from "@/app/ui/panel";
 import type { Section, Tool } from "@/lib/domain/types";
 import type { ToolHint } from "@/lib/plan/engine";
 import { HINT_TEXT } from "@/lib/plan/labels";
@@ -14,16 +16,21 @@ const SECTIONS: { id: Section; title: string }[] = [
   { id: "code", title: "Code components" },
 ];
 
-/** "appCentral expects DBaaS": shown once, above the picker, whichever way the picker is laid out. */
+/** "appCentral expects DBaaS": shown once, above the picker. */
 export function ToolHints({ tools, hints, onToggle }: { tools: Tool[]; hints: ToolHint[]; onToggle: (toolId: string) => void }) {
   const nameOf = (id: string) => tools.find(t => t._id === id)?.name ?? id;
   return hints.map(h => (
-    <SgdsAlert key={`${h.fromToolId}>${h.suggestToolId}`} show outlined variant="warning">
-      <p>{HINT_TEXT(nameOf(h.fromToolId), nameOf(h.suggestToolId), h.count)}</p>
-      <SgdsButton slot="action" size="sm" onClick={() => onToggle(h.suggestToolId)}>
-        Add {nameOf(h.suggestToolId)}
-      </SgdsButton>
-    </SgdsAlert>
+    <Note
+      key={`${h.fromToolId}>${h.suggestToolId}`}
+      tone="attention"
+      action={
+        <Button size="sm" onClick={() => onToggle(h.suggestToolId)}>
+          Add {nameOf(h.suggestToolId)}
+        </Button>
+      }
+    >
+      {HINT_TEXT(nameOf(h.fromToolId), nameOf(h.suggestToolId), h.count)}
+    </Note>
   ));
 }
 
@@ -32,72 +39,46 @@ export function ToolPicker({
   picked,
   verification,
   onToggle,
-  collapsed = false,
 }: {
   tools: Tool[];
   picked: string[];
   verification: Record<string, Verification | null>;
   onToggle: (toolId: string) => void;
-  /** On phones the list folds away so the plan isn't pushed off the screen. */
-  collapsed?: boolean;
 }) {
-  const groupsView = SECTIONS.map(section => {
-    const inSection = tools.filter(t => t.section === section.id);
-    if (inSection.length === 0) return null;
-    return (
-      <section key={section.id} className="sgds:flex sgds:flex-col sgds:gap-text-sm">
-        <h3 className="sgds:text-label-md sgds:font-semibold sgds:text-subtle">{section.title}</h3>
-        <ul className="sgds:flex sgds:flex-col sgds:gap-sm">
-          {inSection.map(tool => (
-            <li key={tool._id} className="sgds:flex sgds:flex-col sgds:gap-text-xs">
-              <SgdsCheckbox
-                name={tool._id}
-                value={tool._id}
-                checked={picked.includes(tool._id)}
-                onSgdsChange={e => checkedOf(e) !== picked.includes(tool._id) && onToggle(tool._id)}
-              >
-                {tool.name}
-              </SgdsCheckbox>
-              <div className="sgds:flex sgds:flex-col sgds:gap-text-xs sgds:pl-layout-md">
-                {tool.description && <p className="sgds:text-body-sm sgds:text-subtle">{tool.description}</p>}
-                <div className="sgds:flex sgds:flex-wrap sgds:gap-text-xs">
-                  {tool.isSample && <SampleTag />}
-                  {verification[tool._id] && <Badge verification={verification[tool._id]!} />}
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
-    );
-  });
-
-  if (collapsed) {
-    return (
-      <SgdsAccordion>
-        <SgdsAccordionItem>
-          <span slot="header" className="sgds:text-subtitle-md sgds:font-semibold">
-            Pick your tools
-          </span>
-          <SgdsBadge slot="badge" show variant="neutral">
-            {picked.length} picked
-          </SgdsBadge>
-          <div slot="content" className="sgds:flex sgds:flex-col sgds:gap-layout-sm">
-            <p className="sgds:text-body-sm sgds:text-subtle">Tick what your app will use. Your plan updates as you go.</p>
-            {groupsView}
-          </div>
-        </SgdsAccordionItem>
-      </SgdsAccordion>
-    );
-  }
-
   return (
-    <SgdsCard>
-      <div slot="title" className="sgds:flex sgds:flex-col sgds:gap-text-xs sgds:pb-sm">
-        <h2 className="sgds:text-subtitle-md sgds:font-semibold">Pick your tools</h2>
-        <p className="sgds:text-body-sm sgds:font-regular sgds:text-subtle">Tick what your app will use. Your plan updates as you go.</p>
+    <Panel scroll className="min-h-0" title="Pick your tools" description="Tick what your app will use. The floor plan updates as you go.">
+      <div className="flex flex-col gap-6">
+        {SECTIONS.map(section => {
+          const inSection = tools.filter(t => t.section === section.id);
+          if (inSection.length === 0) return null;
+          return (
+            <section key={section.id} className="flex flex-col gap-3">
+              <h3 className="text-body font-semibold text-ink-soft">{section.title}</h3>
+              <ul className="flex flex-col gap-3">
+                {inSection.map(tool => (
+                  <li key={tool._id}>
+                    <Checkbox
+                      name={tool._id}
+                      label={<span className="font-semibold">{tool.name}</span>}
+                      checked={picked.includes(tool._id)}
+                      onChange={() => onToggle(tool._id)}
+                      hint={
+                        <div className="flex flex-col gap-1.5">
+                          {tool.description && <span>{tool.description}</span>}
+                          <span className="flex flex-wrap gap-2">
+                            {tool.isSample && <SampleTag />}
+                            {verification[tool._id] && <Badge verification={verification[tool._id]!} />}
+                          </span>
+                        </div>
+                      }
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })}
       </div>
-      <div className="sgds:flex sgds:flex-col sgds:gap-layout-sm">{groupsView}</div>
-    </SgdsCard>
+    </Panel>
   );
 }

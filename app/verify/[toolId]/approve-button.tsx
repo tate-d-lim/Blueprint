@@ -1,8 +1,9 @@
 "use client";
 
-import { SgdsAlert, SgdsButton } from "@govtechsg/sgds-web-component/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { Button } from "@/app/ui/button";
+import { Note } from "@/app/ui/note";
 import { approveAction } from "../actions";
 
 export function ApproveButton({ versionId }: { versionId: string }) {
@@ -10,14 +11,10 @@ export function ApproveButton({ versionId }: { versionId: string }) {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string>();
   return (
-    <div className="sgds:flex sgds:flex-col sgds:gap-sm">
-      {error && (
-        <SgdsAlert show outlined variant="danger">
-          {error}
-        </SgdsAlert>
-      )}
+    <div className="flex flex-col gap-3">
+      {error && <Note tone="error">{error}</Note>}
       <div>
-        <SgdsButton
+        <Button
           disabled={pending}
           onClick={() =>
             start(async () => {
@@ -28,7 +25,7 @@ export function ApproveButton({ versionId }: { versionId: string }) {
           }
         >
           {pending ? "Approving…" : "Approve this version"}
-        </SgdsButton>
+        </Button>
       </div>
     </div>
   );

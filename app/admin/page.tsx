@@ -1,8 +1,8 @@
-import { SgdsButton, SgdsTable, SgdsTableCell, SgdsTableHead, SgdsTableRow } from "@govtechsg/sgds-web-component/react";
-import { AppLink } from "@/app/components/app-link";
-import { PageHeader } from "@/app/components/page-header";
 import { RoleGate } from "@/app/components/role-gate";
 import { Badge, SampleTag } from "@/app/plan/badge";
+import { ButtonLink, TextLink } from "@/app/ui/button";
+import { PageHeader } from "@/app/ui/panel";
+import { Cell, Table } from "@/app/ui/table";
 import { withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
 import { versionVerification } from "@/lib/plan/verification";
@@ -21,62 +21,55 @@ export default function AdminPage() {
 async function AdminTools() {
   const data = await withDb(loadPlanData);
   return (
-    <div className="sgds:mx-auto sgds:flex sgds:max-w-container-xl sgds:flex-col sgds:gap-layout-md">
-      <PageHeader title="Tools and what they cover">
+    <div className="flex flex-col gap-10">
+      <PageHeader title="Tools and what they cover" actions={<ButtonLink href="/admin/import" variant="secondary">Import a Component Guide</ButtonLink>}>
         Edit what each tool covers. Every save creates a new version that a verifier has to approve.
       </PageHeader>
 
-      <SgdsTable>
-        <SgdsTableRow>
-          <SgdsTableHead>Tool</SgdsTableHead>
-          <SgdsTableHead>Kind</SgdsTableHead>
-          <SgdsTableHead>Coverage versions</SgdsTableHead>
-          <SgdsTableHead>
-            <span className="sgds:sr-only">Action</span>
-          </SgdsTableHead>
-        </SgdsTableRow>
+      <Table head={["Tool", "Kind", "Coverage versions", <span key="a" className="sr-only">Action</span>]}>
         {data.tools.map(tool => {
           const pairs = data.versions.filter(v => v.current.toolId === tool._id);
           return (
-            <SgdsTableRow key={tool._id}>
-              <SgdsTableCell>
-                <div className="sgds:flex sgds:flex-col sgds:gap-text-xs">
-                  <div className="sgds:flex sgds:flex-wrap sgds:items-center sgds:gap-text-sm">
-                    <strong>{tool.name}</strong> {tool.isSample && <SampleTag />}
-                  </div>
-                  <span className="sgds:text-body-sm sgds:text-subtle">{tool.description}</span>
+            <tr key={tool._id}>
+              <Cell>
+                <div className="flex flex-col gap-1">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="font-display text-lead font-semibold">{tool.name}</span>
+                    {tool.isSample && <SampleTag />}
+                  </span>
+                  <span className="text-small text-ink-soft">{tool.description}</span>
                 </div>
-              </SgdsTableCell>
-              <SgdsTableCell>{SECTION_TITLE[tool.section]}</SgdsTableCell>
-              <SgdsTableCell>
-                {pairs.length === 0 && <span className="sgds:text-subtle">None yet</span>}
-                <ul className="sgds:flex sgds:flex-col sgds:gap-text-sm">
+              </Cell>
+              <Cell nowrap>{SECTION_TITLE[tool.section]}</Cell>
+              <Cell>
+                {pairs.length === 0 && <span className="text-ink-soft">None yet</span>}
+                <ul className="flex flex-col gap-2">
                   {pairs.map(p => (
-                    <li key={p.current._id} className="sgds:flex sgds:flex-col sgds:gap-text-xs">
-                      <span className="sgds:whitespace-nowrap">
-                        {data.profiles.find(pr => pr._id === p.current.profileId)?.title} v{p.current.version}
+                    <li key={p.current._id} className="flex flex-col gap-1">
+                      <span className="whitespace-nowrap">
+                        {data.profiles.find(pr => pr._id === p.current.profileId)?.title}, version {p.current.version}
                       </span>
-                      <span className="sgds:flex sgds:items-center sgds:gap-text-sm sgds:whitespace-nowrap">
+                      <span className="flex items-center gap-2 whitespace-nowrap">
                         <Badge verification={versionVerification(p)} />
-                        <span className="sgds:text-body-sm sgds:text-subtle">{p.current.createdAt.slice(0, 10)}</span>
+                        <span className="tnum text-small text-ink-soft">{p.current.createdAt.slice(0, 10)}</span>
                       </span>
                     </li>
                   ))}
                 </ul>
-              </SgdsTableCell>
-              <SgdsTableCell>
-                <SgdsButton size="sm" variant="outline" href={`/admin/tools/${tool._id}`}>
+              </Cell>
+              <Cell nowrap className="text-right">
+                <ButtonLink href={`/admin/tools/${tool._id}`} variant="secondary" size="sm">
                   Edit coverage
-                </SgdsButton>
-              </SgdsTableCell>
-            </SgdsTableRow>
+                </ButtonLink>
+              </Cell>
+            </tr>
           );
         })}
-      </SgdsTable>
+      </Table>
 
-      <p>
-        <AppLink href="/admin/import">Import a Component Guide</AppLink>{" "}
-        <span className="sgds:text-subtle">to create a version from a product team&apos;s published spreadsheet.</span>
+      <p className="text-ink-soft">
+        A product team publishes its own coverage? <TextLink href="/admin/import">Import its Component Guide</TextLink> to create a version from
+        the spreadsheet.
       </p>
 
       <NewToolForm />

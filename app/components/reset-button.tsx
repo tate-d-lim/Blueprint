@@ -1,7 +1,5 @@
 "use client";
 
-import { SgdsButton } from "@govtechsg/sgds-web-component/react";
-
 export function ResetButton() {
   return (
     <form
@@ -11,9 +9,12 @@ export function ResetButton() {
         if (!confirm("Reset all demo data? Saved projects and coverage edits will be lost.")) e.preventDefault();
       }}
     >
-      <SgdsButton type="submit" size="sm" variant="ghost">
+      <button
+        type="submit"
+        className="h-9 rounded-xs border border-paper/60 px-3 font-display text-body font-semibold whitespace-nowrap text-paper hover:border-paper hover:bg-blueprint-deep"
+      >
         Reset demo data
-      </SgdsButton>
+      </button>
     </form>
   );
 }

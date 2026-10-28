@@ -4,102 +4,162 @@
   "title": "Design System: Build plan for CPFB app builders",
   "extensions": {
     "colorMeta": {
-      "primary": { "role": "primary", "displayName": "SGDS Violet", "canonical": "#523abc", "tonalRamp": ["#2b1d63", "#3b2a8c", "#523abc", "#6b4feb", "#9a86f2", "#c4b8f7", "#e1dbfb", "#f4f2fe"] },
-      "ground": { "role": "neutral", "displayName": "Gray Ground", "canonical": "#f7f7f7", "tonalRamp": ["#1a1a1a", "#525252", "#6b6b6b", "#868686", "#b5b5b5", "#dfdfdf", "#f3f3f3", "#f7f7f7"] },
-      "success": { "role": "semantic", "displayName": "Verified Green", "canonical": "#0e7c3d", "tonalRamp": ["#0b5e2f", "#0e7c3d", "#e3f9ed"] },
-      "warning-text": { "role": "semantic", "displayName": "Unverified Amber", "canonical": "#7e6917", "tonalRamp": ["#7e6917", "#fcde63", "#fef4cb"] },
-      "info": { "role": "semantic", "displayName": "Published Blue", "canonical": "#0269d0", "tonalRamp": ["#0151a0", "#0269d0", "#ecf5fe"] }
+      "blueprint": { "role": "primary", "displayName": "Blueprint Blue", "canonical": "#1d4e89", "tonalRamp": ["#0b1f38", "#123158", "#163c6b", "#1d4e89", "#4a74a8", "#8eaacb", "#c7d6e8", "#e7eef8"] },
+      "blueprint-deep": { "role": "primary", "displayName": "Deep Blueprint", "canonical": "#163c6b" },
+      "blueprint-wash": { "role": "primary", "displayName": "Blueprint Wash", "canonical": "#e7eef8" },
+      "redline": { "role": "secondary", "displayName": "Redline", "canonical": "#b8322a", "tonalRamp": ["#4a1411", "#74201b", "#962922", "#b8322a", "#cf6a63", "#e3a39e", "#f2d0cd", "#fbedeb"] },
+      "redline-wash": { "role": "secondary", "displayName": "Redline Wash", "canonical": "#fbedeb" },
+      "ink": { "role": "neutral", "displayName": "Drafting Ink", "canonical": "#0f2a4a", "tonalRamp": ["#0f2a4a", "#2c4566", "#4a6280", "#6f89ad", "#9fb3cc", "#c3d1e2", "#dce6f2", "#edf2f8"] },
+      "ink-soft": { "role": "neutral", "displayName": "Soft Ink", "canonical": "#4a6280" },
+      "rule": { "role": "neutral", "displayName": "Rule", "canonical": "#c3d1e2" },
+      "rule-strong": { "role": "neutral", "displayName": "Strong Rule", "canonical": "#6f89ad" },
+      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "#ffffff" },
+      "grid": { "role": "neutral", "displayName": "Grid", "canonical": "#edf2f8" },
+      "grid-major": { "role": "neutral", "displayName": "Major Grid", "canonical": "#dce6f2" },
+      "table": { "role": "neutral", "displayName": "Drafting Table", "canonical": "#e8eef5" }
     },
     "typographyMeta": {
-      "heading-lg": { "displayName": "Page title", "purpose": "One per screen in PageHeader (sgds:text-heading-lg, 600)." },
-      "subtitle-md": { "displayName": "Section title", "purpose": "Panel and group headings." },
-      "body-md": { "displayName": "Body", "purpose": "Paragraphs, rows, cells." },
-      "code": { "displayName": "Code", "purpose": "Ids and the agent snippet (sgds:font-code, Roboto Mono)." }
+      "display": { "displayName": "Display", "purpose": "Page title in PageHeader. One per page." },
+      "heading": { "displayName": "Heading", "purpose": "Page sections in SectionHeading, the floor plan heading, the title-block lettering." },
+      "title": { "displayName": "Title", "purpose": "Panel and Dialog titles, drawn by the component from a plain string." },
+      "lead": { "displayName": "Lead", "purpose": "Sub-sections inside panels and dialogs, note titles, room names, sheet tabs, page description." },
+      "body": { "displayName": "Body", "purpose": "Running text, rows, fields, md buttons. Stops at 72ch." },
+      "small": { "displayName": "Small", "purpose": "Hints, stamps, tags, table headers, segmented choices, sm buttons, code." },
+      "label": { "displayName": "Label", "purpose": "Title-block cell labels only. Uppercase, 0.12em tracking." },
+      "code": { "displayName": "Code", "purpose": "Commands and the agent snippet, at the small step." }
     },
     "shadows": [
-      { "name": "edge-top", "value": "0 -2px 4px 0 rgba(14, 14, 14, 0.08)", "purpose": "Sticky save bar over scrolling coverage rows only (sgds:shadow-edge-top)." }
+      { "name": "dialog", "value": "0 12px 40px rgb(15 42 74 / 0.25)", "purpose": "Modal and side dialogs only." },
+      { "name": "dock", "value": "0 -6px 16px rgb(15 42 74 / 0.08)", "purpose": "The editor's sticky save dock over scrolling rows only." }
     ],
-    "motion": [],
-    "breakpoints": []
+    "motion": [
+      { "name": "room-area", "value": "flex-grow 700ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Floor plan areas grow and shrink in place when counts change. Off under reduced motion." }
+    ],
+    "breakpoints": [],
+    "widths": [
+      { "name": "message", "value": "640px", "purpose": "Short messages." },
+      { "name": "form", "value": "880px", "purpose": "A form inside an editor." },
+      { "name": "page", "value": "1040px", "purpose": "A page that is one form." },
+      { "name": "measure", "value": "72ch", "purpose": "The longest line of running text." }
+    ]
   },
   "components": [
     {
-      "name": "Flat Panel",
-      "kind": "card",
-      "refersTo": "surface-panel",
-      "description": "White bordered panel on the gray ground; the hand-built container pattern.",
-      "html": "<div class=\"ds-panel\"><strong>Add a tool</strong><p>Panels carry no shadow.</p></div>",
-      "css": ".ds-panel { display: flex; flex-direction: column; gap: 12px; background: #fff; color: #1a1a1a; border: 1px solid #dfdfdf; border-radius: 12px; padding: 24px; font-family: Inter, system-ui, sans-serif; } .ds-panel p { margin: 0; color: #525252; font-size: 14px; }"
-    },
-    {
-      "name": "Verified Badge",
-      "kind": "chip",
-      "refersTo": "badge-verified",
-      "description": "Success badge for a platform claim a verifier approved.",
-      "html": "<span class=\"ds-badge ds-badge-ok\">Verified</span>",
-      "css": ".ds-badge { display: inline-block; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; } .ds-badge-ok { background: #e3f9ed; color: #0b5e2f; }"
-    },
-    {
-      "name": "Not Yet Verified Badge",
-      "kind": "chip",
-      "refersTo": "badge-not-yet-verified",
-      "description": "Warning badge for an unapproved claim.",
-      "html": "<span class=\"ds-badge ds-badge-warn\">Not yet verified</span>",
-      "css": ".ds-badge { display: inline-block; font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; } .ds-badge-warn { background: #fef4cb; color: #7e6917; }"
-    },
-    {
       "name": "Primary Button",
       "kind": "button",
-      "refersTo": "primary",
-      "description": "SGDS primary button, small size; the one main action.",
-      "html": "<button class=\"ds-btn-primary\">Save this plan</button>",
-      "css": ".ds-btn-primary { background: #523abc; color: #fff; border: 1px solid #523abc; border-radius: 8px; padding: 8px 16px; font: 600 14px Inter, system-ui, sans-serif; cursor: pointer; } .ds-btn-primary:hover { background: #3b2a8c; } .ds-btn-primary:focus-visible { outline: 2px solid #6b4feb; outline-offset: 2px; }"
+      "refersTo": "button-primary",
+      "description": "Solid blueprint. The one main action on a screen.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Build plan for your agent</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 2px; font: 600 16px/1.5 'Barlow Semi Condensed', Barlow, system-ui, sans-serif; letter-spacing: 0.01em; white-space: nowrap; cursor: pointer; transition: background-color 0.15s, border-color 0.15s; } .ds-btn-primary { background: var(--color-blueprint, #1d4e89); color: var(--color-paper, #fff); border: 0; } .ds-btn-primary:hover { background: var(--color-blueprint-deep, #163c6b); } .ds-btn:focus-visible { outline: 2px solid var(--color-blueprint, #1d4e89); outline-offset: 2px; }"
     },
     {
-      "name": "Main Nav",
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ruled paper button for every other action.",
+      "html": "<button class=\"ds-btn ds-btn-secondary\">Save this plan</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 16px; border-radius: 2px; font: 600 16px/1.5 'Barlow Semi Condensed', Barlow, system-ui, sans-serif; letter-spacing: 0.01em; white-space: nowrap; cursor: pointer; transition: background-color 0.15s, border-color 0.15s; } .ds-btn-secondary { background: var(--color-paper, #fff); color: var(--color-ink, #0f2a4a); border: 1px solid var(--color-rule-strong, #6f89ad); } .ds-btn-secondary:hover { border-color: var(--color-blueprint, #1d4e89); background: var(--color-blueprint-wash, #e7eef8); } .ds-btn:focus-visible { outline: 2px solid var(--color-blueprint, #1d4e89); outline-offset: 2px; }"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Text button in blueprint for minor actions.",
+      "html": "<button class=\"ds-btn-quiet\">Show all rooms</button>",
+      "css": ".ds-btn-quiet { height: 32px; background: none; border: 0; padding: 0; color: var(--color-blueprint, #1d4e89); font: 600 14px/1.45 'Barlow Semi Condensed', Barlow, system-ui, sans-serif; text-underline-offset: 4px; cursor: pointer; } .ds-btn-quiet:hover { text-decoration: underline; } .ds-btn-quiet:focus-visible { outline: 2px solid var(--color-blueprint, #1d4e89); outline-offset: 2px; }"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Labelled control with hint; every form field goes through it.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-f\">Project name</label><p class=\"ds-field-hint\">Shown in the title block.</p><input id=\"ds-f\" class=\"ds-input\" placeholder=\"Claims portal\"></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; } .ds-field-label { font: 600 16px/1.5 'Barlow Semi Condensed', Barlow, system-ui, sans-serif; color: var(--color-ink, #0f2a4a); } .ds-field-hint { margin: 0; font: 400 14px/1.45 Barlow, system-ui, sans-serif; color: var(--color-ink-soft, #4a6280); } .ds-input { height: 40px; padding: 0 12px; border: 1px solid var(--color-rule-strong, #6f89ad); border-radius: 2px; background: var(--color-paper, #fff); color: var(--color-ink, #0f2a4a); font: 400 16px Barlow, system-ui, sans-serif; } .ds-input:hover, .ds-input:focus-visible { border-color: var(--color-blueprint, #1d4e89); } .ds-input:focus-visible { outline: 2px solid var(--color-blueprint, #1d4e89); outline-offset: 2px; }"
+    },
+    {
+      "name": "Title Block",
       "kind": "nav",
-      "refersTo": "surface-panel",
-      "description": "White SGDS main nav with a purple underline on the active item.",
-      "html": "<nav class=\"ds-nav\"><span class=\"ds-nav-brand\">Build plan</span><a class=\"ds-nav-item ds-nav-active\" href=\"#\">New plan</a><a class=\"ds-nav-item\" href=\"#\">Saved projects</a></nav>",
-      "css": ".ds-nav { display: flex; align-items: center; gap: 24px; background: #fff; border-bottom: 1px solid #dfdfdf; padding: 0 24px; font-family: Inter, system-ui, sans-serif; } .ds-nav-brand { font-weight: 600; font-size: 16px; } .ds-nav-item { padding: 16px 0; color: #1a1a1a; text-decoration: none; font-size: 16px; border-bottom: 3px solid transparent; } .ds-nav-item:hover { color: #523abc; } .ds-nav-active { border-bottom-color: #523abc; }"
+      "refersTo": "title-block",
+      "description": "The page header: blueprint band of ruled cells with lettered labels and the sheet tabs.",
+      "html": "<header class=\"ds-tb\"><div class=\"ds-tb-cell\"><span class=\"ds-tb-label\">Drawing</span><span class=\"ds-tb-name\">Build plan</span></div><div class=\"ds-tb-cell ds-tb-grow\"><span class=\"ds-tb-label\">Sheets</span><nav class=\"ds-tb-tabs\"><a href=\"#\" aria-current=\"page\">New plan</a><a href=\"#\">Saved projects</a></nav></div><div class=\"ds-tb-cell\"><span class=\"ds-tb-label\">Viewing as</span><span>Builder</span></div></header>",
+      "css": ".ds-tb { display: flex; background: var(--color-blueprint, #1d4e89); color: var(--color-paper, #fff); border-bottom: 1px solid var(--color-ink, #0f2a4a); font-family: Barlow, system-ui, sans-serif; } .ds-tb-cell { display: flex; flex-direction: column; justify-content: space-between; gap: 6px; padding: 12px 20px; } .ds-tb-cell + .ds-tb-cell { border-left: 1px solid rgb(255 255 255 / 0.25); } .ds-tb-grow { flex: 1; } .ds-tb-label { font: 600 11px/1.3 'Barlow Semi Condensed', Barlow, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(255 255 255 / 0.7); } .ds-tb-name { font: 700 26px/1 'Barlow Semi Condensed', Barlow, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; } .ds-tb-tabs { display: flex; gap: 24px; } .ds-tb-tabs a { font: 600 18px/1.35 'Barlow Semi Condensed', Barlow, sans-serif; color: rgb(255 255 255 / 0.8); text-decoration: none; text-underline-offset: 6px; } .ds-tb-tabs a:hover { color: #fff; text-decoration: underline; } .ds-tb-tabs a[aria-current=page] { color: #fff; text-decoration: underline 2px; } .ds-tb-tabs a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }"
     },
     {
-      "name": "Code Block",
+      "name": "Ruled Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "White paper, one 1px rule, 2px corners, ruled title strip. No shadow.",
+      "html": "<section class=\"ds-panel\"><div class=\"ds-panel-head\"><h2>Pick your tools</h2><p>Tick what your app will use.</p></div><div class=\"ds-panel-body\">Panel body.</div></section>",
+      "css": ".ds-panel { background: var(--color-paper, #fff); border: 1px solid var(--color-rule, #c3d1e2); border-radius: 2px; color: var(--color-ink, #0f2a4a); font: 400 16px/1.5 Barlow, system-ui, sans-serif; } .ds-panel-head { padding: 12px 20px; border-bottom: 1px solid var(--color-rule, #c3d1e2); } .ds-panel-head h2 { margin: 0; font: 600 22px/1.25 'Barlow Semi Condensed', Barlow, sans-serif; } .ds-panel-head p { margin: 2px 0 0; font-size: 14px; color: var(--color-ink-soft, #4a6280); } .ds-panel-body { padding: 16px 20px; }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "chip",
+      "refersTo": "segmented-chosen",
+      "description": "Ruled strip of choices; the chosen cell is washed and underlined in blueprint.",
+      "html": "<div class=\"ds-seg\" role=\"group\" aria-label=\"Show\"><button aria-pressed=\"true\">All (5)</button><button aria-pressed=\"false\">To do (0)</button><button aria-pressed=\"false\">Done (4)</button></div>",
+      "css": ".ds-seg { display: inline-flex; border: 1px solid var(--color-rule-strong, #6f89ad); border-radius: 2px; background: var(--color-paper, #fff); } .ds-seg button { height: 36px; padding: 0 16px; border: 0; border-bottom: 2px solid transparent; background: none; font: 600 14px 'Barlow Semi Condensed', Barlow, sans-serif; color: var(--color-ink-soft, #4a6280); cursor: pointer; transition: background-color 0.15s; } .ds-seg button + button { border-left: 1px solid var(--color-rule-strong, #6f89ad); } .ds-seg button:hover { background: rgb(231 238 248 / 0.5); color: var(--color-ink, #0f2a4a); } .ds-seg button[aria-pressed=true] { background: var(--color-blueprint-wash, #e7eef8); color: var(--color-ink, #0f2a4a); border-bottom-color: var(--color-blueprint, #1d4e89); } .ds-seg button:focus-visible { outline: 2px solid var(--color-blueprint, #1d4e89); outline-offset: 2px; }"
+    },
+    {
+      "name": "Stamps",
+      "kind": "chip",
+      "refersTo": "stamp-pending",
+      "description": "Double-ruled drawing stamps for exceptions: pending (redline), published (ink), sample (dotted).",
+      "html": "<span class=\"ds-stamp ds-stamp-pending\">Not yet verified</span> <span class=\"ds-stamp ds-stamp-published\">Published by GovTech</span> <span class=\"ds-stamp ds-stamp-sample\">Sample</span>",
+      "css": ".ds-stamp { display: inline-flex; align-items: center; padding: 1px 6px; border: 1px solid; border-radius: 2px; outline: 1px solid; outline-offset: 1px; background: var(--color-paper, #fff); font: 600 14px/20px 'Barlow Semi Condensed', Barlow, sans-serif; white-space: nowrap; margin-right: 8px; } .ds-stamp-pending { color: var(--color-redline, #b8322a); border-color: var(--color-redline, #b8322a); outline-color: var(--color-redline, #b8322a); } .ds-stamp-published { color: var(--color-ink, #0f2a4a); border-color: var(--color-ink, #0f2a4a); outline-color: var(--color-ink, #0f2a4a); } .ds-stamp-sample { color: var(--color-ink-soft, #4a6280); border-color: var(--color-ink-soft, #4a6280); border-style: dotted; outline-color: transparent; }"
+    },
+    {
+      "name": "Floor Plan Room",
       "kind": "custom",
-      "refersTo": "code-block",
-      "description": "Agent snippet: mono on the raised gray surface.",
-      "html": "<pre class=\"ds-code\">Read BUILD-PLAN.md first.</pre>",
-      "css": ".ds-code { margin: 0; white-space: pre-wrap; background: #f7f7f7; color: #1a1a1a; border-radius: 12px; padding: 12px; font: 400 14px 'Roboto Mono', ui-monospace, monospace; }"
+      "refersTo": "panel",
+      "description": "One requirement family as a room: floor areas by count (hatch built, dashed yours, cloud question) with a ruled name plate.",
+      "html": "<div class=\"ds-plan\"><button class=\"ds-room\" style=\"flex-grow:3\"><span class=\"ds-floor\"><span class=\"ds-built\" style=\"flex-grow:2\"></span><span class=\"ds-todo\" style=\"flex-grow:1\"></span></span><span class=\"ds-plate\"><b>App security</b><small>5 yours</small></span></button><button class=\"ds-room\" style=\"flex-grow:2\" aria-pressed=\"true\"><span class=\"ds-floor\"><span class=\"ds-built\" style=\"flex-grow:1\"></span></span><span class=\"ds-plate\"><b>Logging</b><small>Built</small></span></button></div>",
+      "css": ".ds-plan { display: flex; border: 2px solid var(--color-ink, #0f2a4a); background: var(--color-paper, #fff); } .ds-room { position: relative; flex-basis: 0; min-height: 132px; min-width: 112px; padding: 12px; border: 0; background: none; text-align: left; display: flex; align-items: flex-start; cursor: pointer; } .ds-room + .ds-room { border-left: 1px solid var(--color-ink, #0f2a4a); } .ds-room[aria-pressed=true] { background: var(--color-blueprint-wash, #e7eef8); } .ds-room:focus-visible { outline: 2px solid var(--color-blueprint, #1d4e89); outline-offset: -4px; } .ds-floor { position: absolute; inset: 8px 5px 8px 8px; display: flex; gap: 3px; } .ds-floor > span { flex-basis: 0; } .ds-built { background: var(--color-blueprint-wash, #e7eef8) repeating-linear-gradient(45deg, rgb(29 78 137 / 0.45) 0 1px, transparent 1px 7px); } .ds-todo { border: 1px dashed var(--color-blueprint, #1d4e89); } .ds-plate { position: relative; display: flex; flex-direction: column; padding: 6px 10px; border: 1px solid var(--color-ink, #0f2a4a); background: var(--color-paper, #fff); color: var(--color-ink, #0f2a4a); transition: color 0.15s, border-color 0.15s; } .ds-plate b { font: 600 18px/1.25 'Barlow Semi Condensed', Barlow, sans-serif; } .ds-plate small { font: 400 14px Barlow, sans-serif; color: var(--color-ink-soft, #4a6280); } .ds-room:hover .ds-plate { border-color: var(--color-blueprint, #1d4e89); color: var(--color-blueprint, #1d4e89); } .ds-room[aria-pressed=true] .ds-plate { background: var(--color-blueprint, #1d4e89); border-color: var(--color-blueprint, #1d4e89); color: #fff; } .ds-room[aria-pressed=true] .ds-plate small { color: rgb(255 255 255 / 0.85); }"
     }
   ],
   "narrative": {
-    "northStar": "The Government Form Desk",
-    "overview": "The whole app is the Singapore Government Design System (SGDS v3), used as shipped. Nothing is restyled: colour, type, spacing and radius all arrive from SGDS theme tokens and its sgds: Tailwind v4 utilities. The app's own stylesheet adds only base resets and two font-family overrides, so the look of a new screen is decided by which SGDS component and which SGDS utility is chosen, not by new CSS.",
+    "northStar": "The Drawing Set",
+    "overview": "Every page is one sheet of an architect's drawing set. The sheet has a double ruled frame. A blueprint blue title block runs across the top. Below it is white paper with a faint blue grid. The sheet sits on a pale blue-grey drafting table.\n\nThe plan is drawn as a building. Each requirement family is a room. Drawing conventions carry the meaning: hatch is built by your tools, solid blue is done, cross-hatch is in progress, a dashed outline is to do, a dotted outline does not apply, and a red revision cloud is an open question. Lines are thin and ruled. Corners are square. Nothing floats except dialogs and the editor's save dock.\n\nThe system is small on purpose. There is one token set, one kit of shared components in `app/ui/`, and seven type steps. A new screen uses these and nothing else. The app is for desktop only.",
     "keyCharacteristics": [
-      "SGDS web components for every control, container and overlay; no hand-built look-alikes.",
-      "White surfaces on a gray alternate ground; borders and flatness do the layering.",
-      "Purple is for action and \"you are here\"; green, yellow, blue and gray badges carry verification state.",
-      "Type and spacing from sgds: utilities only; Inter for text, Roboto Mono for code and ids."
+      "White grid paper, navy ink, 1px ruled lines, 2px corners.",
+      "Blueprint blue is rare: the title block, built and done areas, approval stamps, the one primary action.",
+      "Redline appears only where something needs attention.",
+      "Seven type steps. Uppercase lettering only in the title block.",
+      "Lists are ruled schedules, not stacks of cards.",
+      "Panels are ruled, not shadowed."
     ],
     "rules": [
-      { "name": "The Token Only Rule", "body": "Colour is named by SGDS token or sgds: utility. A raw hex in a component is a defect.", "section": "colors" },
-      { "name": "The Verification Colour Rule", "body": "Green, yellow and blue mean verification state and nothing else; purple never marks state.", "section": "colors" },
-      { "name": "The Real Utility Rule", "body": "Only SGDS utilities that exist work (text-heading-lg/sm, text-subtitle-md, text-body-*, text-caption-md, font-regular, font-semibold, font-code, gap-2-xs, z-10). z-raised, text-heading-xs, font-mono and text-body-xs are not real.", "section": "typography" },
-      { "name": "The Flat Panel Rule", "body": "Panels are bg-surface-default, border-muted, rounded-surface, no shadow. Only a sticky bar over scrolling content may carry the edge shadow.", "section": "elevation" }
+      { "name": "The Blueprint Budget Rule", "body": "Blueprint blue fills only the title block, built and done areas, approval stamps and the one primary action. Everything else is ink on paper.", "section": "colors" },
+      { "name": "The Redline Rule", "body": "Redline means \"needs attention\". Never use it for decoration, emphasis or brand.", "section": "colors" },
+      { "name": "The Seven Steps Rule", "body": "Use only text-label, text-small, text-body, text-lead, text-title, text-heading and text-display. Never write a pixel font size.", "section": "typography" },
+      { "name": "The Title Block Lettering Rule", "body": "Uppercase lettering and the label step appear only in title-block cells. No uppercase labels, small caps or kickers anywhere else.", "section": "typography" },
+      { "name": "The Heading Ladder Rule", "body": "Page title is PageHeader (display). Page sections are SectionHeading (heading). Panel and Dialog titles are plain strings that the component draws at the title step. Sub-sections inside panels and dialogs use lead.", "section": "typography" },
+      { "name": "The One Schedule Rule", "body": "A list of items is one ruled box with 1px rules between rows. Never a stack of separate cards.", "section": "layout" },
+      { "name": "The Width By Role Rule", "body": "Choose the width by what the content is (work surface, single-form page, editor form, message, running text), never by eye.", "section": "layout" },
+      { "name": "The Ruled Not Shadowed Rule", "body": "A panel gets a 1px rule. A shadow means the layer floats: a dialog or the save dock, and nothing else.", "section": "elevation" }
     ],
     "dos": [
-      "Do reach for the SGDS component first and check node_modules/@govtechsg/sgds-web-component before building anything custom.",
-      "Do take type and spacing only from sgds: utilities; headings, paragraphs and lists have zero margin, so spacing comes from gap-* on the parent.",
-      "Do use sgds:font-code for code and ids and sgds:text-subtle for secondary copy.",
-      "Do pass select options as menuList data and keep control accessible names stable.",
-      "Do map verification state to badge variants exactly as in app/plan/badge.tsx."
+      "Do build every screen from the kit in app/ui/ and the tokens in app/globals.css.",
+      "Do use only the seven type steps.",
+      "Do use PageHeader for the page title, SectionHeading for page sections, and plain-string titles for Panel and Dialog. Use lead for sub-sections inside them.",
+      "Do keep one primary action visible at a time. Use secondary (ruled paper) and quiet (text) for the rest.",
+      "Do use the Segmented control for every choice strip.",
+      "Do put lists in one ruled box with 1px rules between rows.",
+      "Do pick widths by role: full sheet, max-w-page, max-w-form, max-w-message, max-w-measure.",
+      "Do use stamps for exceptions only: not yet verified, published by GovTech, sample. Show \"Verified\" in the tool picker and the detail dialog.",
+      "Do use one name per requirement family, from roomName, on every screen.",
+      "Do use tabular figures (tnum) for counts and dates."
     ],
     "donts": [
-      "Don't use z-raised, text-heading-xs, font-mono or text-body-xs; they do not exist (use z-10, text-subtitle-md, font-code, text-caption-md).",
-      "Don't add raw hex colours, pixel spacing, custom shadows or new fonts, or put component styling in globals.css.",
-      "Don't use purple for state, or green/yellow/blue for decoration.",
-      "Don't add a government masthead or GovTech/agency logos; this is a local prototype.",
-      "Don't restyle away SGDS focus rings or contrast."
+      "Don't write pixel font sizes, or use text-label or uppercase outside title-block cells.",
+      "Don't use blueprint blue for decoration, or redline for anything that does not need attention.",
+      "Don't add shadows to panels, tables or the floor plan.",
+      "Don't stack separate cards for a list.",
+      "Don't repeat a \"Verified\" stamp on every list item.",
+      "Don't show two solid primary buttons at the same time.",
+      "Don't write IM8, SSP, OSCAL, control(s) or agency in our own copy on builder screens. Quoted official wording in the detail dialog is allowed.",
+      "Don't round corners past 2px or use pill shapes.",
+      "Don't build mobile layouts."
     ]
   }
 }

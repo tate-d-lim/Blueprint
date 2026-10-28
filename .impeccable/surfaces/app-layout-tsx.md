@@ -5,38 +5,37 @@ primary_target: "app/layout.tsx"
 related_targets: ["app/start/page.tsx","app/plan/page.tsx","app/projects/page.tsx","app/admin/page.tsx","app/verify/page.tsx"]
 ---
 
-# Surface brief: whole-app redesign on SGDS
+# Surface brief: whole app as a blueprint drawing set
 
 ## Scope and visitor mode
 
-Every route: /start, /plan, /projects, /projects/[id], /admin (editor, import), /verify. Mode: Operate. Builders get the most traffic; admins and verifiers get equal design care (user, 2026-10-28).
+Every route: /start, /plan, /projects, /projects/[id], /admin (editor, import), /verify. Mode: Operate. Desktop only. Builders get the most traffic; admins and verifiers get equal design care.
 
 ## Audience, task, constraints
 
 - Builders answer four risk questions, pick tools, read a plan sorted into four headings, tick off tasks, and download two files.
 - Admins edit which requirements a tool covers; verifiers approve the newest version.
-- Pinned by the user: use the Singapore Government Design System (SGDS v3) and its components for the whole app. No masthead, no GovTech or agency logos. Day theme only. Inter is self-hosted so the demo works offline.
-- Presentation only: routes, data, behaviour, exports and the builder-language rule stay. Controls keep stable accessible names; e2e tests change deliberately where a native control becomes an SGDS one.
-- Build rules: components from `@govtechsg/sgds-web-component/react`, utilities only as `sgds:` classes, no unprefixed Tailwind, no custom control where an SGDS one exists.
+- Pinned by the user (2026-10-28): blueprint world; white paper, blue ink; every page a drawing sheet with a title block; own controls instead of SGDS; one consistent token set; floor plan of families as overview and filter on /plan and saved projects.
+- Presentation and the floor plan only: routes, data, exports and the builder-language rule stay.
 
 ## Chosen direction and memorable moment
 
-SGDS as shipped: the Application shell (operational) and Form page templates. The memorable moment is the plan itself: tick a tool and the four counts and every badge change at once.
+The floor plan. Tick appCentral on a new plan and its rooms turn from dashed outlines into built rooms; on a saved project, the builder's rooms fill as tasks are done; click a room and the plan below narrows to it.
 
 ## Unresolved
 
-- Full name of SII on /start (user has not confirmed). CII is Critical Information Infrastructure.
+- Full name of SII on /start (user has not confirmed).
 
 ## Direction contract
 
-THESIS: A working government-service app made only of SGDS parts, where the ownership split is the screen: what is yours is the loud primary action, what the platform already does is quiet, verified evidence. It refuses the generic indigo-chip dashboard it replaces.
+THESIS: An architect's drawing set for a security plan: before you build, see which rooms your platform has already built and which are yours. It refuses the generic dashboard of cards, chips and progress bars.
 
-OWN-WORLD: SGDS day theme as shipped. A white main navigation with a purple active underline, Inter, a gray alternate ground under white surfaces, SGDS primary purple for actions, semantic success, warning, info and neutral for verification states. Only SGDS spacing, radius and type tokens; nothing drawn by hand that a component already is.
+OWN-WORLD: White drafting paper with a faint blue grid on a pale blue-grey drafting table; dark navy ink for text and lines; deep blueprint blue (#1D4E89) only for the title block, built rooms, done work, approval stamps and the one primary action; redline red (#B8322A) only for what needs attention. Barlow for reading, Barlow Semi Condensed for headings and lettering. Drawing conventions carry meaning: hatch = built by your tools, solid = done, diagonal hatch = in progress, dashed = to do, red cloud = open question. Square 2px corners, ruled 1px lines, no shadows except dialogs. Uppercase lettering only inside the title block.
 
-STORY: A builder sees on day 0 what is theirs to build, trusts what the platform covers because each claim carries its source and verification, and leaves with a plan an agent can follow.
+STORY: A builder sees on day 0 that half the building already stands, finds their rooms, and two weeks later watches them fill in.
 
-FIRST VIEWPORT: White main nav across the top: brand left in semibold, New plan and Saved projects, then three quiet outline role buttons and Reset demo data right. On /plan below it: the h1 "Your build plan", the app type, a primary "Build plan for your agent" button and an outline "Security review spreadsheet" button, then one compact two-row accordion (the agent snippet to copy, the machine-readable files; the snippet is part of the demo), then "What you need to do" with its count. On wide screens the tool picker (an SGDS card with a checkbox, description and verification badge per tool) sits in a left column beside all of that; on phones it comes after the buttons and before the sections.
+FIRST VIEWPORT: The title block across the top of the sheet: Build plan lettering, the sheet tabs (New plan, Saved projects, and Admin or Verify), the project and owner cells on a saved project, and "Viewing as" with Reset demo data. Below it on /plan: the heading and the two downloads, then the floor plan full width with its legend and the room filter line, then the tool picker at left and the four sections at right.
 
-FORM: Application shell (operational) with the Form page template for /start and the admin editor; position 1 of 1, pinned by the user. seed: none (direction pinned by user).
+FORM: Drawing sheet with title block, floor plan as the signature; position 1 of 1, pinned by the user. seed: none (direction pinned by user).
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

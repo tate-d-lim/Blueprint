@@ -1,5 +1,5 @@
-import { SgdsAlert } from "@govtechsg/sgds-web-component/react";
 import { redirect } from "next/navigation";
+import { Note } from "@/app/ui/note";
 import { DatabaseUnavailableError, withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
 import type { PlanData } from "@/lib/plan/engine";
@@ -20,10 +20,10 @@ export default async function PlanPage({
   } catch (err) {
     if (err instanceof DatabaseUnavailableError) {
       return (
-        <div className="sgds:mx-auto sgds:max-w-container-md">
-          <SgdsAlert show outlined variant="warning" title={err.message}>
-            Then load the data with: <code>npm run seed</code>
-          </SgdsAlert>
+        <div className="max-w-message">
+          <Note tone="error" title={err.message}>
+            Then load the data with: <code className="font-code text-small">npm run seed</code>
+          </Note>
         </div>
       );
     }

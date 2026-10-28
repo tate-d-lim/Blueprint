@@ -1,8 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const asRole = async (page: Page, role: "Admin" | "Verifier") => {
-  await page.locator("sgds-mainnav").getByRole("button", { name: role }).click();
-  await expect(page.locator("sgds-mainnav").getByRole("button", { name: `${role} (current role)` })).toBeVisible();
+  await page.getByRole("combobox", { name: "Viewing as" }).selectOption({ label: role });
+  // Each role adds its own sheet to the title block once the switch has landed.
+  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: role === "Admin" ? "Admin" : "Verify" })).toBeVisible();
 };
 
 test("the platform cut-away: an admin edits one row, a verifier approves it, builders see it verified again", async ({ page, request }) => {
@@ -13,7 +14,7 @@ test("the platform cut-away: an admin edits one row, a verifier approves it, bui
   await page.goto("/start");
   await asRole(page, "Admin");
   await page.goto("/admin");
-  await page.getByRole("row", { name: /appCentral/ }).getByRole("button", { name: "Edit coverage" }).click();
+  await page.getByRole("row", { name: /appCentral/ }).getByRole("link", { name: "Edit coverage" }).click();
   await page.getByText("Authentication Mechanism Rate-Limiting").click();
   await page.getByRole("textbox", { name: "Explanation" }).first().fill("appCentral rate-limits sign-ins at the gateway.");
   await page.getByRole("button", { name: "Save new version" }).click();
@@ -29,7 +30,7 @@ test("the platform cut-away: an admin edits one row, a verifier approves it, bui
   // A verifier sees the one changed row and approves the version.
   await asRole(page, "Verifier");
   await page.goto("/verify");
-  await page.getByRole("row").filter({ has: page.getByText("appCentral", { exact: true }) }).getByRole("button", { name: "Review" }).click();
+  await page.getByRole("row").filter({ has: page.getByText("appCentral", { exact: true }) }).getByRole("link", { name: "Review" }).click();
   // Only the row that was edited shows up as changed.
   await expect(page.getByText(/Compared with approved version 1: 0 added, 1 changed, 0 removed/)).toBeVisible();
   await page.getByRole("button", { name: "Approve this version" }).click();

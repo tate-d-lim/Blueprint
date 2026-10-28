@@ -1,8 +1,9 @@
-import { SgdsAlert, SgdsBadge, SgdsBreadcrumb, SgdsBreadcrumbItem, SgdsTable, SgdsTableCell, SgdsTableHead, SgdsTableRow } from "@govtechsg/sgds-web-component/react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PageHeader } from "@/app/components/page-header";
 import { RoleGate } from "@/app/components/role-gate";
+import { Note } from "@/app/ui/note";
+import { PageHeader } from "@/app/ui/panel";
+import { Tag } from "@/app/ui/stamp";
+import { Breadcrumb, Cell, Table } from "@/app/ui/table";
 import { withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
 import type { CoverageEntry } from "@/lib/domain/types";
@@ -34,58 +35,40 @@ async function Review({ params, searchParams }: Props) {
   const idOf = (key: string) => key.split(":")[1];
   const describe = (e: CoverageEntry) => {
     const other = e.otherToolId ? data.tools.find(t => t._id === e.otherToolId)?.name : undefined;
-    return [VALUE_LABEL(e.value, tool.name, other), e.explanation, e.builderPart && `App Builder's part: ${e.builderPart}`].filter(Boolean).join(" — ");
+    return [VALUE_LABEL(e.value, tool.name, other), e.explanation, e.builderPart && `App Builder's part: ${e.builderPart}`].filter(Boolean).join(". ");
   };
   const diff = diffVersions(current, lastApproved);
 
   return (
-    <div className="sgds:mx-auto sgds:flex sgds:max-w-container-xl sgds:flex-col sgds:gap-layout-md">
-      <div className="sgds:flex sgds:flex-col sgds:gap-sm">
-        <SgdsBreadcrumb>
-          <SgdsBreadcrumbItem>
-            <Link href="/verify" suppressHydrationWarning>
-              Waiting for approval
-            </Link>
-          </SgdsBreadcrumbItem>
-          <SgdsBreadcrumbItem active>{tool.name}</SgdsBreadcrumbItem>
-        </SgdsBreadcrumb>
-        <PageHeader title={`${tool.name}, version ${current.version}`}>
-          {profile.title} · saved {current.createdAt.slice(0, 10)} · written against {current.writtenAgainst} · Source: {current.source}
-        </PageHeader>
-        {current.changeNote && (
-          <SgdsAlert show outlined variant="info">
-            What changed: {current.changeNote}
-          </SgdsAlert>
-        )}
-      </div>
+    <div className="flex flex-col gap-8">
+      <Breadcrumb items={[{ label: "Waiting for approval", href: "/verify" }, { label: tool.name }]} />
+      <PageHeader title={`${tool.name}, version ${current.version}`}>
+        {profile.title}, saved {current.createdAt.slice(0, 10)}, written against {current.writtenAgainst}. Source: {current.source}
+      </PageHeader>
+      {current.changeNote && <Note title="What changed">{current.changeNote}</Note>}
 
       {current.approval ? (
-        <SgdsAlert show outlined variant="success">
-          This version is already approved ({current.approval.by}, {current.approval.at.slice(0, 10)}).
-        </SgdsAlert>
+        <Note tone="success" title="This version is already approved.">
+          Approved by {current.approval.by} on {current.approval.at.slice(0, 10)}.
+        </Note>
       ) : (
         <>
-          <p className="sgds:text-subtle">
+          <p className="text-lead text-ink-soft">
             {lastApproved ? `Compared with approved version ${lastApproved.version}: ` : "Nothing has been approved before, so every row is new: "}
             {diff.added.length} added, {diff.changed.length} changed, {diff.removed.length} removed.
           </p>
 
-          <SgdsTable>
-            <SgdsTableRow>
-              <SgdsTableHead>Requirement</SgdsTableHead>
-              <SgdsTableHead>Before</SgdsTableHead>
-              <SgdsTableHead>Now</SgdsTableHead>
-            </SgdsTableRow>
+          <Table head={["Requirement", "Before", "Now"]}>
             {diff.added.map(e => (
-              <Row key={e.key} id={idOf(e.key)} title={titleOf(e.key)} kind="Added" before="—" after={describe(e)} />
+              <Row key={e.key} id={idOf(e.key)} title={titleOf(e.key)} kind="Added" before="Nothing" after={describe(e)} />
             ))}
             {diff.changed.map(c => (
               <Row key={c.after.key} id={idOf(c.after.key)} title={titleOf(c.after.key)} kind="Changed" before={describe(c.before)} after={describe(c.after)} />
             ))}
             {diff.removed.map(e => (
-              <Row key={e.key} id={idOf(e.key)} title={titleOf(e.key)} kind="Removed" before={describe(e)} after="—" />
+              <Row key={e.key} id={idOf(e.key)} title={titleOf(e.key)} kind="Removed" before={describe(e)} after="Nothing" />
             ))}
-          </SgdsTable>
+          </Table>
 
           <ApproveButton versionId={current._id} />
         </>
@@ -94,26 +77,22 @@ async function Review({ params, searchParams }: Props) {
   );
 }
 
-const KIND_VARIANT = { Added: "success", Changed: "warning", Removed: "danger" } as const;
-
-function Row({ id, title, kind, before, after }: { id: string; title: string; kind: keyof typeof KIND_VARIANT; before: string; after: string }) {
+function Row({ id, title, kind, before, after }: { id: string; title: string; kind: string; before: string; after: string }) {
   return (
-    <SgdsTableRow>
-      <SgdsTableCell>
-        <div className="sgds:flex sgds:flex-col sgds:gap-text-xs">
-          <strong>{title}</strong>
-          <span className="sgds:flex sgds:items-center sgds:gap-text-sm">
-            <span className="sgds:font-code sgds:text-caption-md sgds:text-subtle">{id}</span>
-            <SgdsBadge show variant={KIND_VARIANT[kind]}>
-              {kind}
-            </SgdsBadge>
+    <tr>
+      <Cell className="w-[30%]">
+        <div className="flex flex-col gap-1.5">
+          <span className="font-semibold">{title}</span>
+          <span className="flex items-center gap-2">
+            <span className="tnum text-small text-ink-soft">{id}</span>
+            <Tag>{kind}</Tag>
           </span>
         </div>
-      </SgdsTableCell>
-      <SgdsTableCell>
-        <span className="sgds:text-subtle">{before}</span>
-      </SgdsTableCell>
-      <SgdsTableCell>{after}</SgdsTableCell>
-    </SgdsTableRow>
+      </Cell>
+      <Cell>
+        <span className="text-ink-soft">{before}</span>
+      </Cell>
+      <Cell>{after}</Cell>
+    </tr>
   );
 }

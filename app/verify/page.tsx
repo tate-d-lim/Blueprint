@@ -1,6 +1,8 @@
-import { SgdsAlert, SgdsButton, SgdsTable, SgdsTableCell, SgdsTableHead, SgdsTableRow } from "@govtechsg/sgds-web-component/react";
-import { PageHeader } from "@/app/components/page-header";
 import { RoleGate } from "@/app/components/role-gate";
+import { ButtonLink } from "@/app/ui/button";
+import { Note } from "@/app/ui/note";
+import { PageHeader } from "@/app/ui/panel";
+import { Cell, Table } from "@/app/ui/table";
 import { withDb } from "@/lib/data/db";
 import { listAwaitingApproval } from "@/lib/data/repos/tool-versions";
 import type { Profile } from "@/lib/domain/types";
@@ -19,47 +21,33 @@ async function Awaiting() {
     profiles: (await db.collection("profiles").find().toArray()) as unknown as Profile[],
   }));
   return (
-    <div className="sgds:mx-auto sgds:flex sgds:max-w-container-xl sgds:flex-col sgds:gap-layout-md">
-      <PageHeader title="Waiting for approval">Check what changed, then approve. Builders see the badge flip straight away.</PageHeader>
+    <div className="flex flex-col gap-8">
+      <PageHeader title="Waiting for approval">Check what changed, then approve. Builders see the stamp change straight away.</PageHeader>
       {awaiting.length === 0 ? (
-        <SgdsAlert show outlined variant="info">
-          Nothing is waiting for approval.
-        </SgdsAlert>
+        <Note title="Nothing is waiting for approval.">New versions appear here when an admin saves or imports one.</Note>
       ) : (
-        <SgdsTable>
-          <SgdsTableRow>
-            <SgdsTableHead>Tool</SgdsTableHead>
-            <SgdsTableHead>Version</SgdsTableHead>
-            <SgdsTableHead>Saved</SgdsTableHead>
-            <SgdsTableHead>What changed</SgdsTableHead>
-            <SgdsTableHead>Source</SgdsTableHead>
-            <SgdsTableHead>
-              <span className="sgds:sr-only">Action</span>
-            </SgdsTableHead>
-          </SgdsTableRow>
+        <Table head={["Tool", "Version", "Saved", "What changed", "Source", <span key="a" className="sr-only">Action</span>]}>
           {awaiting.map(({ tool, current }) => (
-            <SgdsTableRow key={current._id}>
-              <SgdsTableCell>
-                <strong>{tool.name}</strong>
-              </SgdsTableCell>
-              <SgdsTableCell>
-                <span className="sgds:whitespace-nowrap">
-                  {profiles.find(p => p._id === current.profileId)?.title} · version {current.version}
-                </span>
-              </SgdsTableCell>
-              <SgdsTableCell>
-                <span className="sgds:whitespace-nowrap">{current.createdAt.slice(0, 10)}</span>
-              </SgdsTableCell>
-              <SgdsTableCell>{current.changeNote ? `“${current.changeNote}”` : "No note"}</SgdsTableCell>
-              <SgdsTableCell>{current.source}</SgdsTableCell>
-              <SgdsTableCell>
-                <SgdsButton size="sm" variant="outline" href={`/verify/${tool._id}?profile=${current.profileId}`}>
+            <tr key={current._id}>
+              <Cell>
+                <span className="font-display text-lead font-semibold">{tool.name}</span>
+              </Cell>
+              <Cell nowrap>
+                {profiles.find(p => p._id === current.profileId)?.title}, version {current.version}
+              </Cell>
+              <Cell nowrap className="tnum">
+                {current.createdAt.slice(0, 10)}
+              </Cell>
+              <Cell>{current.changeNote ? `“${current.changeNote}”` : <span className="text-ink-soft">No note</span>}</Cell>
+              <Cell>{current.source}</Cell>
+              <Cell nowrap className="text-right">
+                <ButtonLink href={`/verify/${tool._id}?profile=${current.profileId}`} variant="secondary" size="sm">
                   Review
-                </SgdsButton>
-              </SgdsTableCell>
-            </SgdsTableRow>
+                </ButtonLink>
+              </Cell>
+            </tr>
           ))}
-        </SgdsTable>
+        </Table>
       )}
     </div>
   );

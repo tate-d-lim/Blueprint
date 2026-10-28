@@ -1,12 +1,17 @@
 "use client";
 
-import { SgdsAccordion, SgdsAccordionItem, SgdsAlert, SgdsBadge, SgdsButton, SgdsLink } from "@govtechsg/sgds-web-component/react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import type { Project, TaskStatus } from "@/lib/domain/types";
 import { setProjectToolsAction, setQuestionAnswerAction, setTaskStatusAction } from "@/app/projects/actions";
+import { Button, DownloadButton, TextLink } from "@/app/ui/button";
+import { Disclosure } from "@/app/ui/disclosure";
+import { Note } from "@/app/ui/note";
+import { PageHeader, Panel, SectionHeading } from "@/app/ui/panel";
+import { Segmented } from "@/app/ui/segmented";
+import { Tag } from "@/app/ui/stamp";
+import type { Project, TaskStatus } from "@/lib/domain/types";
 import { buildPlan, type Heading, type PlanData, type PlanItem, type ProjectOverlay } from "@/lib/plan/engine";
+import { floorPlanRooms, roomName } from "@/lib/plan/floor-plan";
 import { HEADING_TITLES, STATUS_LABEL } from "@/lib/plan/labels";
 import { planProgress, taskStatusOf } from "@/lib/plan/progress";
 import { runSave, type SaveOutcome } from "@/lib/plan/save";
@@ -14,11 +19,11 @@ import { selectPlanInput } from "@/lib/plan/select";
 import { parsePlanQuery, planQuery } from "@/lib/plan/url-state";
 import { versionVerification, type Verification } from "@/lib/plan/verification";
 import { assessRisk, type RiskAnswers } from "@/lib/risk/assess";
-import { AgentSnippetItem } from "./agent-snippet";
+import { AgentSnippet } from "./agent-snippet";
+import { FloorPlan } from "./floor-plan";
 import type { ItemControls } from "./item-controls";
 import { ItemDetail } from "./item-detail";
 import { PlanItemView } from "./plan-item";
-import { ProgressSummary } from "./progress-summary";
 import { SaveDialog } from "./save-dialog";
 import { ToolHints, ToolPicker } from "./tool-picker";
 
@@ -48,6 +53,8 @@ export function PlanView({
   const [toolIds, setToolIds] = useState(() =>
     project ? initialToolIds : (parsePlanQuery(Object.fromEntries(params), data.tools.map(t => t._id))?.toolIds ?? initialToolIds),
   );
+  // The chosen room lives in the address bar, so Back returns to the previous room and the view can be shared.
+  const room = params.get("room");
   const [saveError, setSaveError] = useState<string | null>(null);
   const [detailKey, setDetailKey] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -84,12 +91,20 @@ export function PlanView({
     }
   };
 
+  const withRoom = (path: string, family: string | null) => {
+    const url = new URL(path, window.location.origin);
+    if (family) url.searchParams.set("room", family);
+    else url.searchParams.delete("room");
+    return `${url.pathname}${url.search}`;
+  };
+  const selectRoom = (family: string | null) => window.history.pushState(null, "", withRoom(window.location.href, family));
+
   const toggle = (id: string) => {
     const previous = toolIds;
     const next = toolIds.includes(id) ? toolIds.filter(t => t !== id) : [...toolIds, id];
     setToolIds(next);
     if (project) void save(() => setProjectToolsAction(project._id, next), () => setToolIds(previous));
-    else window.history.replaceState(null, "", `/plan?${planQuery(answers, next)}`);
+    else window.history.replaceState(null, "", withRoom(`/plan?${planQuery(answers, next)}`, room));
   };
 
   const controls: ItemControls | undefined = project && {
@@ -113,120 +128,135 @@ export function PlanView({
 
   const detailItem = detailKey ? plan.items.find(i => i.key === detailKey) : undefined;
   const query = project ? `project=${encodeURIComponent(project._id)}` : planQuery(answers, toolIds);
-  const byHeading = (h: Heading) => plan.items.filter(i => i.heading === h);
+  const inRoom = (i: PlanItem) => !room || i.family === room;
+  const byHeading = (h: Heading) => plan.items.filter(i => i.heading === h && inRoom(i));
   const progress = planProgress(plan.items);
-  const shownTasks = byHeading("you").filter(i => taskFilter === "all" || taskStatusOf(i) === taskFilter);
+  const rooms = floorPlanRooms(plan.items);
+  const tasks = byHeading("you");
+  const shownTasks = tasks.filter(i => taskFilter === "all" || taskStatusOf(i) === taskFilter);
   const platformGroups = groupPlatform(byHeading("platform"));
+  const questions = byHeading("questions");
+  const extras = byHeading("good-to-have");
+  const emptyInRoom = room ? `Nothing here for ${roomName(room)}.` : "Nothing here.";
   const view = (item: PlanItem, compact = false) => (
-    <PlanItemView key={`${item.profileId}:${item.key}`} item={item} entry={entries.get(item.key)} compact={compact} controls={controls} onOpen={() => {
+    <PlanItemView
+      key={`${item.profileId}:${item.key}`}
+      item={item}
+      entry={entries.get(item.key)}
+      compact={compact}
+      controls={controls}
+      onOpen={() => {
         setDetailKey(item.key);
         setDetailOpen(true);
-      }} />
+      }}
+    />
   );
 
   return (
-    <div className="sgds:grid sgds:gap-layout-md sgds:lg:grid-cols-[20rem_1fr] sgds:lg:grid-rows-[auto_1fr]">
-      {/* The page title and downloads come first on every screen size; on wide screens the picker sits beside them. */}
-      <div className="sgds:flex sgds:min-w-0 sgds:flex-col sgds:gap-sm sgds:lg:col-start-2 sgds:lg:row-start-1">
-        {saveError && (
-          <SgdsAlert show outlined dismissible variant="danger" onSgdsHide={() => setSaveError(null)}>
-            {saveError}
-          </SgdsAlert>
-        )}
-        <div className="sgds:flex sgds:flex-col sgds:gap-text-xs">
-          <h1 className="sgds:text-heading-lg sgds:font-semibold">Your build plan</h1>
-          <p className="sgds:text-body-lg sgds:text-subtle">
-            {assessRisk(answers).appType}.{" "}
-            <SgdsLink>
-              <Link href="/start" suppressHydrationWarning>
-                Change your answers
-              </Link>
-            </SgdsLink>
-          </p>
-        </div>
-        {project && <ProgressSummary progress={progress} />}
-        <div className="sgds:flex sgds:flex-wrap sgds:gap-sm">
-          <SgdsButton href={`/api/export/build-plan?${query}`}>Build plan for your agent</SgdsButton>
-          <SgdsButton variant="outline" href={`/api/export/ssp?${query}`}>
-            Security review spreadsheet
-          </SgdsButton>
-          {!project && <SaveDialog answers={answers} toolIds={toolIds} />}
-        </div>
-        <SgdsAccordion density="compact">
-          <AgentSnippetItem />
-          <SgdsAccordionItem>
-            <span slot="header" className="sgds:text-body-md sgds:font-regular">
-              For security reviewers: machine-readable files
-            </span>
-            <div slot="content" className="sgds:flex sgds:flex-wrap sgds:gap-sm">
-              <SgdsLink>
-                <a href={`/api/export/oscal?kind=ssp&${query}`} suppressHydrationWarning>
-                  Security plan (JSON)
-                </a>
-              </SgdsLink>
-              <SgdsLink>
-                <a href={`/api/export/oscal?kind=component-definition&${query}`} suppressHydrationWarning>
-                  Tool coverage (JSON)
-                </a>
-              </SgdsLink>
-            </div>
-          </SgdsAccordionItem>
-        </SgdsAccordion>
-      </div>
+    <div className="flex flex-col gap-8">
+      {saveError && (
+        <Note
+          tone="error"
+          action={
+            <Button size="sm" variant="secondary" onClick={() => setSaveError(null)}>
+              Dismiss
+            </Button>
+          }
+        >
+          {saveError}
+        </Note>
+      )}
 
-      <aside className="sgds:lg:col-start-1 sgds:lg:row-span-2 sgds:lg:row-start-1 sgds:lg:sticky sgds:lg:top-layout-sm sgds:lg:max-h-[calc(100vh-6rem)] sgds:lg:self-start sgds:lg:overflow-y-auto">
-        <div className="sgds:flex sgds:flex-col sgds:gap-sm">
+      <PageHeader
+        title="Your build plan"
+        actions={
+          <>
+            <DownloadButton href={`/api/export/build-plan?${query}`}>Build plan for your agent</DownloadButton>
+            <DownloadButton variant="secondary" href={`/api/export/ssp?${query}`}>
+              Security review spreadsheet
+            </DownloadButton>
+            {!project && <SaveDialog answers={answers} toolIds={toolIds} />}
+          </>
+        }
+      >
+        {assessRisk(answers).appType}. <TextLink href="/start">Change your answers</TextLink>
+      </PageHeader>
+
+      <FloorPlan rooms={rooms} selected={room} onSelect={selectRoom} progress={project ? progress : undefined} />
+
+      <div className="grid grid-cols-[320px_minmax(0,1fr)] items-start gap-8">
+        <aside className="sticky top-6 flex max-h-[calc(100vh-48px)] flex-col gap-4">
           <ToolHints tools={data.tools} hints={plan.hints} onToggle={toggle} />
-          <div className="sgds:hidden sgds:lg:block">
-            <ToolPicker tools={data.tools} picked={toolIds} verification={verification} onToggle={toggle} />
-          </div>
-          <div className="sgds:lg:hidden">
-            <ToolPicker collapsed tools={data.tools} picked={toolIds} verification={verification} onToggle={toggle} />
-          </div>
+          <ToolPicker tools={data.tools} picked={toolIds} verification={verification} onToggle={toggle} />
+        </aside>
+
+        <div className="flex min-w-0 flex-col gap-12">
+          <Panel>
+            <div className="-my-1 flex flex-col">
+              <AgentSnippet />
+              <Disclosure summary={<span className="font-display text-lead font-semibold">For security reviewers: machine-readable files</span>}>
+                <p className="flex flex-wrap gap-6">
+                  <a href={`/api/export/oscal?kind=ssp&${query}`} className="font-medium text-blueprint underline decoration-1 hover:decoration-2">
+                    Security plan (JSON)
+                  </a>
+                  <a
+                    href={`/api/export/oscal?kind=component-definition&${query}`}
+                    className="font-medium text-blueprint underline decoration-1 hover:decoration-2"
+                  >
+                    Tool coverage (JSON)
+                  </a>
+                </p>
+              </Disclosure>
+            </div>
+          </Panel>
+
+          <Section heading="you" count={tasks.length}>
+            {project && <TaskFilter tasks={tasks} value={taskFilter} onChange={setTaskFilter} />}
+            {shownTasks.length === 0 ? (
+              <p className="text-ink-soft">
+                {taskFilter === "all" ? emptyInRoom : `No tasks are ${STATUS_LABEL[taskFilter].toLowerCase()} here right now.`}
+              </p>
+            ) : (
+              <ul className={SCHEDULE}>{shownTasks.map(i => view(i))}</ul>
+            )}
+          </Section>
+
+          <Section heading="platform" count={platformGroups.reduce((n, g) => n + g.items.length, 0)}>
+            {platformGroups.length === 0 ? (
+              <p className="text-ink-soft">{emptyInRoom}</p>
+            ) : (
+              <div className="rounded-xs border border-rule bg-paper px-4">
+                {platformGroups.map(g => (
+                  <Disclosure
+                    key={g.title}
+                    summary={<span className="font-display text-lead font-semibold">{g.title}</span>}
+                    aside={<Tag>{g.items.length}</Tag>}
+                  >
+                    <ul className="flex flex-col">{g.items.map(i => view(i, true))}</ul>
+                  </Disclosure>
+                ))}
+              </div>
+            )}
+          </Section>
+
+          <Section heading="questions" count={questions.length}>
+            {questions.length === 0 ? <p className="text-ink-soft">{emptyInRoom}</p> : <ul className={SCHEDULE}>{questions.map(i => view(i))}</ul>}
+          </Section>
+
+          <Section heading="good-to-have" count={extras.length}>
+            {extras.length === 0 ? (
+              <p className="text-ink-soft">{emptyInRoom}</p>
+            ) : (
+              <div className="rounded-xs border border-rule bg-paper px-4">
+                <Disclosure summary={<span className="font-display text-lead font-semibold">Show all {extras.length}</span>}>
+                  <ul className="flex flex-col">{extras.map(i => view(i, true))}</ul>
+                </Disclosure>
+              </div>
+            )}
+          </Section>
         </div>
-      </aside>
-
-      <div className="sgds:flex sgds:min-w-0 sgds:flex-col sgds:gap-layout-lg sgds:lg:col-start-2 sgds:lg:row-start-2">
-        <Section heading="you" count={plan.counts.you}>
-          {project && <TaskFilter progress={progress} value={taskFilter} onChange={setTaskFilter} />}
-          {shownTasks.length === 0 ? (
-            <p className="sgds:text-body-md sgds:text-subtle">No tasks are {STATUS_LABEL[taskFilter as TaskStatus].toLowerCase()} right now.</p>
-          ) : (
-            <ul className="sgds:flex sgds:flex-col sgds:gap-sm">{shownTasks.map(i => view(i))}</ul>
-          )}
-        </Section>
-
-        <Section heading="platform" count={plan.counts.platform}>
-          <SgdsAccordion allowMultiple>
-            {platformGroups.map(g => (
-              <SgdsAccordionItem key={g.title}>
-                <span slot="header">{g.title}</span>
-                <SgdsBadge slot="badge" show variant="neutral">
-                  {g.items.length}
-                </SgdsBadge>
-                <ul slot="content" className="sgds:flex sgds:flex-col">
-                  {g.items.map(i => view(i, true))}
-                </ul>
-              </SgdsAccordionItem>
-            ))}
-          </SgdsAccordion>
-        </Section>
-
-        <Section heading="questions" count={plan.counts.questions}>
-          <ul className="sgds:flex sgds:flex-col sgds:gap-sm">{byHeading("questions").map(i => view(i))}</ul>
-        </Section>
-
-        <Section heading="good-to-have" count={plan.counts["good-to-have"]}>
-          <SgdsAccordion>
-            <SgdsAccordionItem>
-              <span slot="header">Show all {plan.counts["good-to-have"]}</span>
-              <ul slot="content" className="sgds:flex sgds:flex-col">
-                {byHeading("good-to-have").map(i => view(i, true))}
-              </ul>
-            </SgdsAccordionItem>
-          </SgdsAccordion>
-        </Section>
       </div>
+
       {detailItem && (
         <ItemDetail item={detailItem} entry={entries.get(detailItem.key)} open={detailOpen} onClose={() => setDetailOpen(false)} />
       )}
@@ -234,52 +264,30 @@ export function PlanView({
   );
 }
 
+/** Every section is one ruled list, with a 1px rule between its items. */
+const SCHEDULE = "flex flex-col divide-y divide-rule rounded-xs border border-rule bg-paper";
+
 const FILTERS: (TaskStatus | "all")[] = ["all", "todo", "in-progress", "done"];
 
 /** All / To do / In progress / Done, each with its count, for a saved project's task list. */
-function TaskFilter({
-  progress,
-  value,
-  onChange,
-}: {
-  progress: ReturnType<typeof planProgress>;
-  value: TaskStatus | "all";
-  onChange: (value: TaskStatus | "all") => void;
-}) {
-  const count = { all: progress.tasks.total, todo: progress.tasks.todo, "in-progress": progress.tasks.inProgress, done: progress.tasks.done };
+function TaskFilter({ tasks, value, onChange }: { tasks: PlanItem[]; value: TaskStatus | "all"; onChange: (value: TaskStatus | "all") => void }) {
+  const count = (f: TaskStatus | "all") => (f === "all" ? tasks.length : tasks.filter(t => taskStatusOf(t) === f).length);
   return (
-    <div role="group" aria-label="Show tasks" className="sgds:flex sgds:flex-wrap sgds:gap-2-xs">
-      {FILTERS.map(f => {
-        const label = `${f === "all" ? "All" : STATUS_LABEL[f]} (${count[f]})`;
-        return (
-          <SgdsButton
-            key={f}
-            size="sm"
-            variant="outline"
-            active={f === value}
-            ariaLabel={f === value ? `${label}, shown` : label}
-            onClick={() => onChange(f)}
-          >
-            {label}
-          </SgdsButton>
-        );
-      })}
-    </div>
+    <Segmented
+      label="Show tasks"
+      value={value}
+      options={FILTERS.map(f => ({ value: f, label: `${f === "all" ? "All" : STATUS_LABEL[f]} (${count(f)})` }))}
+      onChange={onChange}
+    />
   );
 }
 
 function Section({ heading, count, children }: { heading: Heading; count: number; children: React.ReactNode }) {
   return (
-    <section className="sgds:flex sgds:flex-col sgds:gap-sm">
-      <div className="sgds:flex sgds:flex-col sgds:gap-text-xs">
-        <div className="sgds:flex sgds:items-center sgds:gap-sm">
-          <h2 className="sgds:text-heading-sm sgds:font-semibold">{HEADING_TITLES[heading]}</h2>
-          <SgdsBadge show variant="primary">
-            <span>{count}</span>
-          </SgdsBadge>
-        </div>
-        <p className="sgds:text-body-md sgds:text-subtle">{BLURB[heading]}</p>
-      </div>
+    <section className="flex flex-col gap-4">
+      <SectionHeading title={HEADING_TITLES[heading]} count={count}>
+        {BLURB[heading]}
+      </SectionHeading>
       {children}
     </section>
   );

@@ -1,197 +1,311 @@
 ---
 name: Build plan for CPFB app builders
-description: A plain, government-grade tool surface built entirely on SGDS v3 components, purple for action, gray ground, white surfaces.
+description: A blueprint drawing set. White grid paper, navy ink, blueprint blue for what is built, redline for what needs attention.
 colors:
-  primary: "#523abc"
-  primary-bright: "#6b4feb"
-  primary-wash: "#f4f2fe"
-  primary-line: "#e1dbfb"
-  ground: "#f7f7f7"
-  surface: "#ffffff"
-  ink: "#1a1a1a"
-  ink-subtle: "#525252"
-  line-muted: "#dfdfdf"
-  line-default: "#868686"
-  success: "#0e7c3d"
-  success-wash: "#e3f9ed"
-  warning-text: "#7e6917"
-  warning-wash: "#fef4cb"
-  info: "#0269d0"
-  info-wash: "#ecf5fe"
-  danger: "#cf2323"
+  blueprint: "#1d4e89"
+  blueprint-deep: "#163c6b"
+  blueprint-wash: "#e7eef8"
+  redline: "#b8322a"
+  redline-wash: "#fbedeb"
+  ink: "#0f2a4a"
+  ink-soft: "#4a6280"
+  rule: "#c3d1e2"
+  rule-strong: "#6f89ad"
+  paper: "#ffffff"
+  grid: "#edf2f8"
+  grid-major: "#dce6f2"
+  table: "#e8eef5"
 typography:
-  heading-lg:
-    fontFamily: "Inter Variable, Inter, system-ui, sans-serif"
-    fontSize: "1.75rem to 2rem (responsive)"
+  display:
+    fontFamily: "Barlow Semi Condensed, Barlow, system-ui, sans-serif"
+    fontSize: "34px"
     fontWeight: 600
-  subtitle-md:
-    fontFamily: "Inter Variable, Inter, system-ui, sans-serif"
-    fontSize: "1.125rem to 1.25rem (responsive)"
+    lineHeight: 1.1
+    letterSpacing: "-0.01em"
+  heading:
+    fontFamily: "Barlow Semi Condensed, Barlow, system-ui, sans-serif"
+    fontSize: "26px"
     fontWeight: 600
-  body-md:
-    fontFamily: "Inter Variable, Inter, system-ui, sans-serif"
-    fontSize: "1rem"
+    lineHeight: 1.15
+  title:
+    fontFamily: "Barlow Semi Condensed, Barlow, system-ui, sans-serif"
+    fontSize: "22px"
+    fontWeight: 600
+    lineHeight: 1.25
+  lead:
+    fontFamily: "Barlow Semi Condensed, Barlow, system-ui, sans-serif"
+    fontSize: "18px"
+    fontWeight: 600
+    lineHeight: 1.35
+  body:
+    fontFamily: "Barlow, system-ui, sans-serif"
+    fontSize: "16px"
     fontWeight: 400
-  body-sm:
-    fontFamily: "Inter Variable, Inter, system-ui, sans-serif"
-    fontSize: "0.875rem"
+    lineHeight: 1.5
+  small:
+    fontFamily: "Barlow, system-ui, sans-serif"
+    fontSize: "14px"
     fontWeight: 400
-  caption-md:
-    fontFamily: "Inter Variable, Inter, system-ui, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 400
+    lineHeight: 1.45
+  label:
+    fontFamily: "Barlow Semi Condensed, Barlow, system-ui, sans-serif"
+    fontSize: "11px"
+    fontWeight: 600
+    lineHeight: 1.3
+    letterSpacing: "0.12em"
   code:
-    fontFamily: "Roboto Mono Variable, Roboto Mono, ui-monospace, monospace"
-    fontSize: "0.875rem"
+    fontFamily: "Roboto Mono Variable, ui-monospace, monospace"
+    fontSize: "14px"
     fontWeight: 400
 rounded:
-  sm: "4px"
-  md: "8px"
-  surface: "12px"
-  full: "999px"
+  xs: "2px"
 spacing:
-  2-xs: "4px"
-  xs: "8px"
-  sm: "12px"
-  md: "16px"
-  layout-md: "24px to 48px (responsive)"
+  grid-minor: "16px"
+  grid-major: "80px"
+  panel-x: "20px"
+  panel-y: "16px"
+  dialog-x: "24px"
+  sheet: "40px"
 components:
-  surface-panel:
-    backgroundColor: "{colors.surface}"
+  button-primary:
+    backgroundColor: "{colors.blueprint}"
+    textColor: "{colors.paper}"
+    typography: "{typography.body}"
+    rounded: "{rounded.xs}"
+    padding: "0 16px"
+    height: "40px"
+  button-primary-hover:
+    backgroundColor: "{colors.blueprint-deep}"
+  button-secondary:
+    backgroundColor: "{colors.paper}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.surface}"
-    padding: "{spacing.layout-md}"
-  page-ground:
-    backgroundColor: "{colors.ground}"
+    rounded: "{rounded.xs}"
+    padding: "0 16px"
+    height: "40px"
+  button-secondary-hover:
+    backgroundColor: "{colors.blueprint-wash}"
+  button-quiet:
+    textColor: "{colors.blueprint}"
+    height: "40px"
+  field:
+    backgroundColor: "{colors.paper}"
     textColor: "{colors.ink}"
-  badge-verified:
-    backgroundColor: "{colors.success-wash}"
-    textColor: "{colors.success}"
-  badge-not-yet-verified:
-    backgroundColor: "{colors.warning-wash}"
-    textColor: "{colors.warning-text}"
-  badge-published:
-    backgroundColor: "{colors.info-wash}"
-    textColor: "{colors.info}"
-  code-block:
-    backgroundColor: "{colors.ground}"
+    typography: "{typography.body}"
+    rounded: "{rounded.xs}"
+    padding: "0 12px"
+    height: "40px"
+  panel:
+    backgroundColor: "{colors.paper}"
+    rounded: "{rounded.xs}"
+    padding: "16px 20px"
+  title-block:
+    backgroundColor: "{colors.blueprint}"
+    textColor: "{colors.paper}"
+    padding: "12px 20px"
+  segmented-chosen:
+    backgroundColor: "{colors.blueprint-wash}"
     textColor: "{colors.ink}"
-    typography: "{typography.code}"
-    rounded: "{rounded.surface}"
-    padding: "{spacing.sm}"
+    typography: "{typography.small}"
+    height: "36px"
+  stamp-approved:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.blueprint}"
+    typography: "{typography.small}"
+    rounded: "{rounded.xs}"
+  stamp-pending:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.redline}"
+    typography: "{typography.small}"
+    rounded: "{rounded.xs}"
+  note-attention:
+    backgroundColor: "{colors.redline-wash}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.xs}"
+    padding: "12px 16px"
 ---
 
 # Design System: Build plan for CPFB app builders
 
 ## Overview
 
-**Creative North Star: "The Government Form Desk"**
+**Creative North Star: "The Drawing Set"**
 
-The whole app is the Singapore Government Design System (SGDS v3), used as shipped. Nothing is restyled: colour, type, spacing and radius all arrive from SGDS theme tokens and its `sgds:` Tailwind v4 utilities. The app's own stylesheet (`app/globals.css`) adds only base resets and two font-family overrides, so the look of a new screen is decided by which SGDS component and which SGDS utility is chosen, not by new CSS.
+Every page is one sheet of an architect's drawing set. The sheet has a double ruled frame. A blueprint blue title block runs across the top. Below it is white paper with a faint blue grid. The sheet sits on a pale blue-grey drafting table.
 
-Density is calm and document-like: white surfaces on a light gray ground, one purple for actions and the active nav item, and semantic colour reserved for verification state. The tone is plain and official without imitating a live .gov.sg service (no masthead, no agency logos).
+The plan is drawn as a building. Each requirement family is a room. Drawing conventions carry the meaning: hatch is built by your tools, solid blue is done, cross-hatch is in progress, a dashed outline is to do, a dotted outline does not apply, and a red revision cloud is an open question. Lines are thin and ruled. Corners are square. Nothing floats except dialogs and the editor's save dock.
+
+The system is small on purpose. There is one token set, one kit of shared components in `app/ui/`, and seven type steps. A new screen uses these and nothing else. The app is for desktop only.
 
 **Key Characteristics:**
-- SGDS web components for every control, container and overlay; no hand-built look-alikes.
-- White surfaces on a gray alternate ground; borders and flatness do the layering.
-- Purple is for action and "you are here"; green, yellow, blue and gray badges carry verification state.
-- Type and spacing from `sgds:` utilities only; Inter for text, Roboto Mono for code and ids.
+- White grid paper, navy ink, 1px ruled lines, 2px corners.
+- Blueprint blue is rare: the title block, built and done areas, approval stamps, the one primary action.
+- Redline appears only where something needs attention.
+- Seven type steps. Uppercase lettering only in the title block.
+- Lists are ruled schedules, not stacks of cards.
+- Panels are ruled, not shadowed.
 
 ## Colors
 
-A neutral gray-and-white field with a single violet accent and a small semantic set. All values are SGDS day-theme tokens (`themes/day.css`), referenced by token, not copied.
+Blue ink on white paper, with one red pen for corrections.
 
 ### Primary
-- **SGDS Violet** (`--sgds-primary-bg-default`, product-primary-700): primary buttons, active-nav underline, links' emphasis.
-- **Bright Violet** (`--sgds-primary-color-default`, product-primary-600): primary text and border on light grounds.
-- **Violet Wash** (primary-100/200): muted primary backgrounds and borders.
+- **Blueprint Blue** (blueprint): the title block, built rooms (as hatch), done areas (solid), approval stamps, the one primary button, links, focus rings and checkbox accents.
+- **Deep Blueprint** (blueprint-deep): hover state of the primary button only.
+- **Blueprint Wash** (blueprint-wash): the hatch ground, a chosen segment, a chosen room, hover on secondary buttons and rows, text selection, info and success notes.
+
+### Secondary
+- **Redline** (redline): attention only. Revision clouds, the "Not yet verified" stamp, field errors, attention and error notes.
+- **Redline Wash** (redline-wash): the fill inside a revision cloud and the ground of attention and error notes.
 
 ### Neutral
-- **Gray Ground** (`--sgds-bg-alternate`, gray-50): the `body` background.
-- **Paper White** (`--sgds-bg-default` / `surface-default`): panels, cards, nav, sticky bars.
-- **Ink** (`--sgds-body-color-default`) and **Subtle Ink** (`--sgds-body-color-subtle`, class `sgds:text-subtle`): body and secondary copy.
-- **Muted Line** (`--sgds-border-color-muted`, class `sgds:border-muted`): panel and sticky-bar borders.
-
-### Semantic
-- **Verified**: success badge (green). **Not yet verified**: warning badge (yellow). **Published by GovTech**: info badge (blue). Sample and chip labels: neutral badge. Errors: danger alerts and buttons. Alerts use the outlined variant.
+- **Drafting Ink** (ink): all text, the sheet frame, room walls, table header rules, dialog borders.
+- **Soft Ink** (ink-soft): descriptions, hints, counts, placeholders, the legend.
+- **Rule** (rule): 1px lines between rows, panel borders, divider strips.
+- **Strong Rule** (rule-strong): borders of controls (fields, secondary buttons, segmented strips).
+- **Paper** (paper): the sheet, panels, dialogs, fields.
+- **Grid** (grid) and **Major Grid** (grid-major): the drafting grid lines, every 16px and every 80px.
+- **Drafting Table** (table): the page ground around the sheet.
 
 ### Named Rules
-**The Token Only Rule.** Colour is named by SGDS token or `sgds:` utility. A raw hex in a component is a defect.
-**The Verification Colour Rule.** Green, yellow and blue mean verification state and nothing else; purple never marks state.
+**The Blueprint Budget Rule.** Blueprint blue fills only the title block, built and done areas, approval stamps and the one primary action. Everything else is ink on paper.
+
+**The Redline Rule.** Redline means "needs attention". Never use it for decoration, emphasis or brand.
 
 ## Typography
 
-**Display / Body Font:** Inter (self-hosted `@fontsource-variable/inter`, family "Inter Variable" listed first via `--sgds-font-family-sans`)
-**Label/Mono Font:** Roboto Mono (self-hosted, via `--sgds-font-family-code`) for code, ids and the agent snippet
+**Body Font:** Barlow (with system-ui)
+**Display Font:** Barlow Semi Condensed (with Barlow, system-ui), for headings, labels on controls, room names and lettering.
+**Code Font:** Roboto Mono Variable (with ui-monospace), for commands and the agent snippet, at the small step.
 
-**Character:** One sans family at modest sizes with weight (600) doing the hierarchy; mono appears only where text is literal.
+**Character:** A plain engineering sans for reading, with its condensed sibling as drafting lettering.
 
 ### Hierarchy
-- **Page title** (600, `sgds:text-heading-lg`, 28-32px responsive): one per screen, in `PageHeader`.
-- **Section / card title** (600, `sgds:text-heading-sm` or `sgds:text-subtitle-md`): headings inside panels and requirement groups.
-- **Lede** (400, `sgds:text-body-lg` + `sgds:text-subtle`): the single line under a page title.
-- **Body** (`sgds:text-body-md` / `sgds:text-body-sm`, 16px / 14px): paragraphs, table cells, list rows.
-- **Caption** (`sgds:text-caption-md`, 14px): metadata, source lines. **Label** (`sgds:text-label-md`) for form labels outside components.
-- **Code** (`sgds:font-code`, usually with caption size): ids, `BUILD-PLAN.md` snippet.
+- **Display** (600, 34px, 1.1): the page title in PageHeader. One per page.
+- **Heading** (600, 26px, 1.15): page sections in SectionHeading, the floor plan heading, the "Build plan" lettering in the title block.
+- **Title** (600, 22px, 1.25): Panel and Dialog titles, rendered by the component from a plain string. Also the count beside a SectionHeading.
+- **Lead** (18px, 1.35): sub-sections inside panels and dialogs, legends of radio groups, note titles, room names and sheet tabs (all in the display face, 600). Also the description under a page title (Barlow, ink-soft).
+- **Body** (400, 16px, 1.5): running text, rows, fields, field labels (display face, 600), md buttons.
+- **Small** (400, 14px, 1.45): hints, descriptions, stamps, tags, table headers, segmented choices, sm buttons, code.
+- **Label** (600, 11px, 0.12em, uppercase): title-block cell labels only.
 
 ### Named Rules
-**The Real Utility Rule.** Only these names exist and work: `text-heading-lg`, `text-heading-sm`, `text-subtitle-md`, `text-subtitle-sm`, `text-body-lg/md/sm`, `text-caption-md`, `text-label-md`, `font-regular`, `font-semibold`, `font-code`, `text-subtle`, `gap-2-xs`, `z-10`. These look real but are not: `z-raised`, `text-heading-xs`, `font-mono`, `text-body-xs`. Check `css/utility.css` before using any other name.
+**The Seven Steps Rule.** Use only text-label, text-small, text-body, text-lead, text-title, text-heading and text-display. Never write a pixel font size.
+
+**The Title Block Lettering Rule.** Uppercase lettering and the label step appear only in title-block cells. No uppercase labels, small caps or kickers anywhere else.
+
+**The Heading Ladder Rule.** Page title is PageHeader (display). Page sections are SectionHeading (heading). Panel and Dialog titles are plain strings that the component draws at the title step. Sub-sections inside panels and dialogs use lead.
 
 ## Layout
 
-A single centred column: `main` is `sgds:max-w-container-xl` (1312px token), full width below it, with `px-layout-md` and `py-layout-md`. Narrower reading and form screens use `max-w-container-md` or `-lg`. The page is a flex column so `main` fills the viewport height under the nav. Spacing is a token ladder, not pixels: `gap-2-xs` (4px), `gap-text-xs` / `gap-text-sm` for title-to-text, `gap-sm` (12px) for control and badge clusters, `gap-layout-sm/md/lg` between sections and cards, `p-layout-md` inside panels. Flex rows use `flex-wrap` so the 390px mobile view stacks without a separate layout. Layout tokens step up at SGDS's responsive breakpoints.
+The sheet is centred on the drafting table, up to 1400px wide with a 32px margin. It has a 1px ink border and a second, lighter outline 4px outside it. The title block runs the full width. The sheet body has 40px padding on the drafting grid.
+
+Content widths are fixed by role:
+- Tables, the floor plan and other work surfaces use the full sheet.
+- A page that is one form uses max-w-page (1040px), for example the start page and the import page.
+- A form inside an editor uses max-w-form (880px).
+- A short message (an error, a role gate, a missing database) uses max-w-message (640px).
+- Running text stops at max-w-measure (72ch).
+
+Lists of items are one ruled box with 1px rule lines between rows. The plan's four sections and the editor's rows follow this. Panels pad 20px by 16px. Dialogs pad 24px.
+
+The app is desktop only. There are no mobile layouts.
+
+### Named Rules
+**The One Schedule Rule.** A list of items is one ruled box with 1px rules between rows. Never a stack of separate cards.
+
+**The Width By Role Rule.** Choose the width by what the content is (work surface, single-form page, editor form, message, running text), never by eye.
 
 ## Elevation & Depth
 
-Flat and tonal. Depth is white panels on a gray ground plus a muted 1px border; there are no ambient shadows. One structural exception: the coverage editor's sticky save bar uses SGDS's edge shadow (`sgds:shadow-edge-top`, `0 -2px 4px rgba(14,14,14,0.08)`) with `z-10` to separate it from scrolling rows. Overlays (drawer, modal) use SGDS's own layering.
+The sheet is flat. Depth comes from ruled lines, the double frame and the grid, not from shadows. Panels, tables and the floor plan have a border and no shadow. Only layers that float above the sheet cast a shadow.
+
+### Shadow Vocabulary
+- **Dialog** (`box-shadow: 0 12px 40px rgb(15 42 74 / 0.25)`): modal and side dialogs, over a 35% ink backdrop.
+- **Dock** (`box-shadow: 0 -6px 16px rgb(15 42 74 / 0.08)`): the editor's sticky save dock over scrolling rows.
 
 ### Named Rules
-**The Flat Panel Rule.** Panels are `bg-surface-default`, `border-muted`, `rounded-surface`, no shadow. Only a sticky bar over scrolling content may carry the edge shadow.
+**The Ruled Not Shadowed Rule.** A panel gets a 1px rule. A shadow means the layer floats: a dialog or the save dock, and nothing else.
 
 ## Shapes
 
-SGDS rounding: panels use the surface radius (`sgds:rounded-surface`, 12px); controls and badges keep their component radius (4-8px, badges pill-shaped). Borders are 1px muted gray. No custom clipping or decorative geometry.
+Corners are square, at 2px. Lines are 1px. The floor plan draws its outer walls at 2px ink and inner walls at 1px ink, as on a real plan. Stamps are double ruled: a 1px border with a 1px outline 1px outside it. The revision cloud is a scalloped redline border that repeats along any box size.
 
 ## Components
 
-All are SGDS web components imported from `@govtechsg/sgds-web-component/react`; they are the design system's own component specs and keep their keyboard, focus and screen-reader behaviour.
-
 ### Buttons
-- `SgdsButton`, mostly `size="sm"`; default (primary violet) for the one main action, `outline` for secondary, `ghost` for tertiary, `danger` for destructive. Focus rings are SGDS's; never remove them.
+Lettered, square and plain.
+- **Shape:** 2px corners. md is 40px high with 16px side padding at body; sm is 32px high with 12px side padding at small. Display face, 600.
+- **Primary:** solid blueprint with paper text. Hover goes to deep blueprint.
+- **Secondary:** paper with a strong-rule border and ink text. Hover gives a blueprint border and wash.
+- **Quiet:** blueprint text with no box. Hover underlines.
+- **Focus:** 2px blueprint outline, 2px offset, everywhere.
+- **Disabled:** 45% opacity.
+- Links that move between pages and file downloads use the same classes, so they match buttons exactly.
 
-### Badges
-- `SgdsBadge show` with variants `success` (Verified), `warning` (Not yet verified), `info` (Published by GovTech), `neutral` (sample tag, chips), `primary` for emphasis. Wrapped in `app/plan/badge.tsx`.
+### Segmented control
+A ruled strip of choices, divided like title-block cells. 36px high, small step, display face. The chosen cell gets the blueprint wash and a 2px blueprint underline. Use it for every choice strip (status filters, yes or no answers).
 
-### Alerts
-- `SgdsAlert` in the outlined style, with danger/warning/info/success variants, for errors, unsaved and unverified states.
+### Stamps and tags
+- **Stamp:** a small double-ruled box at the small step. Approved is blueprint. Pending ("Not yet verified") is redline. Published (by GovTech) is ink. Sample is dotted soft ink.
+- **Tag:** a single 1px rule box in soft ink, for neutral facts such as "Optional" or "App Builder".
 
-### Cards / Containers
-- `SgdsCard` for the tool picker, the /start form and requirement cards. Hand-built form panels (admin) use the Flat Panel Rule: `rounded-surface`, `border-muted`, `bg-surface-default`, `p-layout-md`, `gap-sm`.
-
-### Accordions
-- `SgdsAccordion` holds the quiet "your platform already does" lists and the coverage editor rows, keeping evidence below the headline.
-
-### Overlays
-- `SgdsDrawer` for item detail; `SgdsModal` for "Save this plan".
+### Panels
+- **Corner Style:** 2px.
+- **Background:** paper.
+- **Shadow Strategy:** none. See Elevation & Depth.
+- **Border:** 1px rule. An optional title strip is ruled off below the title.
+- **Internal Padding:** 20px by 16px. A scrolling panel keeps the title strip fixed and scrolls only the body.
 
 ### Inputs / Fields
-- `SgdsInput`, `SgdsTextarea`, `SgdsSelect` (options supplied as `menuList` data, not child elements), `SgdsCheckbox`, `SgdsRadioGroup`/`SgdsRadio`, `SgdsFileUpload`. Labels, errors and focus are SGDS's.
+- **Style:** paper, 1px strong-rule border, 2px corners, 40px high, body step.
+- **Label:** above the control, display face, body step, 600. Hint below the label at small in soft ink.
+- **Focus / Hover:** border goes to blueprint, plus the global focus ring.
+- **Error:** redline border and a redline message at small.
+- Checkboxes and radios are native, 18px, with a blueprint accent.
 
-### Navigation
-- `SgdsMainnav` on white, brand slot "Build plan" (`text-subtitle-sm`, 600), `SgdsMainnavItem` links wrapping real Next `Link`s; the active item shows SGDS's purple underline. The role switcher and reset sit in the `end` slot. `SgdsBreadcrumb` on nested pages. Data uses `SgdsTable`; key/value detail uses `SgdsDescriptionList`.
+### Notes
+A note on the drawing. One 1px border on every side, 2px corners, 12px by 16px padding. Info and success use blueprint wash. Attention and error use redline wash. Never a thick side stripe.
+
+### Tables and disclosures
+- **Table:** a drawing schedule. A 1px ink rule under the header row, 1px rules between rows, headers at small in the display face, numbers in tabular figures.
+- **Disclosure:** a row that opens, with a blueprint chevron that turns 90 degrees. Used for every collapsible list.
+- **Breadcrumb:** small, soft ink, blueprint links, slash separators.
+
+### Dialog
+Native dialog. A centred dialog is up to 560px wide. A side dialog is a full-height panel from the right, up to 720px wide, for detail views. Ink border, paper ground, the dialog shadow. The title strip and footer are ruled off. The close button is a 32px square ruled button.
+
+### Navigation: the title block
+The page header is the drawing's title block. It is a full-width blueprint band of ruled cells with paper lettering. Each cell has a label at the label step over its value. The cells are Drawing ("Build plan" lettering), Sheets (the page tabs), the sheet's own cells, Viewing as, and Demo data. The current sheet tab is underlined 2px; the others are 80% paper. A saved project adds its Project, Owner and Revised cells through the @titlecells parallel route. Other sheets render no cells.
+
+### Floor plan (signature component)
+The plan drawn as a building, full width on /plan and on a saved project.
+- One room per requirement family, named with roomName from lib/plan/floor-plan.ts. Rooms are sized by requirement count and arranged in three rows.
+- Each room's floor is split into areas sized by count: hatch for built, solid blueprint for done, cross-hatch for in progress, dashed blueprint for to do, dotted soft ink for does not apply, a revision cloud for questions. Areas grow and shrink in place over 700ms; reduced motion turns this off.
+- A name plate sits on the floor: a ruled paper box with the room name at lead and its status at small. A chosen room turns its plate solid blueprint and its floor to wash.
+- Choosing a room filters the lists below (?room=). A status line under the plan says what is shown, with a quiet "Show all rooms" button.
+- A legend in the header shows each convention at a small size.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** reach for the SGDS component first and check `node_modules/@govtechsg/sgds-web-component` before building anything custom.
-- **Do** take type and spacing only from `sgds:` utilities; headings, paragraphs and lists have zero margin, so spacing comes from `gap-*` on the parent.
-- **Do** use `sgds:font-code` for code and ids and `sgds:text-subtle` for secondary copy.
-- **Do** pass select options as `menuList` data and keep control accessible names stable.
-- **Do** map verification state to badge variants exactly as in `app/plan/badge.tsx`.
+- **Do** build every screen from the kit in app/ui/ and the tokens in app/globals.css.
+- **Do** use only the seven type steps.
+- **Do** use PageHeader for the page title, SectionHeading for page sections, and plain-string titles for Panel and Dialog. Use lead for sub-sections inside them.
+- **Do** keep one primary action visible at a time. Use secondary (ruled paper) and quiet (text) for the rest.
+- **Do** use the Segmented control for every choice strip.
+- **Do** put lists in one ruled box with 1px rules between rows.
+- **Do** pick widths by role: full sheet, max-w-page, max-w-form, max-w-message, max-w-measure.
+- **Do** use stamps for exceptions only: not yet verified, published by GovTech, sample. Show "Verified" in the tool picker and the detail dialog.
+- **Do** use one name per requirement family, from roomName, on every screen.
+- **Do** use tabular figures (tnum) for counts and dates.
 
 ### Don't:
-- **Don't** use `z-raised`, `text-heading-xs`, `font-mono` or `text-body-xs`; they do not exist (use `z-10`, `text-subtitle-md`, `font-code`, `text-caption-md`).
-- **Don't** add raw hex colours, pixel spacing, custom shadows or new fonts, or put component styling in `globals.css`.
-- **Don't** use purple for state, or green/yellow/blue for decoration.
-- **Don't** add a government masthead or GovTech/agency logos; this is a local prototype.
-- **Don't** restyle away SGDS focus rings or contrast.
+- **Don't** write pixel font sizes, or use text-label or uppercase outside title-block cells.
+- **Don't** use blueprint blue for decoration, or redline for anything that does not need attention.
+- **Don't** add shadows to panels, tables or the floor plan.
+- **Don't** stack separate cards for a list.
+- **Don't** repeat a "Verified" stamp on every list item.
+- **Don't** show two solid primary buttons at the same time.
+- **Don't** write IM8, SSP, OSCAL, control(s) or agency in our own copy on builder screens. Quoted official wording in the detail dialog is allowed.
+- **Don't** round corners past 2px or use pill shapes.
+- **Don't** build mobile layouts.

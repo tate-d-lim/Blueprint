@@ -1,10 +1,12 @@
 "use client";
 
-import { SgdsAlert, SgdsButton, SgdsInput, SgdsModal } from "@govtechsg/sgds-web-component/react";
 import { useRouter } from "next/navigation";
-import { valueOf } from "@/app/components/sgds-events";
 import { useState, useTransition } from "react";
 import { createProjectAction } from "@/app/projects/actions";
+import { Button } from "@/app/ui/button";
+import { Dialog } from "@/app/ui/dialog";
+import { Field, inputClass } from "@/app/ui/field";
+import { Note } from "@/app/ui/note";
 import type { RiskAnswers } from "@/lib/risk/assess";
 
 export function SaveDialog({ answers, toolIds }: { answers: RiskAnswers; toolIds: string[] }) {
@@ -17,16 +19,27 @@ export function SaveDialog({ answers, toolIds }: { answers: RiskAnswers; toolIds
 
   return (
     <>
-      <SgdsButton variant="outline" onClick={() => setOpen(true)}>
+      <Button variant="secondary" onClick={() => setOpen(true)}>
         Save this plan
-      </SgdsButton>
-      <SgdsModal open={open} onSgdsClose={() => setOpen(false)} hasFooterSlot>
-        <h2 slot="title" className="sgds:text-heading-sm sgds:font-semibold">
-          Save this plan
-        </h2>
+      </Button>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Save this plan"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="secondary" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" form="save-plan-form" disabled={pending}>
+              {pending ? "Saving…" : "Save"}
+            </Button>
+          </div>
+        }
+      >
         <form
           id="save-plan-form"
-          className="sgds:flex sgds:flex-col sgds:gap-sm"
+          className="flex flex-col gap-4"
           onSubmit={e => {
             e.preventDefault();
             start(async () => {
@@ -36,23 +49,16 @@ export function SaveDialog({ answers, toolIds }: { answers: RiskAnswers; toolIds
             });
           }}
         >
-          <SgdsInput label="Project name" name="name" placeholder="" required value={name} onSgdsInput={e => setName(valueOf(e))} />
-          <SgdsInput label="Your name" name="ownerName" placeholder="" required value={ownerName} onSgdsInput={e => setOwnerName(valueOf(e))} />
-          {error && (
-            <SgdsAlert show outlined variant="danger">
-              {error}
-            </SgdsAlert>
-          )}
+          <p className="text-ink-soft">A saved plan lets you track each task and answer the questions as you go.</p>
+          <Field label="Project name">
+            {props => <input {...props} required value={name} onChange={e => setName(e.target.value)} placeholder="Payments portal" className={inputClass} />}
+          </Field>
+          <Field label="Your name">
+            {props => <input {...props} required value={ownerName} onChange={e => setOwnerName(e.target.value)} className={inputClass} />}
+          </Field>
+          {error && <Note tone="error">{error}</Note>}
         </form>
-        <div slot="footer" className="sgds:flex sgds:justify-end sgds:gap-sm">
-          <SgdsButton variant="ghost" onClick={() => setOpen(false)}>
-            Cancel
-          </SgdsButton>
-          <SgdsButton type="submit" form="save-plan-form" disabled={pending}>
-            {pending ? "Saving…" : "Save"}
-          </SgdsButton>
-        </div>
-      </SgdsModal>
+      </Dialog>
     </>
   );
 }

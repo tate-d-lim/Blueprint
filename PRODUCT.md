@@ -30,6 +30,7 @@ A build plan for app builders, not a security-plan generator. A builder answers 
 
 ## Capabilities and Constraints
 
+- Desktop only: nobody uses the app on a phone (user, 2026-10-28).
 - Next.js 16 App Router, TypeScript, Tailwind 4, MongoDB. Business logic is pure and shared by client and server. The redesign changes presentation only: behaviour, data, routes and exports stay as they are.
 - Builder-language rule (the user feels strongly): builder screens (/start, /plan, /projects) must not show "IM8", "SSP", "OSCAL", "control" or "agency" in our own copy. Say "App Builder", never "Agency". Official wording may appear in the detail panel and in exports. GovTech's own wording stays out of builder lists.
 - Verification vocabulary is part of the product: Verified, Not yet verified, Published by GovTech; per-row, per-version. A tool version is never auto-approved.
@@ -38,7 +39,9 @@ A build plan for app builders, not a security-plan generator. A builder answers 
 
 ## Brand Commitments
 
-- **Use the Singapore Government Design System (SGDS v3, https://designsystem.tech.gov.sg/) and its components for the whole app.** The user pinned this on 2026-10-28.
+- **Blueprint world (user, 2026-10-28), replacing SGDS.** The app looks like an architect's drawing set: white drafting paper with a faint blue grid and dark blue ink; deep blueprint blue only in the title block, the floor plan and approval stamps. Every page is a drawing sheet with a title block. The name "Build plan" carries the metaphor: plan before you build.
+- **Own controls, no SGDS.** The Singapore Government Design System components were removed at the user's request; every control is plain HTML styled from one shared token set, and design choices must be consistent across every screen.
+- **Floor plan as the overview.** One room per requirement family, sized by its number of requirements. Rooms the picked tools cover are drawn as already built; the builder's rooms fill as tasks are done; open questions are marked. Clicking a room filters the lists below it. It appears on a new plan (rooms become built as tools are ticked) and on a saved project.
 - No official Singapore Government masthead and no GovTech or agency logos: this is a local prototype, not a live .gov.sg service (confirmed by the user on 2026-10-28).
 - Voice: plain, direct, second person. "App Builder", never "Agency".
 
@@ -57,4 +60,4 @@ A build plan for app builders, not a security-plan generator. A builder answers 
 
 ## Accessibility & Inclusion
 
-SGDS components are built to government accessibility standards; keep their keyboard and screen-reader behaviour intact and do not restyle away focus rings or contrast. Every control keeps a stable accessible name (the Playwright tests depend on it).
+Native HTML controls carry the keyboard and screen-reader behaviour; keep visible focus rings and WCAG AA contrast. Every control keeps a stable accessible name (the Playwright tests depend on it).

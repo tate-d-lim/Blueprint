@@ -1,9 +1,8 @@
-import { SgdsBreadcrumb, SgdsBreadcrumbItem } from "@govtechsg/sgds-web-component/react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AppLink } from "@/app/components/app-link";
-import { PageHeader } from "@/app/components/page-header";
 import { RoleGate } from "@/app/components/role-gate";
+import { TextLink } from "@/app/ui/button";
+import { PageHeader } from "@/app/ui/panel";
+import { Breadcrumb } from "@/app/ui/table";
 import { withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
 import type { DraftRow } from "@/lib/admin/new-version";
@@ -50,31 +49,25 @@ async function ToolEditor({
   }));
 
   return (
-    <div className="sgds:flex sgds:flex-col sgds:gap-layout-md">
-      <div className="sgds:flex sgds:flex-col sgds:gap-sm">
-        <SgdsBreadcrumb>
-          <SgdsBreadcrumbItem>
-            <Link href="/admin" suppressHydrationWarning>
-              All tools
-            </Link>
-          </SgdsBreadcrumbItem>
-          <SgdsBreadcrumbItem active>{tool.name}</SgdsBreadcrumbItem>
-        </SgdsBreadcrumb>
+    <div className="flex flex-col gap-8">
+      <Breadcrumb items={[{ label: "All tools", href: "/admin" }, { label: tool.name }]} />
+      <div className="flex flex-col gap-3">
         <PageHeader title={`${tool.name}: what it covers`}>
-          Profile: {profile.title}
-          {current ? ` · editing from version ${current.version}` : " · no coverage recorded yet"}
+          {profile.title}, {current ? `editing from version ${current.version}` : "no coverage recorded yet"}.
         </PageHeader>
         {new Set(withVersions).size > 1 && (
-          <p className="sgds:flex sgds:gap-sm">
+          <p className="flex gap-4">
             {data.profiles
               .filter(p => withVersions.includes(p._id))
               .map(p =>
                 p._id === profile._id ? (
-                  <strong key={p._id}>{p.title}</strong>
-                ) : (
-                  <AppLink key={p._id} href={`/admin/tools/${toolId}?profile=${p._id}`}>
+                  <span key={p._id} className="font-semibold">
                     {p.title}
-                  </AppLink>
+                  </span>
+                ) : (
+                  <TextLink key={p._id} href={`/admin/tools/${toolId}?profile=${p._id}`}>
+                    {p.title}
+                  </TextLink>
                 ),
               )}
           </p>

@@ -1,18 +1,14 @@
 "use client";
 
-import {
-  SgdsCard,
-  SgdsDescriptionList,
-  SgdsDescriptionListGroup,
-  SgdsDrawer,
-} from "@govtechsg/sgds-web-component/react";
+import { Dialog } from "@/app/ui/dialog";
 import type { ProfileEntry } from "@/lib/domain/types";
 import type { PlanItem } from "@/lib/plan/engine";
+import { roomName } from "@/lib/plan/floor-plan";
 import { resolveParameters } from "@/lib/plan/format";
 import { VALUE_LABEL } from "@/lib/plan/labels";
 import { Badge } from "./badge";
 
-/** The side panel with the official wording and what each picked tool says. The drawer handles Escape and focus. */
+/** The side panel with the official wording and what each picked tool says. The dialog handles Escape and focus. */
 export function ItemDetail({
   item,
   entry,
@@ -26,72 +22,69 @@ export function ItemDetail({
 }) {
   const title = item.plain?.title ?? item.title;
   return (
-    <SgdsDrawer open={open} size="lg" ariaLabel={title} onSgdsAfterHide={onClose}>
-      <div slot="title" className="sgds:flex sgds:flex-col sgds:gap-text-xs">
-        <h2 className="sgds:text-heading-sm sgds:font-semibold">{title}</h2>
-        <p className="sgds:font-code sgds:text-caption-md sgds:text-subtle">{item.id}</p>
-      </div>
+    <Dialog
+      side
+      open={open}
+      onClose={onClose}
+      title={title}
+      description={`${item.id} in ${roomName(item.family)}`}
+    >
+      <div className="flex flex-col gap-8">
+        <p className="max-w-measure text-ink-soft">{item.reason}</p>
 
-      <div className="sgds:flex sgds:flex-col sgds:gap-layout-sm">
-        <p className="sgds:text-subtle">{item.reason}</p>
-
-        <section className="sgds:flex sgds:flex-col sgds:gap-text-sm">
-          <h3 className="sgds:text-subtitle-md sgds:font-semibold">Official wording</h3>
+        <section className="flex flex-col gap-3">
+          <h3 className="text-lead font-semibold">Official wording</h3>
           {entry ? (
-            <SgdsDescriptionListGroup stacked bordered>
+            <dl className="flex flex-col border-t border-rule">
               <Field label="Requirement" text={entry.statement} />
               <Field label="Recommendations" text={entry.recommendations} />
               <Field label="Why it matters (official)" text={entry.rationale} />
               <Field label="References" text={entry.references} />
-            </SgdsDescriptionListGroup>
+            </dl>
           ) : (
-            <p className="sgds:text-subtle">The official wording isn&apos;t available.</p>
+            <p className="text-ink-soft">The official wording isn&apos;t available.</p>
           )}
         </section>
 
-        <section className="sgds:flex sgds:flex-col sgds:gap-text-sm">
-          <h3 className="sgds:text-subtitle-md sgds:font-semibold">What your tools say</h3>
+        <section className="flex flex-col gap-3">
+          <h3 className="text-lead font-semibold">What your tools say</h3>
           {item.claims.length === 0 ? (
-            <p className="sgds:text-subtle">None of the tools you picked say anything about this one.</p>
+            <p className="text-ink-soft">None of the tools you picked say anything about this one.</p>
           ) : (
-            <ul className="sgds:flex sgds:flex-col sgds:gap-sm">
+            <ul className="flex flex-col gap-3">
               {item.claims.map(c => (
-                <li key={c.toolId}>
-                  <SgdsCard>
-                    <div slot="title" className="sgds:flex sgds:flex-wrap sgds:items-center sgds:justify-between sgds:gap-sm">
-                      <span className="sgds:text-subtitle-md sgds:font-semibold">{c.toolName}</span>
-                      <Badge verification={c.verification} />
-                    </div>
-                    <div className="sgds:flex sgds:flex-col sgds:gap-text-sm sgds:text-body-sm">
-                      <p>{VALUE_LABEL(c.value, c.toolName, c.otherToolName)}</p>
-                      {c.explanation && <p className="sgds:text-subtle">{c.explanation}</p>}
-                      {c.builderPart && (
-                        <p>
-                          <strong>App Builder&apos;s part: </strong>
-                          {c.builderPart}
-                        </p>
-                      )}
-                      <p className="sgds:text-caption-md sgds:text-subtle">Source: {c.source}</p>
-                    </div>
-                  </SgdsCard>
+                <li key={c.toolId} className="rounded-xs border border-rule">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rule px-4 py-2.5">
+                    <span className="font-display text-lead font-semibold">{c.toolName}</span>
+                    <Badge verification={c.verification} />
+                  </div>
+                  <div className="flex flex-col gap-2 px-4 py-3 text-body">
+                    <p>{VALUE_LABEL(c.value, c.toolName, c.otherToolName)}</p>
+                    {c.explanation && <p className="text-ink-soft">{c.explanation}</p>}
+                    {c.builderPart && (
+                      <p>
+                        <span className="font-semibold">App Builder&apos;s part: </span>
+                        {c.builderPart}
+                      </p>
+                    )}
+                    <p className="text-small text-ink-soft">Source: {c.source}</p>
+                  </div>
                 </li>
               ))}
             </ul>
           )}
         </section>
       </div>
-    </SgdsDrawer>
+    </Dialog>
   );
 }
 
 function Field({ label, text }: { label: string; text: string }) {
   if (!text.trim()) return null;
   return (
-    <SgdsDescriptionList stacked bordered>
-      {label}
-      <span slot="data" className="sgds:whitespace-pre-line">
-        {resolveParameters(text)}
-      </span>
-    </SgdsDescriptionList>
+    <div className="grid grid-cols-[180px_1fr] gap-4 border-b border-rule py-3">
+      <dt className="font-display text-small font-semibold">{label}</dt>
+      <dd className="max-w-measure whitespace-pre-line text-body text-ink">{resolveParameters(text)}</dd>
+    </div>
   );
 }

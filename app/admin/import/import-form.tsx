@@ -1,30 +1,17 @@
 "use client";
 
-import {
-  SgdsAlert,
-  SgdsButton,
-  SgdsFileUpload,
-  SgdsInput,
-  SgdsSelect,
-  SgdsTable,
-  SgdsTableCell,
-  SgdsTableHead,
-  SgdsTableRow,
-} from "@govtechsg/sgds-web-component/react";
-import Link from "next/link";
 import { useState, useTransition } from "react";
-import { filesOf, valueOf } from "@/app/components/sgds-events";
+import { Button, TextLink } from "@/app/ui/button";
+import { Field, inputClass, selectClass } from "@/app/ui/field";
+import { Note } from "@/app/ui/note";
+import { Panel } from "@/app/ui/panel";
+import { Cell, Table } from "@/app/ui/table";
 import type { CoverageValue } from "@/lib/domain/types";
 import { VALUE_LABEL } from "@/lib/plan/labels";
 import { createImportAction, previewImportAction, type CreateResult, type PreviewResult } from "./actions";
 
 const CHOICES: CoverageValue[] = ["provided", "shared", "app-builder", "not-applicable"];
 const NEW_TOOL = "new";
-const SECTION_OPTIONS = [
-  { label: "CPF tools", value: "cpf" },
-  { label: "Whole-of-government tools", value: "wog" },
-  { label: "Code components", value: "code" },
-];
 
 export function ImportForm({ tools, profiles }: { tools: { id: string; name: string }[]; profiles: { id: string; title: string }[] }) {
   const [file, setFile] = useState<File | null>(null);
@@ -40,9 +27,6 @@ export function ImportForm({ tools, profiles }: { tools: { id: string; name: str
   const [created, setCreated] = useState<CreateResult | null>(null);
 
   const toolName = tool === NEW_TOOL ? newToolName || "the tool" : tools.find(t => t.id === tool)?.name ?? "the tool";
-  const profileOptions = profiles.map(p => ({ label: p.title, value: p.id }));
-  const toolOptions = [...tools.map(t => ({ label: t.name, value: t.id })), { label: "A new tool…", value: NEW_TOOL }];
-  const choiceOptions = CHOICES.map(v => ({ label: VALUE_LABEL(v, toolName), value: v }));
   const base = () => {
     const form = new FormData();
     if (file) form.set("file", file);
@@ -77,125 +61,149 @@ export function ImportForm({ tools, profiles }: { tools: { id: string; name: str
   const allMapped = checked?.ok && checked.preview.pairs.every(p => mapping[p.pairKey]);
 
   return (
-    <div className="sgds:flex sgds:flex-col sgds:gap-layout-sm">
-      <div className="sgds:flex sgds:flex-col sgds:gap-sm sgds:rounded-surface sgds:border sgds:border-muted sgds:bg-surface-default sgds:p-layout-md">
-        <SgdsFileUpload
-          label="Component Guide file (.xlsx)"
-          name="file"
-          accept=".xlsx"
-          onSgdsChange={e => {
-            setFile(filesOf(e)[0] ?? null);
-            setChecked(null);
-            setCreated(null);
-          }}
-        />
-        <div className="sgds:grid sgds:gap-sm sgds:md:grid-cols-2">
-          <SgdsSelect
-            label="Profile it is written for"
-            name="profile"
-            value={profileId}
-            menuList={profileOptions}
-            onSgdsChange={e => {
-              if (valueOf(e) === profileId) return;
-              setProfileId(valueOf(e));
-              setChecked(null);
-            }}
-          />
-          <SgdsSelect label="Which tool is this for?" name="tool" value={tool} menuList={toolOptions} onSgdsChange={e => setTool(valueOf(e))} />
-          {tool === NEW_TOOL && (
-            <>
-              <SgdsInput label="New tool name" name="newToolName" placeholder="" value={newToolName} onSgdsInput={e => setNewToolName(valueOf(e))} />
-              <SgdsSelect label="Section" name="newToolSection" value={newToolSection} menuList={SECTION_OPTIONS} onSgdsChange={e => setNewToolSection(valueOf(e))} />
-            </>
-          )}
+    <div className="flex flex-col gap-6">
+      <Panel title="The spreadsheet">
+        <div className="flex flex-col gap-5">
+          <Field label="Component Guide file (.xlsx)">
+            {props => (
+              <input
+                {...props}
+                type="file"
+                accept=".xlsx"
+                onChange={e => {
+                  setFile(e.target.files?.[0] ?? null);
+                  setChecked(null);
+                  setCreated(null);
+                }}
+                className="text-body file:mr-4 file:h-10 file:cursor-pointer file:rounded-xs file:border file:border-rule-strong file:bg-paper file:px-4 file:font-display file:font-semibold file:text-ink hover:file:bg-blueprint-wash"
+              />
+            )}
+          </Field>
+          <div className="grid grid-cols-2 gap-5">
+            <Field label="Profile it is written for">
+              {props => (
+                <select
+                  {...props}
+                  value={profileId}
+                  onChange={e => {
+                    setProfileId(e.target.value);
+                    setChecked(null);
+                  }}
+                  className={selectClass}
+                >
+                  {profiles.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </Field>
+            <Field label="Which tool is this for?">
+              {props => (
+                <select {...props} value={tool} onChange={e => setTool(e.target.value)} className={selectClass}>
+                  {tools.map(t => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                  <option value={NEW_TOOL}>A new tool…</option>
+                </select>
+              )}
+            </Field>
+            {tool === NEW_TOOL && (
+              <>
+                <Field label="New tool name">
+                  {props => <input {...props} value={newToolName} onChange={e => setNewToolName(e.target.value)} className={inputClass} />}
+                </Field>
+                <Field label="Section">
+                  {props => (
+                    <select {...props} value={newToolSection} onChange={e => setNewToolSection(e.target.value)} className={selectClass}>
+                      <option value="cpf">CPF tools</option>
+                      <option value="wog">Whole-of-government tools</option>
+                      <option value="code">Code components</option>
+                    </select>
+                  )}
+                </Field>
+              </>
+            )}
+          </div>
+          <div>
+            <Button disabled={!file || pending} onClick={check}>
+              {pending && !checked ? "Checking…" : "Check the file"}
+            </Button>
+          </div>
         </div>
-        <div>
-          <SgdsButton disabled={!file || pending} onClick={check}>
-            {pending && !checked ? "Checking…" : "Check the file"}
-          </SgdsButton>
-        </div>
-      </div>
+      </Panel>
 
-      {checked && !checked.ok && (
-        <SgdsAlert show outlined variant="danger">
-          {checked.error}
-        </SgdsAlert>
-      )}
+      {checked && !checked.ok && <Note tone="error">{checked.error}</Note>}
 
       {checked?.ok && checked.preview.unknownIds.length > 0 && (
-        <SgdsAlert show outlined variant="danger">
-          This guide doesn&apos;t match {checked.profileTitle}: {checked.preview.unknownIds.length} requirement IDs aren&apos;t in it (first five:{" "}
-          {checked.preview.unknownIds.slice(0, 5).join(", ")}). It was probably written for a different standard.
-        </SgdsAlert>
+        <Note tone="error" title={`This guide doesn't match ${checked.profileTitle}.`}>
+          {checked.preview.unknownIds.length} requirement IDs aren&apos;t in it (first five: {checked.preview.unknownIds.slice(0, 5).join(", ")}). It
+          was probably written for a different standard.
+        </Note>
       )}
 
       {ready && checked.ok && (
-        <div className="sgds:flex sgds:flex-col sgds:gap-sm sgds:rounded-surface sgds:border sgds:border-muted sgds:bg-surface-default sgds:p-layout-md">
-          <p>
-            Read {checked.rowCount} requirements from sheet &ldquo;{checked.sheetName}&rdquo; of {checked.fileName}. Written against:{" "}
-            {checked.preview.writtenAgainst}
-          </p>
-          {checked.preview.missingKeys.length > 0 && (
-            <SgdsAlert show outlined variant="warning">
-              This guide predates {checked.preview.missingKeys.length} requirements, so it says nothing about them:{" "}
-              {checked.preview.missingKeys.map(k => k.split(":")[1]).join(", ")}.
-            </SgdsAlert>
-          )}
-          <SgdsTable>
-            <SgdsTableRow>
-              <SgdsTableHead>&ldquo;Who is responsible?&rdquo; says</SgdsTableHead>
-              <SgdsTableHead>Rows</SgdsTableHead>
-              <SgdsTableHead>Treat as</SgdsTableHead>
-            </SgdsTableRow>
-            {checked.preview.pairs.map(p => (
-              <SgdsTableRow key={p.pairKey}>
-                <SgdsTableCell>
-                  <span className="sgds:whitespace-pre-line">{p.owner || "(blank)"}</span>
-                  {p.agencyInputs && <span className="sgds:block sgds:text-caption-md sgds:text-subtle">For agency inputs: {p.agencyInputs}</span>}
-                </SgdsTableCell>
-                <SgdsTableCell>{p.count}</SgdsTableCell>
-                <SgdsTableCell>
-                  <SgdsSelect
-                    label={`Treat "${p.owner}" as`}
-                    name={`mapping-${p.pairKey}`}
-                    placeholder="Choose…"
-                    value={mapping[p.pairKey] ?? ""}
-                    menuList={choiceOptions}
-                    onSgdsChange={e => setMapping(m => ({ ...m, [p.pairKey]: valueOf(e) }))}
-                  />
-                </SgdsTableCell>
-              </SgdsTableRow>
-            ))}
-          </SgdsTable>
-          <div className="sgds:grid sgds:gap-sm sgds:md:grid-cols-2">
-            <SgdsInput label="Source for this version" name="source" value={source} onSgdsInput={e => setSource(valueOf(e))} />
-            <SgdsInput label="What changed" name="changeNote" placeholder="Optional" value={changeNote} onSgdsInput={e => setChangeNote(valueOf(e))} />
+        <Panel title="How to read it">
+          <div className="flex flex-col gap-5">
+            <p>
+              Read {checked.rowCount} requirements from sheet &ldquo;{checked.sheetName}&rdquo; of {checked.fileName}. Written against:{" "}
+              {checked.preview.writtenAgainst}
+            </p>
+            {checked.preview.missingKeys.length > 0 && (
+              <Note tone="attention">
+                This guide predates {checked.preview.missingKeys.length} requirements, so it says nothing about them:{" "}
+                {checked.preview.missingKeys.map(k => k.split(":")[1]).join(", ")}.
+              </Note>
+            )}
+            <Table head={["“Who is responsible?” says", "Rows", "Treat as"]}>
+              {checked.preview.pairs.map(p => (
+                <tr key={p.pairKey}>
+                  <Cell>
+                    <span className="whitespace-pre-line">{p.owner || "(blank)"}</span>
+                    {p.agencyInputs && <span className="mt-1 block text-small text-ink-soft">For agency inputs: {p.agencyInputs}</span>}
+                  </Cell>
+                  <Cell className="tnum">{p.count}</Cell>
+                  <Cell className="w-[280px]">
+                    <select
+                      aria-label={`Treat "${p.owner}" as`}
+                      value={mapping[p.pairKey] ?? ""}
+                      onChange={e => setMapping(m => ({ ...m, [p.pairKey]: e.target.value }))}
+                      className={selectClass}
+                    >
+                      <option value="">Choose…</option>
+                      {CHOICES.map(v => (
+                        <option key={v} value={v}>
+                          {VALUE_LABEL(v, toolName)}
+                        </option>
+                      ))}
+                    </select>
+                  </Cell>
+                </tr>
+              ))}
+            </Table>
+            <div className="grid grid-cols-2 gap-5">
+              <Field label="Source for this version">{props => <input {...props} value={source} onChange={e => setSource(e.target.value)} className={inputClass} />}</Field>
+              <Field label="What changed">
+                {props => <input {...props} value={changeNote} placeholder="Optional" onChange={e => setChangeNote(e.target.value)} className={inputClass} />}
+              </Field>
+            </div>
+            <div>
+              <Button disabled={pending || !allMapped || !source.trim() || (tool === NEW_TOOL && !newToolName.trim())} onClick={create}>
+                {pending ? "Creating…" : "Create version"}
+              </Button>
+            </div>
           </div>
-          <div>
-            <SgdsButton disabled={pending || !allMapped || !source.trim() || (tool === NEW_TOOL && !newToolName.trim())} onClick={create}>
-              {pending ? "Creating…" : "Create version"}
-            </SgdsButton>
-          </div>
-        </div>
+        </Panel>
       )}
 
-      {created?.ok === false && (
-        <SgdsAlert show outlined variant="danger">
-          {created.error}
-        </SgdsAlert>
-      )}
+      {created?.ok === false && <Note tone="error">{created.error}</Note>}
       {created?.ok && (
-        <SgdsAlert show outlined variant="success">
-          Created version {created.version}. It is not yet verified.{" "}
-          <Link href={`/admin/tools/${created.toolId}`} suppressHydrationWarning>
-            Open it in the editor
-          </Link>{" "}
-          or{" "}
-          <Link href="/verify" suppressHydrationWarning>
-            go to the verifier
-          </Link>
-          .
-        </SgdsAlert>
+        <Note tone="success" title={`Created version ${created.version}. It is not yet verified.`}>
+          <TextLink href={`/admin/tools/${created.toolId}`}>Open it in the editor</TextLink> or <TextLink href="/verify">go to the verifier</TextLink>.
+        </Note>
       )}
     </div>
   );

@@ -12,9 +12,9 @@ npm run build && npm start    # steadier than `npm run dev` for a live demo; ope
 
 The app and MongoDB listen on this Mac only (127.0.0.1), because the database has no password and the venue's Wi-Fi isn't yours. If a page shows a banner saying the database isn't running or is empty, follow it (`docker-compose up -d`, then `npm run seed`).
 
-- Role buttons (top right) on **Builder**. Browser at `http://localhost:3000/start`. Downloads folder empty.
-- If a page ever shows an error about a missing function after you edited code, restart the server. Turbopack's dev server can serve a stale module.
-- `npm run e2e` checks moments 1 to 3 and the platform cut-away (moment 5) automatically, on a production build with its own port and database, so it never touches your demo data. The screens are built from the Singapore Government Design System (SGDS) components; if the page ever looks unstyled after you edit code, stop the dev server, delete the `.next` folder and start it again.
+- **Viewing as** (in the blue title block, top right) on **Builder**. Browser at `http://localhost:3000/start`, desktop width. Downloads folder empty.
+- If a page ever shows an error about a missing function, or looks unstyled, after you edited code: stop the dev server, delete the `.next` folder and start it again. Turbopack's dev server can serve a stale module.
+- `npm run e2e` checks moments 1 to 4, the room filter and the platform cut-away (moment 5) automatically, on a production build with its own port and database, so it never touches your demo data.
 
 ## Moment 1: Tell us about your app (about 30 seconds)
 
@@ -34,10 +34,12 @@ The app and MongoDB listen on this Mac only (127.0.0.1), because the database ha
    | appCentral | 11 | 51 | 24 | 32 |
    | appCentral + DBaaS + IGA | **11** | **66** | **9** | 32 |
 
-2. Point at the badges: appCentral **Verified**, DBaaS and IGA **Not yet verified**.
+   The floor plan above the lists fills in as you tick: hatched rooms are built by your tools. With all three it says **66 of 86 requirements are already built** and "11 are yours to build, and 9 are questions to answer first."
+2. Point at the stamps: appCentral **Verified**, DBaaS and IGA **Not yet verified**.
 3. Untick **DBaaS**. Questions go 9 → 13 and a box says "appCentral expects DBaaS for 4 requirements. Add DBaaS?" Click **Add DBaaS** to put it back (9 again).
 4. If the app uses AI, tick **genCentral**: 8 new questions appear (Questions to answer 17). Untick it again.
-5. Click one item title (for example "Check every input before you use it") to show the detail panel: official wording, and which tool says what, with its source. Press Escape.
+5. Click the **App security** room on the floor plan. The lists below show only that room (5 tasks), and the address bar gets `room=as`. Click **Show all rooms** (or the room again) to go back.
+6. Click one item title (for example "Check every input before you use it") to show the detail panel: official wording, and which tool says what, with its source. Press Escape.
 
 The 86 requirements that must or should be done become **11 that are yours and 9 to check**, before any code is written.
 
@@ -49,8 +51,9 @@ The 86 requirements that must or should be done become **11 that are yours and 9
 
 ## Moment 4: Send it for review, two weeks later (about 60 seconds)
 
-1. Header → **Saved projects** → **Sample project (two weeks in)**.
-2. Expect **17** under What you need to do: 9 done, 2 in progress, 6 to do. The 11 core tasks plus 6 of the questions the builder answered "Applies". The other 3 questions are answered "Doesn't apply" with a reason.
+1. Title block → **Saved projects** → **Sample project (two weeks in)**. The title block now also shows the project, its owner and the date it last changed.
+2. The floor plan says **9 of 17 tasks done** and "2 in progress, 6 to do. All 9 questions answered." Solid rooms are done, cross-hatched ones are in progress, dashed ones are still to do. The 17 are the 11 core tasks plus 6 of the questions the builder answered "Applies". The other 3 questions are answered "Doesn't apply" with a reason.
+   Optional: click **To do (6)** above the task list to show only what is left.
 3. Click **Security review spreadsheet** and open it. Check these rows (columns H and I):
 
    | Row | Implemented | Explanation starts |
@@ -68,9 +71,9 @@ The 86 requirements that must or should be done become **11 that are yours and 9
 
 ## Moment 5: The platform cut-away (about 30 seconds)
 
-1. Click the **Admin** role button → **Admin** in the navigation → **appCentral**: **Edit coverage**. Click the row **Authentication Mechanism Rate-Limiting** (as-4) to open it and type in **Explanation**: "appCentral rate-limits sign-ins at the gateway." Click **Save new version**, type a source for this version (it is required and starts empty on purpose, for example "appCentral team, 2026-10-27"; only the row you changed is credited to it, every other row keeps its old source), add "What changed", **Save**. A green note says version 2 is not yet verified.
+1. Set **Viewing as** to **Admin** → **Admin** in the title block → **appCentral**: **Edit coverage**. Click the row **Authentication Mechanism Rate-Limiting** (as-4) to open it and type in **Explanation**: "appCentral rate-limits sign-ins at the gateway." Click **Save new version**, type a source for this version (it is required and starts empty on purpose, for example "appCentral team, 2026-10-27"; only the row you changed is credited to it, every other row keeps its old source), add "What changed", **Save**. A green note says version 2 is not yet verified.
 2. Open the plan for appCentral: **only as-4** shows **Not yet verified**, and so does appCentral in the picker.
-3. Click the **Verifier** role button → **Verify** → **Review** on appCentral. The table shows the one changed row. Click **Approve this version**.
+3. Set **Viewing as** to **Verifier** → **Verify** in the title block → **Review** on appCentral. The table shows the one changed row. Click **Approve this version**.
 4. Reload the plan: as-4 and appCentral are **Verified** again.
 
 Optional: as Admin, **Import a Component Guide** and upload a published guide to show a platform team's spreadsheet becoming a not-yet-verified version. Real guides to try: `data/guides/WebSG-LowRiskCloud_2026-06-22.xlsx` (works), `data/guides/FormSG-Component-Guide-DSS.xlsx` (rejected: it is for a different standard).
@@ -79,9 +82,9 @@ Optional: as Admin, **Import a Component Guide** and upload a published guide to
 
 Click **Reset demo data** (confirm) to put everything back. It reloads all the source files, so edits made in the admin screens are lost.
 
-## After the SGDS revamp (2026-10-28)
+## After the blueprint redesign (2026-10-28)
 
-Every screen was rebuilt with the Singapore Government Design System. Checked: all screens in the browser at 1440 and 390 wide (no sideways scrolling), and `npm run e2e` (7 tests on a production build: moments 1 to 3, the platform cut-away, adding a tool, and three regressions). Still **not** checked: one uninterrupted timed run, the exported `.xlsx` in Excel, and the agent clip.
+Every screen is now a drawing sheet with a title block, built from our own plain HTML controls (the Singapore Government Design System is gone). The app is for desktop only. Checked: all screens in the browser at 1440 wide, and `npm run e2e` (11 tests on a production build: moments 1 to 4, the room filter, the project cells in the title block, the platform cut-away, adding a tool, and three regressions). Still **not** checked: one uninterrupted timed run, the exported `.xlsx` in Excel, and the agent clip.
 
 ## What was checked on 2026-10-27, and what wasn't
 
