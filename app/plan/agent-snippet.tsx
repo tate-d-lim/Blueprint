@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@/app/ui/button";
-import { Disclosure } from "@/app/ui/disclosure";
 import { AGENT_SNIPPET } from "@/lib/export/build-plan-md";
 
-/** One disclosure row with the text to paste into AGENTS.md or CLAUDE.md. */
+/** The text to paste into AGENTS.md or CLAUDE.md, with a copy button. */
 export function AgentSnippet() {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
@@ -18,17 +17,15 @@ export function AgentSnippet() {
     }
   };
   return (
-    <Disclosure summary={<span className="font-display text-lead font-semibold">Using a coding agent? Add this to AGENTS.md or CLAUDE.md</span>}>
-      <div className="flex flex-col gap-3">
-        <pre className="rounded-xs border border-rule bg-blueprint-wash/40 p-4 font-code text-small leading-relaxed whitespace-pre-wrap">
-          {AGENT_SNIPPET}
-        </pre>
-        <div>
-          <Button size="sm" variant="secondary" onClick={copy}>
-            {copied ? "Copied" : "Copy"}
-          </Button>
-        </div>
+    <div className="flex flex-col gap-3">
+      <pre className="rounded-xs border border-rule bg-blueprint-wash/40 p-4 font-code text-small leading-relaxed whitespace-pre-wrap">
+        {AGENT_SNIPPET}
+      </pre>
+      <div>
+        <Button size="sm" variant="secondary" onClick={copy}>
+          {copied ? "Copied" : "Copy"}
+        </Button>
       </div>
-    </Disclosure>
+    </div>
   );
 }

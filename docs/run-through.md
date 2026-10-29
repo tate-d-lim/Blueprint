@@ -36,19 +36,19 @@ The app and MongoDB listen on this Mac only (127.0.0.1), because the database ha
    | appCentral | 18 | 51 | 15 | 32 |
    | appCentral + DBaaS + IGA | **18** | **66** | **0** | 32 |
 
-   The floor plan above the lists fills in as you tick: hatched rooms are built by your tools. With all three it says **66 of 86 requirements are already built** and "18 are yours to build." A new heading, **Doesn't apply to your app (2)**, lists what your answers left out.
+   The floor plan on the left fills in as you tick: hatched rooms are built by your tools. With all three it says **66 of 86 requirements are already built** and "18 are yours to build." A new heading, **Doesn't apply to your app (2)**, lists what your answers left out.
 2. Point at the stamps: appCentral **Verified**, DBaaS and IGA **Not yet verified**.
 3. Untick **DBaaS**. Questions go 0 → 4 and a box says "appCentral expects DBaaS for 4 requirements. Add DBaaS?" Click **Add DBaaS** to put it back (0 again).
 4. If the app uses AI, tick **genCentral**: 8 new questions appear (Questions to answer 11). Untick it again.
-5. Click the **App security** room on the floor plan. The lists below show only that room (5 tasks), and the address bar gets `room=as`. Click **Show all rooms** (or the room again) to go back.
+5. Click the **App security** room on the floor plan. The lists on the right show only that room (5 tasks), and the address bar gets `room=as`. Click **Show all rooms** (or the room again) to go back.
 6. Click one item title (for example "Check every input before you use it") to show the detail panel: official wording, and which tool says what, with its source. Press Escape.
 
 The 86 requirements that must or should be done become **18 that are yours and none to check**, before any code is written.
 
 ## Moment 3: Hand it to your agent (about 45 seconds)
 
-1. Click **Build plan for your agent**. Open `BUILD-PLAN.md`: section 1 (18 tasks), section 2 (no questions to ask a person first), section 3 (66 things not to build, grouped by tool), section 4 (2 that do not apply to this app). Show that unverified claims end with "(not yet verified)".
-2. Open **Using a coding agent? Add this to AGENTS.md or CLAUDE.md** and show the snippet.
+1. Click **Export**, then **Build plan for your agent**. Open `BUILD-PLAN.md`: section 1 (18 tasks), section 2 (no questions to ask a person first), section 3 (66 things not to build, grouped by tool), section 4 (2 that do not apply to this app). Show that unverified claims end with "(not yet verified)".
+2. In the same box, show the snippet for AGENTS.md or CLAUDE.md under **For your coding agent**.
 3. Play the pre-recorded clip of an agent using the plan. (Still to record.)
 
 ## Moment 4: Send it for review, two weeks later (about 60 seconds)
@@ -56,7 +56,7 @@ The 86 requirements that must or should be done become **18 that are yours and n
 1. Title block → **Saved projects** → **Sample project (two weeks in)**. The title block now also shows the project, its owner and the date it last changed.
 2. The floor plan says **9 of 17 tasks done** and "2 in progress, 6 to do. All 3 questions answered." Solid rooms are done, cross-hatched ones are in progress, dashed ones are still to do. The 17 are the 11 core tasks plus 6 planning and paperwork tasks. The 3 questions are answered "Doesn't apply" with a reason.
    Optional: click **To do (6)** above the task list to show only what is left.
-3. Click **Security review spreadsheet** and open it. Check these rows (columns H and I):
+3. Click **Export**, then **Security review spreadsheet** (under **For security review**) and open it. Check these rows (columns H and I):
 
    | Row | Implemented | Explanation starts |
    |---|---|---|

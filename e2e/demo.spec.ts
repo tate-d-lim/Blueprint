@@ -41,6 +41,7 @@ test("the demo path: answer, pick tools, watch the counts move, download both fi
   await expect(countOf("Questions to answer")).toHaveText("0");
 
   // 4. Hand it to your agent
+  await page.getByRole("button", { name: "Export" }).click();
   const plan = page.waitForEvent("download");
   await page.getByRole("link", { name: "Build plan for your agent" }).click();
   const planDownload = await plan;

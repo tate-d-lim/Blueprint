@@ -46,7 +46,7 @@ export function ToolPicker({
   onToggle: (toolId: string) => void;
 }) {
   return (
-    <Panel scroll className="min-h-0" title="Pick your tools" description="Tick what your app will use. The floor plan updates as you go.">
+    <Panel title="Pick your tools" description="Tick what your app will use. The floor plan updates as you go.">
       <div className="flex flex-col gap-6">
         {SECTIONS.map(section => {
           const inSection = tools.filter(t => t.section === section.id);
@@ -54,7 +54,7 @@ export function ToolPicker({
           return (
             <section key={section.id} className="flex flex-col gap-3">
               <h3 className="text-body font-semibold text-ink-soft">{section.title}</h3>
-              <ul className="flex flex-col gap-3">
+              <ul className="grid grid-cols-2 gap-x-8 gap-y-4">
                 {inSection.map(tool => (
                   <li key={tool._id}>
                     <Checkbox

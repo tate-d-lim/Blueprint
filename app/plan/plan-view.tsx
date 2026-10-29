@@ -3,10 +3,10 @@
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { setProjectToolsAction, setQuestionAnswerAction, setTaskStatusAction } from "@/app/projects/actions";
-import { Button, DownloadButton, TextLink } from "@/app/ui/button";
+import { Button, TextLink } from "@/app/ui/button";
 import { Disclosure } from "@/app/ui/disclosure";
 import { Note } from "@/app/ui/note";
-import { PageHeader, Panel, SectionHeading } from "@/app/ui/panel";
+import { PageHeader, SectionHeading } from "@/app/ui/panel";
 import { Segmented } from "@/app/ui/segmented";
 import { Tag } from "@/app/ui/stamp";
 import type { FactAnswers, Project, TaskStatus } from "@/lib/domain/types";
@@ -19,7 +19,7 @@ import { selectPlanInput } from "@/lib/plan/select";
 import { parsePlanQuery, planQuery } from "@/lib/plan/url-state";
 import { versionVerification, type Verification } from "@/lib/plan/verification";
 import { assessRisk, type RiskAnswers } from "@/lib/risk/assess";
-import { AgentSnippet } from "./agent-snippet";
+import { ExportDialog } from "./export-dialog";
 import { FloorPlan } from "./floor-plan";
 import type { ItemControls } from "./item-controls";
 import { ItemDetail } from "./item-detail";
@@ -138,6 +138,7 @@ export function PlanView({
   const tasks = byHeading("you");
   const shownTasks = tasks.filter(i => taskFilter === "all" || taskStatusOf(i) === taskFilter);
   const platformGroups = groupPlatform(byHeading("platform"));
+  const platformCount = platformGroups.reduce((n, g) => n + g.items.length, 0);
   const questions = byHeading("questions");
   const skipped = byHeading("skipped");
   const extras = byHeading("good-to-have");
@@ -175,10 +176,7 @@ export function PlanView({
         title="Your build plan"
         actions={
           <>
-            <DownloadButton href={`/api/export/build-plan?${query}`}>Build plan for your agent</DownloadButton>
-            <DownloadButton variant="secondary" href={`/api/export/ssp?${query}`}>
-              Security review spreadsheet
-            </DownloadButton>
+            <ExportDialog query={query} />
             {!project && <SaveDialog answers={answers} toolIds={toolIds} facts={facts} />}
           </>
         }
@@ -186,93 +184,85 @@ export function PlanView({
         {assessRisk(answers).appType}. <TextLink href="/start">Change your answers</TextLink>
       </PageHeader>
 
-      <FloorPlan rooms={rooms} selected={room} onSelect={selectRoom} progress={project ? progress : undefined} />
-
-      <div className="grid grid-cols-[320px_minmax(0,1fr)] items-start gap-8">
-        <aside className="sticky top-6 flex max-h-[calc(100vh-48px)] flex-col gap-4">
+      <div className="grid grid-cols-[minmax(0,5fr)_minmax(0,4fr)] items-start gap-8">
+        <div className="flex min-w-0 flex-col gap-6">
           <ToolHints tools={data.tools} hints={plan.hints} onToggle={toggle} />
+          <FloorPlan rooms={rooms} selected={room} onSelect={selectRoom} progress={project ? progress : undefined} />
           <ToolPicker tools={data.tools} picked={toolIds} verification={verification} onToggle={toggle} />
-        </aside>
+        </div>
 
-        <div className="flex min-w-0 flex-col gap-12">
-          <Panel>
-            <div className="-my-1 flex flex-col">
-              <AgentSnippet />
-              <Disclosure summary={<span className="font-display text-lead font-semibold">For security reviewers: machine-readable files</span>}>
-                <p className="flex flex-wrap gap-6">
-                  <a href={`/api/export/oscal?kind=ssp&${query}`} className="font-medium text-blueprint underline decoration-1 hover:decoration-2">
-                    Security plan (JSON)
-                  </a>
-                  <a
-                    href={`/api/export/oscal?kind=component-definition&${query}`}
-                    className="font-medium text-blueprint underline decoration-1 hover:decoration-2"
-                  >
-                    Tool coverage (JSON)
-                  </a>
+        {/* The inspector: the lists for the room chosen on the plan, or for every room. */}
+        <aside
+          aria-label="Requirements"
+          className="sticky top-6 flex max-h-[calc(100vh-48px)] min-h-0 min-w-0 flex-col rounded-xs border border-ink bg-paper"
+        >
+          <div className="flex flex-col gap-1 border-b border-ink px-5 py-3">
+            <h2 className="text-title font-semibold">{room ? roomName(room) : "All rooms"}</h2>
+            <p className="tnum text-small text-ink-soft">
+              {tasks.length} to build, {platformCount} built by your tools, {questions.length} to answer
+            </p>
+          </div>
+          <div className="flex min-h-0 flex-col gap-10 overflow-y-auto px-5 py-5">
+            <Section heading="you" count={tasks.length}>
+              {project && <TaskFilter tasks={tasks} value={taskFilter} onChange={setTaskFilter} />}
+              {shownTasks.length === 0 ? (
+                <p className="text-ink-soft">
+                  {taskFilter === "all" ? emptyInRoom : `No tasks are ${STATUS_LABEL[taskFilter].toLowerCase()} here right now.`}
                 </p>
-              </Disclosure>
-            </div>
-          </Panel>
+              ) : (
+                <ul className={SCHEDULE}>{shownTasks.map(i => view(i))}</ul>
+              )}
+            </Section>
 
-          <Section heading="you" count={tasks.length}>
-            {project && <TaskFilter tasks={tasks} value={taskFilter} onChange={setTaskFilter} />}
-            {shownTasks.length === 0 ? (
-              <p className="text-ink-soft">
-                {taskFilter === "all" ? emptyInRoom : `No tasks are ${STATUS_LABEL[taskFilter].toLowerCase()} here right now.`}
-              </p>
-            ) : (
-              <ul className={SCHEDULE}>{shownTasks.map(i => view(i))}</ul>
-            )}
-          </Section>
-
-          <Section heading="platform" count={platformGroups.reduce((n, g) => n + g.items.length, 0)}>
-            {platformGroups.length === 0 ? (
-              <p className="text-ink-soft">{emptyInRoom}</p>
-            ) : (
-              <div className="rounded-xs border border-rule bg-paper px-4">
-                {platformGroups.map(g => (
-                  <Disclosure
-                    key={g.title}
-                    summary={<span className="font-display text-lead font-semibold">{g.title}</span>}
-                    aside={<Tag>{g.items.length}</Tag>}
-                  >
-                    <ul className="flex flex-col">{g.items.map(i => view(i, true))}</ul>
-                  </Disclosure>
-                ))}
-              </div>
-            )}
-          </Section>
-
-          <Section heading="questions" count={questions.length}>
-            {questions.length === 0 ? <p className="text-ink-soft">{emptyInRoom}</p> : <ul className={SCHEDULE}>{questions.map(i => view(i))}</ul>}
-          </Section>
-
-          {(skipped.length > 0 || !room) && (
-            <Section heading="skipped" count={skipped.length}>
-              {skipped.length === 0 ? (
+            <Section heading="platform" count={platformCount}>
+              {platformGroups.length === 0 ? (
                 <p className="text-ink-soft">{emptyInRoom}</p>
               ) : (
                 <div className="rounded-xs border border-rule bg-paper px-4">
-                  <Disclosure summary={<span className="font-display text-lead font-semibold">Show all {skipped.length}</span>}>
-                    <ul className="flex flex-col">{skipped.map(i => view(i, true))}</ul>
+                  {platformGroups.map(g => (
+                    <Disclosure
+                      key={g.title}
+                      summary={<span className="font-display text-lead font-semibold">{g.title}</span>}
+                      aside={<Tag>{g.items.length}</Tag>}
+                    >
+                      <ul className="flex flex-col">{g.items.map(i => view(i, true))}</ul>
+                    </Disclosure>
+                  ))}
+                </div>
+              )}
+            </Section>
+
+            <Section heading="questions" count={questions.length}>
+              {questions.length === 0 ? <p className="text-ink-soft">{emptyInRoom}</p> : <ul className={SCHEDULE}>{questions.map(i => view(i))}</ul>}
+            </Section>
+
+            {(skipped.length > 0 || !room) && (
+              <Section heading="skipped" count={skipped.length}>
+                {skipped.length === 0 ? (
+                  <p className="text-ink-soft">{emptyInRoom}</p>
+                ) : (
+                  <div className="rounded-xs border border-rule bg-paper px-4">
+                    <Disclosure summary={<span className="font-display text-lead font-semibold">Show all {skipped.length}</span>}>
+                      <ul className="flex flex-col">{skipped.map(i => view(i, true))}</ul>
+                    </Disclosure>
+                  </div>
+                )}
+              </Section>
+            )}
+
+            <Section heading="good-to-have" count={extras.length}>
+              {extras.length === 0 ? (
+                <p className="text-ink-soft">{emptyInRoom}</p>
+              ) : (
+                <div className="rounded-xs border border-rule bg-paper px-4">
+                  <Disclosure summary={<span className="font-display text-lead font-semibold">Show all {extras.length}</span>}>
+                    <ul className="flex flex-col">{extras.map(i => view(i, true))}</ul>
                   </Disclosure>
                 </div>
               )}
             </Section>
-          )}
-
-          <Section heading="good-to-have" count={extras.length}>
-            {extras.length === 0 ? (
-              <p className="text-ink-soft">{emptyInRoom}</p>
-            ) : (
-              <div className="rounded-xs border border-rule bg-paper px-4">
-                <Disclosure summary={<span className="font-display text-lead font-semibold">Show all {extras.length}</span>}>
-                  <ul className="flex flex-col">{extras.map(i => view(i, true))}</ul>
-                </Disclosure>
-              </div>
-            )}
-          </Section>
-        </div>
+          </div>
+        </aside>
       </div>
 
       {detailItem && (
