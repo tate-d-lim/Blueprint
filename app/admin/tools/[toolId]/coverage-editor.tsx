@@ -12,6 +12,7 @@ import type { CoverageValue, Level, RequirementKey } from "@/lib/domain/types";
 import { roomName } from "@/lib/plan/floor-plan";
 import { VALUE_LABEL } from "@/lib/plan/labels";
 import { saveVersionAction } from "../../actions";
+import { AgentFill, type AgentFilled } from "./agent-fill";
 
 interface Requirement {
   key: RequirementKey;
@@ -53,13 +54,29 @@ export function CoverageEditor({
   const [changeNote, setChangeNote] = useState("");
   const [errors, setErrors] = useState<{ key?: string; message: string }[]>([]);
   const [savedVersion, setSavedVersion] = useState<number | null>(null);
+  // Set once a coding agent's file has filled the editor. From then on every row needs an answer before save.
+  const [agent, setAgent] = useState<{ fileName: string; filled: number } | null>(null);
+  const [blankOnly, setBlankOnly] = useState(false);
 
   const families = [...new Set(requirements.map(r => r.family))];
   const update = (key: RequirementKey, patch: Partial<DraftRow>) =>
     setRows(prev => new Map(prev).set(key, { ...prev.get(key)!, ...patch }));
   const visible = requirements.filter(
-    r => (!family || r.family === family) && (!level || String(r.level) === level) && (!coveredOnly || rows.get(r.key)!.value),
+    r =>
+      (!family || r.family === family) &&
+      (!level || String(r.level) === level) &&
+      (!coveredOnly || rows.get(r.key)!.value) &&
+      (!blankOnly || !rows.get(r.key)!.value),
   );
+  const blankKeys = agent ? requirements.filter(r => !rows.get(r.key)!.value).map(r => r.key) : [];
+  const fillFromAgent = (result: AgentFilled) => {
+    setRows(new Map(result.rows.map(r => [r.key, r])));
+    setAgent({ fileName: result.fileName, filled: result.filled });
+    setSource(`Coding agent: ${result.fileName}`);
+    setErrors([]);
+    setSavedVersion(null);
+    setBlankOnly(false);
+  };
   const covered = [...rows.values()].filter(r => r.value).length;
   const errorFor = (key: RequirementKey) => errors.find(e => e.key === key)?.message;
   const changed = (key: RequirementKey) => JSON.stringify(strip(rows.get(key)!)) !== JSON.stringify(strip(initial.get(key) ?? { key, value: "" }));
@@ -67,7 +84,7 @@ export function CoverageEditor({
 
   const save = () =>
     startTransition(async () => {
-      const result = await saveVersionAction(toolId, profileId, [...rows.values()], source, changeNote);
+      const result = await saveVersionAction(toolId, profileId, [...rows.values()], source, changeNote, agent?.fileName);
       if (result.ok) {
         setErrors([]);
         setSavedVersion(result.version);
@@ -80,6 +97,24 @@ export function CoverageEditor({
 
   return (
     <div className="flex flex-col gap-5">
+      <AgentFill toolId={toolId} profileId={profileId} onFilled={fillFromAgent} />
+
+      {agent && (
+        <Note tone={blankKeys.length ? "attention" : "success"} role="status">
+          <span className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <span>
+              Filled in from {agent.fileName}: {agent.filled} of {requirements.length} rows.
+              {blankKeys.length > 0 && ` Fill the ${blankKeys.length} blank row${blankKeys.length === 1 ? "" : "s"} before you submit.`}
+            </span>
+            {blankKeys.length > 0 && !blankOnly && (
+              <Button variant="secondary" size="sm" onClick={() => setBlankOnly(true)}>
+                Show blank rows
+              </Button>
+            )}
+          </span>
+        </Note>
+      )}
+
       <div className="grid grid-cols-[220px_180px_auto_1fr] items-end gap-5">
         <Field label="Room">
           {props => (
@@ -103,8 +138,9 @@ export function CoverageEditor({
             </select>
           )}
         </Field>
-        <div className="pb-2">
+        <div className="flex flex-col gap-2 pb-2">
           <Checkbox label="Rows with coverage only" checked={coveredOnly} onChange={e => setCoveredOnly(e.target.checked)} />
+          {agent && <Checkbox label="Blank rows only" checked={blankOnly} onChange={e => setBlankOnly(e.target.checked)} />}
         </div>
         <p className="tnum pb-2 text-small text-ink-soft">
           {visible.length} shown, {covered} with coverage
@@ -121,6 +157,7 @@ export function CoverageEditor({
         {visible.map(req => {
           const row = rows.get(req.key)!;
           const error = errorFor(req.key);
+          const needsAnswer = agent !== null && !row.value;
           return (
             <Disclosure
               key={req.key}
@@ -135,13 +172,14 @@ export function CoverageEditor({
               aside={
                 <span className="flex flex-wrap items-center justify-end gap-2">
                   {changed(req.key) && <Stamp tone="pending">Changed</Stamp>}
-                  {error && <Stamp tone="pending">Fix this row</Stamp>}
+                  {needsAnswer && <Stamp tone="pending">Needs an answer</Stamp>}
+                  {error && !needsAnswer && <Stamp tone="pending">Fix this row</Stamp>}
                   <Tag>{row.value ? VALUE_LABEL(row.value, toolName, toolNameOf(row.otherToolId)) : "No statement"}</Tag>
                 </span>
               }
             >
               <div className="flex max-w-form flex-col gap-4">
-                {error && <Note tone="error">{error}</Note>}
+                {needsAnswer ? <Note tone="error">The agent left this blank. Choose an answer.</Note> : error && <Note tone="error">{error}</Note>}
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Who handles it">
                     {props => (
@@ -241,7 +279,7 @@ export function CoverageEditor({
                 {props => <input {...props} value={changeNote} onChange={e => setChangeNote(e.target.value)} placeholder="Optional" className={inputClass} />}
               </Field>
               <div className="flex gap-3">
-                <Button disabled={pending} onClick={save}>
+                <Button disabled={pending || blankKeys.length > 0} onClick={save}>
                   {pending ? "Saving…" : "Save"}
                 </Button>
                 <Button

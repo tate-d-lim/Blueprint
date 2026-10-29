@@ -80,6 +80,8 @@ The 86 requirements that must or should be done become **18 that are yours and n
 
 Optional: as Admin, **Import a Component Guide** and upload a published guide to show a platform team's spreadsheet becoming a not-yet-verified version. Real guides to try: `data/guides/WebSG-LowRiskCloud_2026-06-22.xlsx` (works), `data/guides/FormSG-Component-Guide-DSS.xlsx` (rejected: it is for a different standard).
 
+Optional, "a new tool in two minutes": as Admin, create a tool with the form at the bottom of **Admin**. In its editor, under **Fill in with your coding agent**, click **Download the brief** and show that `BUILD-COVERAGE.md` lists every requirement and holds a JSON template. Upload an agent file you made before the demo (an agent's answers to that template, with one row left blank) and click **Fill in the editor**. The note says how many rows are filled and asks you to fill the blank one. **Show blank rows**, open the row marked **Needs an answer**, choose who handles it, then **Save new version** → **Save**. As Verifier, the version's review page says a coding agent filled it in.
+
 ## After a rehearsal
 
 Click **Reset demo data** (confirm) to put everything back. It reloads all the source files, so edits made in the admin screens are lost.
