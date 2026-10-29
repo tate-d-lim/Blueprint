@@ -6,6 +6,7 @@ export const HEADING_TITLES: Record<Heading, string> = {
   you: 'What you need to do',
   platform: 'What your platform already does',
   questions: 'Questions to answer',
+  skipped: "Doesn't apply to your app",
   'good-to-have': 'Good to have',
 };
 
@@ -47,6 +48,7 @@ export const GOOD_TO_HAVE_LABEL: Record<Placement, string> = {
   conflict: 'Worth checking',
   open: 'Worth checking',
   'answered-not-applicable': 'Worth checking',
+  'not-for-app': "Doesn't apply",
 };
 
 export const HINT_TEXT = (from: string, to: string, n: number): string =>
@@ -62,6 +64,7 @@ export const REASON = {
   'app-builder': (tools: string[]) => `${and(tools)} says this one is yours.`,
   'default-builder': () => 'No tool you picked covers this.',
   'answered-applies': () => 'You said this applies to your app.',
+  confirmed: () => 'You said this applies to your app.',
   redirect: (pairs: { from: string; other: string }[]) =>
     pairs
       .map(p => `${p.from} expects ${p.other} to handle this. Are you using ${p.other}, or handling it yourself?`)

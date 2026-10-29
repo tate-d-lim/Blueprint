@@ -36,10 +36,10 @@ test('create, mark as-1 Done with a note, reload: the plan shows it', async () =
 test('answering "Applies" turns a question into a task; clearing the answer puts it back', async () => {
   const project = await make();
   const db = await getDb();
-  await setQuestionAnswer(db, project._id, 'im8-reform:pm-1', { applies: true, reason: '' });
-  expect((await planFor(project._id)).items.find(i => i.id === 'pm-1')!.placement).toBe('answered-applies');
-  await setQuestionAnswer(db, project._id, 'im8-reform:pm-1', null);
-  expect((await planFor(project._id)).items.find(i => i.id === 'pm-1')!.placement).toBe('open');
+  await setQuestionAnswer(db, project._id, 'im8-reform:is-11', { applies: true, reason: '' });
+  expect((await planFor(project._id)).items.find(i => i.id === 'is-11')!.placement).toBe('answered-applies');
+  await setQuestionAnswer(db, project._id, 'im8-reform:is-11', null);
+  expect((await planFor(project._id)).items.find(i => i.id === 'is-11')!.placement).toBe('open');
 });
 
 test('project data that points at things that no longer exist still plans without errors', async () => {
@@ -85,4 +85,21 @@ test('a download link with ?project= uses the saved answers, tools and statuses'
   expect(request.toolIds).toEqual(['appcentral', 'dbaas', 'iga']);
   expect((request.plan.items.find(i => i.id === 'as-1')!.status as { status: string }).status).toBe('done');
   await expect(resolvePlanRequest(new URLSearchParams({ project: 'nope' }))).rejects.toBeInstanceOf(BadPlanRequestError);
+});
+
+test('a saved project keeps its answers about the app, and its plan leaves out what they rule out', async () => {
+  const facts = { reach: 'staff', web: 'no', signin: 'no', domain: 'no', shortlinks: 'no' };
+  const project = await make({ facts });
+  const db = await getDb();
+  const stored = (await getProject(db, project._id))!;
+  expect(stored.facts).toEqual(facts);
+  const plan = buildPlan(selectPlanInput(await loadPlanData(db), { profileId: 'low-risk-cloud', toolIds: stored.toolIds, facts: stored.facts }, stored));
+  expect(plan.items.filter(i => i.heading === 'skipped').map(i => i.id).sort()).toEqual(
+    ['ac-7', 'as-11', 'as-15', 'as-3', 'as-4', 'as-5', 'as-6', 'as-9', 'is-11', 'is-14', 'is-15', 'lm-6'],
+  );
+});
+
+test('a project saved without answers has none, and every requirement applies', async () => {
+  const stored = (await getProject(await getDb(), (await make())._id))!;
+  expect(stored.facts).toBeUndefined();
 });

@@ -7,6 +7,7 @@ import type {
   Catalog,
   CoverageEntry,
   CoverageValue,
+  Fact,
   PlainText,
   Profile,
   Project,
@@ -208,6 +209,8 @@ export async function buildSeedDocuments(
       const plain = await readJson<Record<string, PlainText>>(plainFile);
       for (const entry of p.entries) if (plain[entry.id]) entry.plain = plain[entry.id];
     }
+    const factsFile = path.join(dataDir, 'facts', `${p._id}.json`);
+    if (existsSync(factsFile)) p.facts = await readJson<Fact[]>(factsFile);
   }
 
   const handWritten = await readJson<Tool[]>(path.join(dataDir, 'seed', 'tools.json'));

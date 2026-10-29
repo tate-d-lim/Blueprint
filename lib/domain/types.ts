@@ -28,11 +28,42 @@ export interface Requirement {
   lastModified?: string;
 }
 
+/** A rule: "this requirement applies when ...", over the answers to the app facts. */
+export type Rule =
+  | { fact: string; is: string | string[] }
+  | { all: Rule[] }
+  | { any: Rule[] };
+
+/** One answer a person can give to a fact. `reason` is the sentence shown when the answer rules a requirement out. */
+export interface FactOption {
+  value: string;
+  label: string;
+  reason?: string;
+}
+
+/**
+ * Something about the app that a person can answer before it is built. A "tick" is yes or no; a "choice" is one of
+ * its options. `showIf` hides the fact unless an earlier answer makes it relevant.
+ */
+export type Fact = {
+  id: string;
+  hint?: string;
+  showIf?: Rule;
+} & (
+  | { kind: 'tick'; label: string; noReason: string }
+  | { kind: 'choice'; question: string; options: FactOption[] }
+);
+
+/** Fact id to the value chosen. A tick is "yes" or "no". */
+export type FactAnswers = Record<string, string>;
+
 export interface PlainText {
   title: string;
   task: string;
   why: string;
   question?: string;
+  /** The requirement only applies to apps whose answers satisfy this. No rule means it applies to every app. */
+  appliesWhen?: Rule;
 }
 
 export interface ProfileEntry {
@@ -56,6 +87,8 @@ export interface Profile {
   version: string;
   sourceFile: string;
   entries: ProfileEntry[];
+  /** What a person can tell us about the app; the entries' rules are written over these. */
+  facts?: Fact[];
 }
 
 export interface Tool {
@@ -107,6 +140,8 @@ export interface Project {
   toolIds: string[];
   taskStatus: Record<RequirementKey, { status: TaskStatus; note?: string }>;
   questionAnswers: Record<RequirementKey, { applies: boolean; reason: string }>;
+  /** Answers about the app. Projects saved before these existed have none, and every requirement applies. */
+  facts?: FactAnswers;
   createdAt: string;
   updatedAt: string;
 }

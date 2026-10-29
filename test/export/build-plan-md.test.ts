@@ -22,8 +22,8 @@ async function demo(toolIds = ['appcentral', 'dbaas', 'iga'], project?: ProjectO
 
 test('the three sections, their counts and the platform groups', async () => {
   const md = await demo();
-  expect(md).toContain('## 1. What you need to do (11)');
-  expect(md).toContain('## 2. Ask a person first (9)');
+  expect(md).toContain('## 1. What you need to do (17)');
+  expect(md).toContain('## 2. Ask a person first (3)');
   expect(md).toContain("## 3. Don't build this: your platform already does it (66)");
   expect(md).toContain('### appCentral\n');
   expect(md).toContain("### Doesn't apply on your platform\n");

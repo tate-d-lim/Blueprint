@@ -1,5 +1,7 @@
 import { z } from 'zod';
+import type { FactAnswers } from '../domain/types';
 import type { Classification, Downstream, Impact, RiskAnswers, Sensitivity } from '../risk/assess';
+import { parseFactAnswers, writeFactAnswers } from './facts';
 
 const CLASSIFICATION = {
   open: 'official-open',
@@ -23,7 +25,7 @@ const codeFor = <T extends string>(table: Record<string, T>, value: T): string =
   Object.keys(table).find(code => table[code] === value) ?? '';
 
 /** The query string (without "?") that carries a builder's answers and tool picks. */
-export function planQuery(answers: RiskAnswers, toolIds: string[]): string {
+export function planQuery(answers: RiskAnswers, toolIds: string[], facts: FactAnswers = {}): string {
   const ticks = [answers.cii ? 'cii' : '', answers.sii ? 'sii' : ''].filter(Boolean).join(',');
   return [
     `c=${codeFor(CLASSIFICATION, answers.classification)}`,
@@ -32,6 +34,7 @@ export function planQuery(answers: RiskAnswers, toolIds: string[]): string {
     `d=${codeFor(DOWNSTREAM, answers.downstream)}`,
     `k=${ticks}`,
     `t=${toolIds.map(encodeURIComponent).join(',')}`,
+    ...(Object.keys(facts).length ? [`f=${writeFactAnswers(facts)}`] : []),
   ].join('&');
 }
 
@@ -45,6 +48,7 @@ const schema = z.object({
   d: oneOf(DOWNSTREAM),
   k: z.string().default('').transform(list).pipe(z.array(z.enum(['cii', 'sii']))),
   t: z.string().default('').transform(list),
+  f: z.string().default('').transform(parseFactAnswers),
 });
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -53,16 +57,17 @@ type SearchParams = Record<string, string | string[] | undefined>;
 export function parsePlanQuery(
   sp: SearchParams,
   knownToolIds: string[],
-): { answers: RiskAnswers; toolIds: string[] } | null {
+): { answers: RiskAnswers; toolIds: string[]; facts: FactAnswers } | null {
   const first = Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
   const parsed = schema.safeParse(first);
   if (!parsed.success) return null;
-  const { c, s, i, d, k, t } = parsed.data;
+  const { c, s, i, d, k, t, f } = parsed.data;
   const known = new Set(knownToolIds);
   const toolIds = [...new Set(t.map(decodeURIComponentSafe))].filter(id => known.has(id));
   return {
     answers: { classification: c, sensitivity: s, impact: i, downstream: d, cii: k.includes('cii'), sii: k.includes('sii') },
     toolIds,
+    facts: f,
   };
 }
 

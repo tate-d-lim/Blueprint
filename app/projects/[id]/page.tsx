@@ -13,7 +13,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
   return (
     <div className="flex flex-col gap-6">
       <Breadcrumb items={[{ label: "Saved projects", href: "/projects" }, { label: project.name }]} />
-      <PlanView data={data} answers={project.riskAnswers} initialToolIds={project.toolIds} project={project} />
+      <PlanView data={data} answers={project.riskAnswers} initialToolIds={project.toolIds} facts={project.facts ?? {}} project={project} />
     </div>
   );
 }

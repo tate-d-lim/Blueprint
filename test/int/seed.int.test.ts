@@ -19,12 +19,12 @@ test('loadPlanData returns both profiles and pairs each tool’s versions', asyn
   expect(dbaas.lastApproved).toBeUndefined();
 });
 
-test('the seeded data gives the headline counts: you 11, platform 66, questions 9', async () => {
+test('the seeded data gives the headline counts: you 17, platform 66, questions 3', async () => {
   const data = await loadPlanData(await getDb());
   const plan = buildPlan(
     selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds: ['appcentral', 'dbaas', 'iga'] }),
   );
-  expect(plan.counts).toEqual({ you: 11, platform: 66, questions: 9, 'good-to-have': 32 });
+  expect(plan.counts).toEqual({ you: 17, platform: 66, questions: 3, skipped: 0, 'good-to-have': 32 });
 });
 
 test('seeding twice replaces the data instead of duplicating it', async () => {

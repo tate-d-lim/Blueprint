@@ -1,5 +1,6 @@
 import type {
   CoverageValue,
+  FactAnswers,
   Level,
   PlainText,
   Profile,
@@ -9,10 +10,11 @@ import type {
   TaskStatus,
   Tool,
 } from '../domain/types';
+import { checkRule } from './facts';
 import { REASON } from './labels';
 import { rowVerification, type Verification, type VersionPair } from './verification';
 
-export type Heading = 'you' | 'platform' | 'questions' | 'good-to-have';
+export type Heading = 'you' | 'platform' | 'questions' | 'skipped' | 'good-to-have';
 export type Placement =
   | 'provided'
   | 'not-applicable'
@@ -23,7 +25,9 @@ export type Placement =
   | 'redirect'
   | 'conflict'
   | 'open'
-  | 'answered-not-applicable';
+  | 'answered-not-applicable'
+  /** The person's answers about the app rule it out. */
+  | 'not-for-app';
 
 export interface Claim {
   toolId: string;
@@ -80,6 +84,8 @@ export interface PlanInput {
   allTools: Tool[];
   versions: VersionPair[];
   project?: ProjectOverlay;
+  /** What the person said about the app; with no answers every requirement applies. */
+  factAnswers?: FactAnswers;
 }
 
 export interface PlanData {
@@ -91,6 +97,7 @@ export interface PlanData {
 export interface PlanState {
   profileId: string;
   toolIds: string[];
+  facts?: FactAnswers;
 }
 
 const YOU_PLACEMENTS: Placement[] = ['shared', 'app-builder', 'default-builder', 'answered-applies'];
@@ -98,6 +105,7 @@ const QUESTION_PLACEMENTS: Placement[] = ['redirect', 'conflict', 'open'];
 
 function headingOf(placement: Placement, level: Level): Heading {
   if (level === 2) return 'good-to-have';
+  if (placement === 'not-for-app') return 'skipped';
   if (placement === 'provided' || placement === 'not-applicable') return 'platform';
   if (YOU_PLACEMENTS.includes(placement)) return 'you';
   return 'questions';
@@ -170,7 +178,15 @@ export function buildPlan(input: PlanInput): Plan {
         claims.push(claim);
       }
 
-      let verdict = classify(entry, claims, picked);
+      const rule = checkRule(entry.plain?.appliesWhen, profile.facts ?? [], input.factAnswers ?? {});
+      let verdict: Verdict =
+        rule.state === 'skipped'
+          ? { placement: 'not-for-app', decisive: [], reason: rule.reason }
+          : classify(entry, claims, picked);
+      // An answer that confirms the requirement applies settles a question nothing else could.
+      if (rule.state === 'applies' && rule.confirmed && verdict.placement === 'open') {
+        verdict = { placement: 'default-builder', decisive: [], reason: REASON.confirmed() };
+      }
       let status: ItemStatus | undefined;
       const project = input.project;
       if (project && entry.level < 2 && QUESTION_PLACEMENTS.includes(verdict.placement)) {
@@ -209,7 +225,7 @@ export function buildPlan(input: PlanInput): Plan {
 
   assertEachOnce(items);
 
-  const counts: Record<Heading, number> = { you: 0, platform: 0, questions: 0, 'good-to-have': 0 };
+  const counts: Record<Heading, number> = { you: 0, platform: 0, questions: 0, skipped: 0, 'good-to-have': 0 };
   for (const item of items) counts[item.heading]++;
 
   const hintCounts = new Map<string, ToolHint>();

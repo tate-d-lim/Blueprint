@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { attempt } from "@/lib/data/attempt";
 import { withDb } from "@/lib/data/db";
 import { createProject, setProjectTools, setQuestionAnswer, setTaskStatus } from "@/lib/data/repos/projects";
-import type { TaskStatus } from "@/lib/domain/types";
+import type { FactAnswers, TaskStatus } from "@/lib/domain/types";
 import type { SaveOutcome } from "@/lib/plan/save";
 import type { RiskAnswers } from "@/lib/risk/assess";
 
@@ -13,6 +13,7 @@ export async function createProjectAction(input: {
   ownerName: string;
   riskAnswers: RiskAnswers;
   toolIds: string[];
+  facts?: FactAnswers;
 }): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
   try {
     const project = await withDb(db => createProject(db, input));

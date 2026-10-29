@@ -1,0 +1,48 @@
+[
+  {
+    "id": "reach",
+    "kind": "choice",
+    "question": "Who will use your app?",
+    "hint": "If both staff and the public use it, choose the public.",
+    "options": [
+      { "value": "public", "label": "Members of the public", "reason": "Your app is open to the public." },
+      { "value": "staff", "label": "Government staff only", "reason": "Your app is only for government staff, not the public." }
+    ]
+  },
+  {
+    "id": "web",
+    "kind": "tick",
+    "label": "People use it in a web browser",
+    "hint": "A website or web app. Leave it empty if people only reach it through another system.",
+    "noReason": "Your app isn't used in a web browser."
+  },
+  {
+    "id": "signin",
+    "kind": "tick",
+    "label": "People sign in to it",
+    "hint": "With a password, or with Singpass or a work account.",
+    "noReason": "Nobody signs in to your app."
+  },
+  {
+    "id": "sms",
+    "kind": "tick",
+    "label": "It sends SMS text messages",
+    "hint": "For example one-time passwords or reminders.",
+    "noReason": "Your app doesn't send SMS text messages to the public.",
+    "showIf": { "fact": "reach", "is": "public" }
+  },
+  {
+    "id": "domain",
+    "kind": "tick",
+    "label": "It has its own web address",
+    "hint": "For example myapp.gov.sg.",
+    "noReason": "Your app has no web address of its own."
+  },
+  {
+    "id": "shortlinks",
+    "kind": "tick",
+    "label": "It shows or sends shortened links",
+    "hint": "Links that redirect to a longer address.",
+    "noReason": "Your app doesn't use shortened links."
+  }
+]

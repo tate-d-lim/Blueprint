@@ -9,7 +9,7 @@ import { Note } from "@/app/ui/note";
 import { PageHeader, Panel, SectionHeading } from "@/app/ui/panel";
 import { Segmented } from "@/app/ui/segmented";
 import { Tag } from "@/app/ui/stamp";
-import type { Project, TaskStatus } from "@/lib/domain/types";
+import type { FactAnswers, Project, TaskStatus } from "@/lib/domain/types";
 import { buildPlan, type Heading, type PlanData, type PlanItem, type ProjectOverlay } from "@/lib/plan/engine";
 import { floorPlanRooms, roomName } from "@/lib/plan/floor-plan";
 import { HEADING_TITLES, STATUS_LABEL } from "@/lib/plan/labels";
@@ -33,6 +33,7 @@ const BLURB: Record<Heading, string> = {
   you: "These are yours to build or arrange. Each one says why it matters.",
   platform: "Your tools already handle these. Don't build them again.",
   questions: "We can't tell from your tools. Check these with the right person before you build.",
+  skipped: "Your answers about the app rule these out. If an answer is wrong, change it and they come back.",
   "good-to-have": "Optional extras, worth doing once the basics are done.",
 };
 
@@ -40,11 +41,13 @@ export function PlanView({
   data,
   answers,
   initialToolIds,
+  facts,
   project,
 }: {
   data: PlanData;
   answers: RiskAnswers;
   initialToolIds: string[];
+  facts: FactAnswers;
   project?: Project;
 }) {
   // The page's own props can be a stale copy when the browser restores it with Back, so an unsaved plan
@@ -64,8 +67,8 @@ export function PlanView({
   );
 
   const plan = useMemo(
-    () => buildPlan(selectPlanInput(data, { profileId: PROFILE_ID, toolIds }, overlay)),
-    [data, toolIds, overlay],
+    () => buildPlan(selectPlanInput(data, { profileId: PROFILE_ID, toolIds, facts }, overlay)),
+    [data, toolIds, facts, overlay],
   );
   const entries = useMemo(
     () => new Map(data.profiles.flatMap(p => p.entries.map(e => [e.key, e] as const))),
@@ -104,7 +107,7 @@ export function PlanView({
     const next = toolIds.includes(id) ? toolIds.filter(t => t !== id) : [...toolIds, id];
     setToolIds(next);
     if (project) void save(() => setProjectToolsAction(project._id, next), () => setToolIds(previous));
-    else window.history.replaceState(null, "", withRoom(`/plan?${planQuery(answers, next)}`, room));
+    else window.history.replaceState(null, "", withRoom(`/plan?${planQuery(answers, next, facts)}`, room));
   };
 
   const controls: ItemControls | undefined = project && {
@@ -127,7 +130,7 @@ export function PlanView({
   };
 
   const detailItem = detailKey ? plan.items.find(i => i.key === detailKey) : undefined;
-  const query = project ? `project=${encodeURIComponent(project._id)}` : planQuery(answers, toolIds);
+  const query = project ? `project=${encodeURIComponent(project._id)}` : planQuery(answers, toolIds, facts);
   const inRoom = (i: PlanItem) => !room || i.family === room;
   const byHeading = (h: Heading) => plan.items.filter(i => i.heading === h && inRoom(i));
   const progress = planProgress(plan.items);
@@ -136,6 +139,7 @@ export function PlanView({
   const shownTasks = tasks.filter(i => taskFilter === "all" || taskStatusOf(i) === taskFilter);
   const platformGroups = groupPlatform(byHeading("platform"));
   const questions = byHeading("questions");
+  const skipped = byHeading("skipped");
   const extras = byHeading("good-to-have");
   const emptyInRoom = room ? `Nothing here for ${roomName(room)}.` : "Nothing here.";
   const view = (item: PlanItem, compact = false) => (
@@ -175,7 +179,7 @@ export function PlanView({
             <DownloadButton variant="secondary" href={`/api/export/ssp?${query}`}>
               Security review spreadsheet
             </DownloadButton>
-            {!project && <SaveDialog answers={answers} toolIds={toolIds} />}
+            {!project && <SaveDialog answers={answers} toolIds={toolIds} facts={facts} />}
           </>
         }
       >
@@ -242,6 +246,20 @@ export function PlanView({
           <Section heading="questions" count={questions.length}>
             {questions.length === 0 ? <p className="text-ink-soft">{emptyInRoom}</p> : <ul className={SCHEDULE}>{questions.map(i => view(i))}</ul>}
           </Section>
+
+          {(skipped.length > 0 || !room) && (
+            <Section heading="skipped" count={skipped.length}>
+              {skipped.length === 0 ? (
+                <p className="text-ink-soft">{emptyInRoom}</p>
+              ) : (
+                <div className="rounded-xs border border-rule bg-paper px-4">
+                  <Disclosure summary={<span className="font-display text-lead font-semibold">Show all {skipped.length}</span>}>
+                    <ul className="flex flex-col">{skipped.map(i => view(i, true))}</ul>
+                  </Disclosure>
+                </div>
+              )}
+            </Section>
+          )}
 
           <Section heading="good-to-have" count={extras.length}>
             {extras.length === 0 ? (

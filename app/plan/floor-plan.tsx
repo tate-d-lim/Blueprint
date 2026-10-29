@@ -93,7 +93,7 @@ export function FloorPlan({
 
 const AREAS = {
   built: "hatch-built",
-  done: "bg-blueprint",
+  done: "bg-done",
   inProgress: "hatch-progress",
   todo: "border border-dashed border-blueprint",
   settled: "border border-dotted border-ink-soft",

@@ -156,6 +156,7 @@ export function buildSsp(input: {
           own(STATE_BY_STATUS[taskStatus(item).status]);
           break;
         case 'answered-not-applicable':
+        case 'not-for-app':
           own('not-applicable');
           break;
         case 'open':

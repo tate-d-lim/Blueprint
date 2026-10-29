@@ -1,5 +1,5 @@
 ---
-name: Build plan for CPFB app builders
+name: Blueprint for CPFB app builders
 description: A blueprint drawing set. White grid paper, navy ink, blueprint blue for what is built, redline for what needs attention.
 colors:
   blueprint: "#1d4e89"
@@ -7,6 +7,10 @@ colors:
   blueprint-wash: "#e7eef8"
   redline: "#b8322a"
   redline-wash: "#fbedeb"
+  done: "#2c7a56"
+  done-wash: "#e4f2ea"
+  working: "#d08f1d"
+  working-wash: "#fdf3dd"
   ink: "#0f2a4a"
   ink-soft: "#4a6280"
   rule: "#c3d1e2"
@@ -124,7 +128,7 @@ components:
     padding: "12px 16px"
 ---
 
-# Design System: Build plan for CPFB app builders
+# Design System: Blueprint for CPFB app builders
 
 ## Overview
 
@@ -132,7 +136,7 @@ components:
 
 Every page is one sheet of an architect's drawing set. The sheet has a double ruled frame. A blueprint blue title block runs across the top. Below it is white paper with a faint blue grid. The sheet sits on a pale blue-grey drafting table.
 
-The plan is drawn as a building. Each requirement family is a room. Drawing conventions carry the meaning: hatch is built by your tools, solid blue is done, cross-hatch is in progress, a dashed outline is to do, a dotted outline does not apply, and a red revision cloud is an open question. Lines are thin and ruled. Corners are square. Nothing floats except dialogs and the editor's save dock.
+The plan is drawn as a building. Each requirement family is a room. Drawing conventions carry the meaning: blue hatch is built by your tools, solid green is done, amber hatch is in progress, a dashed outline is to do, a dotted outline does not apply, and a red revision cloud is an open question. Lines are thin and ruled. Corners are square. Nothing floats except dialogs and the editor's save dock.
 
 The system is small on purpose. There is one token set, one kit of shared components in `app/ui/`, and seven type steps. A new screen uses these and nothing else. The app is for desktop only.
 
@@ -149,11 +153,13 @@ The system is small on purpose. There is one token set, one kit of shared compon
 Blue ink on white paper, with one red pen for corrections.
 
 ### Primary
-- **Blueprint Blue** (blueprint): the title block, built rooms (as hatch), done areas (solid), approval stamps, the one primary button, links, focus rings and checkbox accents.
+- **Blueprint Blue** (blueprint): the title block, built rooms (as hatch), approval stamps, the one primary button, links, focus rings and checkbox accents.
 - **Deep Blueprint** (blueprint-deep): hover state of the primary button only.
-- **Blueprint Wash** (blueprint-wash): the hatch ground, a chosen segment, a chosen room, hover on secondary buttons and rows, text selection, info and success notes.
+- **Blueprint Wash** (blueprint-wash): the hatch ground, a chosen segment, a chosen room, hover on secondary buttons and rows, text selection, info notes.
 
 ### Secondary
+- **Done Green** (done): finished work only. Solid done areas on the floor plan and success notes. Its wash (done-wash) is the ground of success notes.
+- **Working Amber** (working): work under way only. The in-progress hatch on the floor plan. Its wash (working-wash) is the hatch ground.
 - **Redline** (redline): attention only. Revision clouds, the "Not yet verified" stamp, field errors, attention and error notes.
 - **Redline Wash** (redline-wash): the fill inside a revision cloud and the ground of attention and error notes.
 
@@ -167,7 +173,7 @@ Blue ink on white paper, with one red pen for corrections.
 - **Drafting Table** (table): the page ground around the sheet.
 
 ### Named Rules
-**The Blueprint Budget Rule.** Blueprint blue fills only the title block, built and done areas, approval stamps and the one primary action. Everything else is ink on paper.
+**The Blueprint Budget Rule.** Blueprint blue fills only the title block, built areas, approval stamps and the one primary action. Green and amber appear only to show a state (done, in progress) and never as decoration. Everything else is ink on paper.
 
 **The Redline Rule.** Redline means "needs attention". Never use it for decoration, emphasis or brand.
 
@@ -181,7 +187,7 @@ Blue ink on white paper, with one red pen for corrections.
 
 ### Hierarchy
 - **Display** (600, 34px, 1.1): the page title in PageHeader. One per page.
-- **Heading** (600, 26px, 1.15): page sections in SectionHeading, the floor plan heading, the "Build plan" lettering in the title block.
+- **Heading** (600, 26px, 1.15): page sections in SectionHeading, the floor plan heading, the "Blueprint" lettering in the title block.
 - **Title** (600, 22px, 1.25): Panel and Dialog titles, rendered by the component from a plain string. Also the count beside a SectionHeading.
 - **Lead** (18px, 1.35): sub-sections inside panels and dialogs, legends of radio groups, note titles, room names and sheet tabs (all in the display face, 600). Also the description under a page title (Barlow, ink-soft).
 - **Body** (400, 16px, 1.5): running text, rows, fields, field labels (display face, 600), md buttons.
@@ -264,7 +270,7 @@ A ruled strip of choices, divided like title-block cells. 36px high, small step,
 - Checkboxes and radios are native, 18px, with a blueprint accent.
 
 ### Notes
-A note on the drawing. One 1px border on every side, 2px corners, 12px by 16px padding. Info and success use blueprint wash. Attention and error use redline wash. Never a thick side stripe.
+A note on the drawing. One 1px border on every side, 2px corners, 12px by 16px padding. Info uses blueprint wash. Success uses done-green wash. Attention and error use redline wash. Never a thick side stripe.
 
 ### Tables and disclosures
 - **Table:** a drawing schedule. A 1px ink rule under the header row, 1px rules between rows, headers at small in the display face, numbers in tabular figures.
@@ -275,12 +281,12 @@ A note on the drawing. One 1px border on every side, 2px corners, 12px by 16px p
 Native dialog. A centred dialog is up to 560px wide. A side dialog is a full-height panel from the right, up to 720px wide, for detail views. Ink border, paper ground, the dialog shadow. The title strip and footer are ruled off. The close button is a 32px square ruled button.
 
 ### Navigation: the title block
-The page header is the drawing's title block. It is a full-width blueprint band of ruled cells with paper lettering. Each cell has a label at the label step over its value. The cells are Drawing ("Build plan" lettering), Sheets (the page tabs), the sheet's own cells, Viewing as, and Demo data. The current sheet tab is underlined 2px; the others are 80% paper. A saved project adds its Project, Owner and Revised cells through the @titlecells parallel route. Other sheets render no cells.
+The page header is the drawing's title block. It is a full-width blueprint band of ruled cells with paper lettering. Each cell has a label at the label step over its value. The cells are Drawing ("Blueprint" lettering), Sheets (the page tabs), the sheet's own cells, Viewing as, and Demo data. The current sheet tab is underlined 2px; the others are 80% paper. A saved project adds its Project, Owner and Revised cells through the @titlecells parallel route. Other sheets render no cells.
 
 ### Floor plan (signature component)
 The plan drawn as a building, full width on /plan and on a saved project.
 - One room per requirement family, named with roomName from lib/plan/floor-plan.ts. Rooms are sized by requirement count and arranged in three rows.
-- Each room's floor is split into areas sized by count: hatch for built, solid blueprint for done, cross-hatch for in progress, dashed blueprint for to do, dotted soft ink for does not apply, a revision cloud for questions. Areas grow and shrink in place over 700ms; reduced motion turns this off.
+- Each room's floor is split into areas sized by count: hatch for built, solid green for done, amber hatch for in progress, dashed blueprint for to do, dotted soft ink for does not apply, a revision cloud for questions. Areas grow and shrink in place over 700ms; reduced motion turns this off.
 - A name plate sits on the floor: a ruled paper box with the room name at lead and its status at small. A chosen room turns its plate solid blueprint and its floor to wash.
 - Choosing a room filters the lists below (?room=). A status line under the plan says what is shown, with a quiet "Show all rooms" button.
 - A legend in the header shows each convention at a small size.

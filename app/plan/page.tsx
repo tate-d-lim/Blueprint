@@ -33,5 +33,5 @@ export default async function PlanPage({
   const parsed = parsePlanQuery(sp, data.tools.map(t => t._id));
   if (!parsed || !assessRisk(parsed.answers).profileId) redirect("/start");
 
-  return <PlanView data={data} answers={parsed.answers} initialToolIds={parsed.toolIds} />;
+  return <PlanView data={data} answers={parsed.answers} initialToolIds={parsed.toolIds} facts={parsed.facts} />;
 }

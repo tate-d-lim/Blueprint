@@ -39,7 +39,7 @@ A build plan for app builders, not a security-plan generator. A builder answers 
 
 ## Brand Commitments
 
-- **Blueprint world (user, 2026-10-28), replacing SGDS.** The app looks like an architect's drawing set: white drafting paper with a faint blue grid and dark blue ink; deep blueprint blue only in the title block, the floor plan and approval stamps. Every page is a drawing sheet with a title block. The name "Build plan" carries the metaphor: plan before you build.
+- **Blueprint world (user, 2026-10-28), replacing SGDS.** The app looks like an architect's drawing set: white drafting paper with a faint blue grid and dark blue ink; deep blueprint blue only in the title block, the floor plan and approval stamps. Every page is a drawing sheet with a title block. The name "Blueprint" carries the metaphor: plan before you build.
 - **Own controls, no SGDS.** The Singapore Government Design System components were removed at the user's request; every control is plain HTML styled from one shared token set, and design choices must be consistent across every screen.
 - **Floor plan as the overview.** One room per requirement family, sized by its number of requirements. Rooms the picked tools cover are drawn as already built; the builder's rooms fill as tasks are done; open questions are marked. Clicking a room filters the lists below it. It appears on a new plan (rooms become built as tools are ticked) and on a saved project.
 - No official Singapore Government masthead and no GovTech or agency logos: this is a local prototype, not a live .gov.sg service (confirmed by the user on 2026-10-28).

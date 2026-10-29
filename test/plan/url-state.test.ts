@@ -19,7 +19,7 @@ test('planQuery for the demo answers is the documented link', () => {
 test('a round trip returns the same answers and tools', () => {
   const answers: RiskAnswers = { ...demo, classification: 'confidential-cloud-eligible', impact: 'moderate', sii: true, cii: true };
   const parsed = parse(planQuery(answers, ['iga', 'appcentral']));
-  expect(parsed).toEqual({ answers, toolIds: ['iga', 'appcentral'] });
+  expect(parsed).toEqual({ answers, toolIds: ['iga', 'appcentral'], facts: {} });
 });
 
 test('an unknown classification code is rejected', () => {
@@ -49,4 +49,12 @@ test('a repeated parameter uses its first value', () => {
     known,
   );
   expect(parsed?.answers.classification).toBe('restricted');
+});
+
+test('answers about the app travel in the link, and an old link without them still works', () => {
+  const facts = { reach: 'public', sms: 'no' };
+  expect(planQuery(demo, ['iga'], facts)).toBe('c=restricted&s=sn&i=slight&d=min&k=&t=iga&f=reach.public,sms.no');
+  expect(parse(planQuery(demo, ['iga'], facts))?.facts).toEqual(facts);
+  expect(planQuery(demo, ['iga'])).not.toContain('&f=');
+  expect(parse('c=restricted&s=sn&i=slight&d=min&k=&t=iga')?.facts).toEqual({});
 });

@@ -12,22 +12,38 @@
   "as-3": {
     "title": "Escape output before it reaches the browser",
     "task": "Sanitise or escape every value you put into an HTML page so the browser shows it as text and never runs it as code.",
-    "why": "Unescaped output lets an attacker run their own script in your users' browsers (cross-site scripting)."
+    "why": "Unescaped output lets an attacker run their own script in your users' browsers (cross-site scripting).",
+    "appliesWhen": {
+      "fact": "web",
+      "is": "yes"
+    }
   },
   "as-4": {
     "title": "Slow down repeated sign-in attempts",
     "task": "Rate-limit every sign-in mechanism so repeated attempts are delayed or blocked.",
-    "why": "Without limits, attackers can guess passwords at high speed until one works."
+    "why": "Without limits, attackers can guess passwords at high speed until one works.",
+    "appliesWhen": {
+      "fact": "signin",
+      "is": "yes"
+    }
   },
   "as-5": {
     "title": "Set strong password rules",
     "task": "If you can't use single sign-on, require long passwords and block weak or commonly used ones.",
-    "why": "Short or common passwords are guessed quickly and lead to hijacked accounts."
+    "why": "Short or common passwords are guessed quickly and lead to hijacked accounts.",
+    "appliesWhen": {
+      "fact": "signin",
+      "is": "yes"
+    }
   },
   "as-6": {
     "title": "Store passwords as salted hashes",
     "task": "Store passwords only as salted hashes made with a slow password-hashing scheme, never as plain text.",
-    "why": "If your data leaks, properly hashed passwords can't simply be read out and reused."
+    "why": "If your data leaks, properly hashed passwords can't simply be read out and reused.",
+    "appliesWhen": {
+      "fact": "signin",
+      "is": "yes"
+    }
   },
   "as-7": {
     "title": "Check permissions on every request",
@@ -42,7 +58,11 @@
   "as-9": {
     "title": "Set a Content Security Policy",
     "task": "Send a strict Content Security Policy header that allows only the scripts, styles and images your app needs.",
-    "why": "A strict policy stops injected scripts from loading, which limits the damage from cross-site scripting."
+    "why": "A strict policy stops injected scripts from loading, which limits the damage from cross-site scripting.",
+    "appliesWhen": {
+      "fact": "web",
+      "is": "yes"
+    }
   },
   "as-10": {
     "title": "Force HTTPS with HSTS",
@@ -52,7 +72,11 @@
   "as-11": {
     "title": "Make users sign in again after a while",
     "task": "Require users to sign in again after your session time limit, or end the session.",
-    "why": "A forgotten open session would otherwise let anyone using that device act as the user."
+    "why": "A forgotten open session would otherwise let anyone using that device act as the user.",
+    "appliesWhen": {
+      "fact": "signin",
+      "is": "yes"
+    }
   },
   "as-12": {
     "title": "Scan uploaded files for malware",
@@ -72,7 +96,11 @@
   "as-15": {
     "title": "Force a password change after a suspected break-in",
     "task": "Make users change their password when you suspect their account was compromised.",
-    "why": "Otherwise an attacker who has the password can stay in the account."
+    "why": "Otherwise an attacker who has the password can stay in the account.",
+    "appliesWhen": {
+      "fact": "signin",
+      "is": "yes"
+    }
   },
   "sc-1": {
     "title": "Keep your code in a central repository",
@@ -247,7 +275,11 @@
   "lm-6": {
     "title": "Log requests to your web front door",
     "task": "Log access requests reaching your firewalls, load balancers, proxies and web servers.",
-    "why": "These logs show attacks as they happen."
+    "why": "These logs show attacks as they happen.",
+    "appliesWhen": {
+      "fact": "web",
+      "is": "yes"
+    }
   },
   "lm-7": {
     "title": "Log security events on your hosts",
@@ -342,7 +374,11 @@
   "ac-7": {
     "title": "Use Singpass or Corppass for public users",
     "task": "Use Singpass or Corppass sign-in for services that need a high level of identity assurance.",
-    "why": "It saves effort and gives users a familiar, trusted sign-in."
+    "why": "It saves effort and gives users a familiar, trusted sign-in.",
+    "appliesWhen": {
+      "fact": "reach",
+      "is": "public"
+    }
   },
   "ac-8": {
     "title": "Automate removing leavers' access",
@@ -524,7 +560,11 @@
     "title": "Register your domain through GovTech",
     "task": "Register .gov.sg and .edu.sg domain names with GovTech as the only registrar.",
     "why": "Properly registered domains are harder to hijack or fake.",
-    "question": "Does your app use a .gov.sg or .edu.sg domain, and is it registered with GovTech?"
+    "question": "Does your app use a .gov.sg or .edu.sg domain, and is it registered with GovTech?",
+    "appliesWhen": {
+      "fact": "domain",
+      "is": "yes"
+    }
   },
   "is-12": {
     "title": "Enable DNSSEC",
@@ -540,13 +580,21 @@
     "title": "Register your SMS sender ID",
     "task": "Register and use whitelisted SMS Sender IDs for any SMS you send to the public.",
     "why": "It stops scammers spoofing government SMS.",
-    "question": "Will your app send SMS to members of the public? If so, is your sender ID registered?"
+    "question": "Will your app send SMS to members of the public? If so, is your sender ID registered?",
+    "appliesWhen": {
+      "fact": "sms",
+      "is": "yes"
+    }
   },
   "is-15": {
     "title": "Use only go.gov.sg for short links",
     "task": "Use only the go.gov.sg URL shortener to shorten links.",
     "why": "Official short links tell people a link is genuine.",
-    "question": "Will your app share shortened links? If so, are you using go.gov.sg?"
+    "question": "Will your app share shortened links? If so, are you using go.gov.sg?",
+    "appliesWhen": {
+      "fact": "shortlinks",
+      "is": "yes"
+    }
   },
   "sd-1": {
     "title": "Block secrets from being pushed to the repository",

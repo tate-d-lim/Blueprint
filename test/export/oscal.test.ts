@@ -61,7 +61,7 @@ test('a requirement that is the builder’s has only this-system, planned', asyn
 
 test('a requirement that needs a person has no components and says why', async () => {
   const { ssp: doc } = await build();
-  const r = requirement(doc, 'pm-1');
+  const r = requirement(doc, 'is-11');
   expect(r['by-components']).toBeUndefined();
   expect(r.remarks).toMatch(/^Needs assessment:/);
 });

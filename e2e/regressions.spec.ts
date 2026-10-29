@@ -60,3 +60,25 @@ test("builder screens never show GovTech's wording about the agency, controls or
   });
   expect([...text.matchAll(/\b(IM8|SSP|OSCAL|controls?|agency|agencies)\b/gi)].map(m => m[0])).toEqual([]);
 });
+
+test("the app screens use builder language, and answers about the app stay in the link when you pick a tool", async ({ page }) => {
+  const facts = "f=reach.staff,web.no,signin.no,domain.no,shortlinks.no";
+  const banned = /\b(IM8|SSP|OSCAL|controls?|agency|agencies)\b/gi;
+  const mainText = () => page.evaluate(() => (document.querySelector("main") as HTMLElement).innerText);
+
+  await page.goto(`/start/app?${DEMO}&t=&${facts}`);
+  // Staff only: the SMS question is not asked, and the earlier answers are filled in.
+  await expect(page.getByRole("radio", { name: "Government staff only" })).toBeChecked();
+  await expect(page.getByRole("checkbox", { name: /It sends SMS text messages/ })).toHaveCount(0);
+  expect([...(await mainText()).matchAll(banned)].map(m => m[0])).toEqual([]);
+
+  await page.getByRole("button", { name: "Next: how we read your app" }).click();
+  await expect(page.getByRole("heading", { name: "How we read your app" })).toBeVisible();
+  expect([...(await mainText()).matchAll(banned)].map(m => m[0])).toEqual([]);
+
+  await page.getByRole("link", { name: "See your build plan" }).click();
+  await page.getByRole("checkbox", { name: /appCentral/ }).check();
+  await expect(page).toHaveURL(/f=reach\.staff(,|%2C)web\.no(,|%2C)signin\.no(,|%2C)domain\.no(,|%2C)shortlinks\.no/);
+  // The requirements those answers rule out are listed with their reasons.
+  await expect(page.getByRole("heading", { name: "Doesn't apply to your app", exact: true })).toBeVisible();
+});

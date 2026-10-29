@@ -1,12 +1,12 @@
 /**
  * A note on the drawing. Attention and error notes use redline, the colour architects use for corrections;
- * information and success use blueprint blue. One rule on every side, never a thick side stripe.
+ * information uses blueprint blue and success uses the done green. One rule on every side, never a thick side stripe.
  */
 type Tone = "info" | "success" | "attention" | "error";
 
 const TONES: Record<Tone, string> = {
   info: "border-blueprint/40 bg-blueprint-wash",
-  success: "border-blueprint bg-blueprint-wash",
+  success: "border-done bg-done-wash",
   attention: "border-redline/50 bg-redline-wash",
   error: "border-redline bg-redline-wash",
 };

@@ -35,5 +35,6 @@ export function selectPlanInput(data: PlanData, state: PlanState, project?: Proj
     allTools: data.tools,
     versions: data.versions.filter(v => wanted.has(v.current.toolId) && active.has(v.current.profileId)),
     project,
+    factAnswers: state.facts,
   };
 }

@@ -22,7 +22,9 @@ The app and MongoDB listen on this Mac only (127.0.0.1), because the database ha
 2. Click **Work out my app type**.
 3. Expect **Low-risk app on the cloud**, the reason ("Data up to Restricted and Sensitive Normal, at most Slight impact…") and a link to GovTech's risk materiality levels.
 4. Optional aside: tick **The system is Critical Information Infrastructure (CII)** and submit again. It becomes **High-risk app on the cloud** with "We don't support this type of app yet." Untick it before going on.
-5. Click **See your build plan**.
+5. Click **Next: about your app**. Choose **Members of the public**. Tick **People use it in a web browser**, **People sign in to it** and **It sends SMS text messages**. (Choose **Government staff only** and the SMS question goes away.)
+6. Click **Next: how we read your app**. Expect "84 of 86 requirements apply" and a box **Left out because of your answers (2)**: no web address of its own, no shortened links. Each line gives the reason in plain words.
+7. Click **See your build plan**.
 
 ## Moment 2: Pick your tools (about 75 seconds)
 
@@ -30,29 +32,29 @@ The app and MongoDB listen on this Mac only (127.0.0.1), because the database ha
 
    | Picked | What you need to do | What your platform already does | Questions to answer | Good to have |
    |---|---|---|---|---|
-   | nothing | 11 | 0 | 75 | 32 |
-   | appCentral | 11 | 51 | 24 | 32 |
-   | appCentral + DBaaS + IGA | **11** | **66** | **9** | 32 |
+   | nothing | 84 | 0 | 0 | 32 |
+   | appCentral | 18 | 51 | 15 | 32 |
+   | appCentral + DBaaS + IGA | **18** | **66** | **0** | 32 |
 
-   The floor plan above the lists fills in as you tick: hatched rooms are built by your tools. With all three it says **66 of 86 requirements are already built** and "11 are yours to build, and 9 are questions to answer first."
+   The floor plan above the lists fills in as you tick: hatched rooms are built by your tools. With all three it says **66 of 86 requirements are already built** and "18 are yours to build." A new heading, **Doesn't apply to your app (2)**, lists what your answers left out.
 2. Point at the stamps: appCentral **Verified**, DBaaS and IGA **Not yet verified**.
-3. Untick **DBaaS**. Questions go 9 → 13 and a box says "appCentral expects DBaaS for 4 requirements. Add DBaaS?" Click **Add DBaaS** to put it back (9 again).
-4. If the app uses AI, tick **genCentral**: 8 new questions appear (Questions to answer 17). Untick it again.
+3. Untick **DBaaS**. Questions go 0 → 4 and a box says "appCentral expects DBaaS for 4 requirements. Add DBaaS?" Click **Add DBaaS** to put it back (0 again).
+4. If the app uses AI, tick **genCentral**: 8 new questions appear (Questions to answer 11). Untick it again.
 5. Click the **App security** room on the floor plan. The lists below show only that room (5 tasks), and the address bar gets `room=as`. Click **Show all rooms** (or the room again) to go back.
 6. Click one item title (for example "Check every input before you use it") to show the detail panel: official wording, and which tool says what, with its source. Press Escape.
 
-The 86 requirements that must or should be done become **11 that are yours and 9 to check**, before any code is written.
+The 86 requirements that must or should be done become **18 that are yours and none to check**, before any code is written.
 
 ## Moment 3: Hand it to your agent (about 45 seconds)
 
-1. Click **Build plan for your agent**. Open `BUILD-PLAN.md`: section 1 (11 tasks), section 2 (9 questions to ask a person first), section 3 (66 things not to build, grouped by tool). Show that unverified claims end with "(not yet verified)".
+1. Click **Build plan for your agent**. Open `BUILD-PLAN.md`: section 1 (18 tasks), section 2 (no questions to ask a person first), section 3 (66 things not to build, grouped by tool), section 4 (2 that do not apply to this app). Show that unverified claims end with "(not yet verified)".
 2. Open **Using a coding agent? Add this to AGENTS.md or CLAUDE.md** and show the snippet.
 3. Play the pre-recorded clip of an agent using the plan. (Still to record.)
 
 ## Moment 4: Send it for review, two weeks later (about 60 seconds)
 
 1. Title block → **Saved projects** → **Sample project (two weeks in)**. The title block now also shows the project, its owner and the date it last changed.
-2. The floor plan says **9 of 17 tasks done** and "2 in progress, 6 to do. All 9 questions answered." Solid rooms are done, cross-hatched ones are in progress, dashed ones are still to do. The 17 are the 11 core tasks plus 6 of the questions the builder answered "Applies". The other 3 questions are answered "Doesn't apply" with a reason.
+2. The floor plan says **9 of 17 tasks done** and "2 in progress, 6 to do. All 3 questions answered." Solid rooms are done, cross-hatched ones are in progress, dashed ones are still to do. The 17 are the 11 core tasks plus 6 planning and paperwork tasks. The 3 questions are answered "Doesn't apply" with a reason.
    Optional: click **To do (6)** above the task list to show only what is left.
 3. Click **Security review spreadsheet** and open it. Check these rows (columns H and I):
 
@@ -67,7 +69,7 @@ The 86 requirements that must or should be done become **11 that are yours and 9
 
    The "About this file" sheet lists the tool versions and says the profile is locally derived.
 
-   (The scope note says "7 of 11 tasks done". With the answered questions it is 9 of 17; update the slide or the note, whichever you use.)
+   (The scope note says "7 of 11 tasks done". With the 6 planning tasks it is 9 of 17; update the slide or the note, whichever you use.)
 
 ## Moment 5: The platform cut-away (about 30 seconds)
 

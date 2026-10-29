@@ -67,24 +67,6 @@
       "is-15": {
         "applies": false,
         "reason": "The app shares no short links (sample answer)"
-      },
-      "pm-1": {
-        "applies": true
-      },
-      "pm-2": {
-        "applies": true
-      },
-      "pm-3": {
-        "applies": true
-      },
-      "pm-4": {
-        "applies": true
-      },
-      "pm-5": {
-        "applies": true
-      },
-      "pm-6": {
-        "applies": true
       }
     }
   }

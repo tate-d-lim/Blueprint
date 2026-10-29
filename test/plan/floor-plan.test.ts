@@ -21,6 +21,11 @@ test('each family becomes one room that counts what is built, what is yours by s
   ]);
 });
 
+test('a requirement the app\'s answers rule out is drawn as settled, not as an open question', () => {
+  const rooms = floorPlanRooms([built('as'), item('as', { heading: 'skipped', placement: 'not-for-app' })]);
+  expect(rooms).toEqual([{ family: 'as', total: 2, built: 1, done: 0, inProgress: 0, todo: 0, openQuestions: 0, settled: 1 }]);
+});
+
 test('good-to-have extras are not part of the building', () => {
   expect(floorPlanRooms([built('lm'), item('lm', { heading: 'good-to-have', level: 2 })])).toEqual([
     { family: 'lm', total: 1, built: 1, done: 0, inProgress: 0, todo: 0, openQuestions: 0, settled: 0 },

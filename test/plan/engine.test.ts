@@ -139,7 +139,7 @@ test('a Level 2 item goes under good-to-have and keeps its placement', () => {
   const profile = makeProfile('p', [{ id: 'lm-19', level: 2 }, { id: 'as-1' }]);
   const plan = planOf(profile, [{ id: 'a', entries: [makeEntry('lm-19'), makeEntry('as-1')] }]);
   expect([item(plan, 'lm-19').heading, item(plan, 'lm-19').placement]).toEqual(['good-to-have', 'provided']);
-  expect(plan.counts).toEqual({ you: 0, platform: 1, questions: 0, 'good-to-have': 1 });
+  expect(plan.counts).toEqual({ you: 0, platform: 1, questions: 0, skipped: 0, 'good-to-have': 1 });
 });
 
 test('a project "Applies" answer turns a question into a task with its status', () => {
@@ -232,5 +232,58 @@ describe('selectPlanInput', () => {
     expect([p1.current.version, p1.lastApproved?.version]).toEqual([2, 1]);
     const [p2] = pairVersions([v1]);
     expect(p2.lastApproved).toBe(p2.current);
+  });
+});
+
+describe('answers about the app', () => {
+  const web = {
+    id: 'web',
+    kind: 'tick' as const,
+    label: 'People use it in a web browser',
+    noReason: "Your app isn't used in a web browser.",
+  };
+  const rule = { title: 'T', task: 't', why: 'w', appliesWhen: { fact: 'web', is: 'yes' } };
+  const profile = () => {
+    const p = makeProfile('p', [{ id: 'as-3', plain: rule }, { id: 'as-1' }, { id: 'lm-6', plain: rule, level: 2 }]);
+    p.facts = [web];
+    return p;
+  };
+  const planWith = (answers: Record<string, string>, specs: ToolSpec[] = []) => {
+    const tools = specs.map(s => makeTool(s.id, { name: s.id }));
+    const versions = specs.map(s => pair(makeVersion(s.id, 'p', 1, s.entries)));
+    return buildPlan({ profiles: [profile()], pickedTools: tools, allTools: tools, versions, factAnswers: answers });
+  };
+
+  test('a requirement the answers rule out is set aside with the reason, whatever a tool says', () => {
+    const plan = planWith({ web: 'no' }, [{ id: 'a', entries: [makeEntry('as-3', { value: 'provided' })] }]);
+    const i = item(plan, 'as-3');
+    expect([i.heading, i.placement, i.reason]).toEqual(['skipped', 'not-for-app', "Your app isn't used in a web browser."]);
+    expect(plan.counts.skipped).toBe(1);
+  });
+
+  test('the same requirement stays when the answer fits, or when nothing was answered', () => {
+    expect(item(planWith({ web: 'yes' }), 'as-3').placement).not.toBe('not-for-app');
+    expect(item(planWith({}), 'as-3').placement).not.toBe('not-for-app');
+  });
+
+  test('a question that the answers confirm becomes a task for the builder', () => {
+    const plan = planWith({ web: 'yes' });
+    // as-3 has no tool behind it and ifUncovered is "ask": without the answer it is a question.
+    expect(item(planWith({}), 'as-3').placement).toBe('open');
+    const i = item(plan, 'as-3');
+    expect([i.heading, i.placement, i.reason]).toEqual(['you', 'default-builder', 'You said this applies to your app.']);
+  });
+
+  test('a requirement without a rule is never set aside', () => {
+    expect(item(planWith({ web: 'no' }), 'as-1').heading).not.toBe('skipped');
+  });
+
+  test('good-to-have extras stay good-to-have', () => {
+    expect(item(planWith({ web: 'no' }), 'lm-6').heading).toBe('good-to-have');
+  });
+
+  test('the counts cover every item once', () => {
+    const plan = planWith({ web: 'no' });
+    expect(Object.values(plan.counts).reduce((a, b) => a + b, 0)).toBe(plan.items.length);
   });
 });

@@ -41,8 +41,8 @@ test('fills Implemented (H) and Explanation (I) for the demo plan', async () => 
   expect(h('as-1')).toBe('N');
   expect(i('as-1')).toBe("App builder's responsibility. Status: To do (self-declared).");
   expect(h('is-1')).toBe('N/A');
-  expect(h('pm-1')).toBe('');
-  expect(i('pm-1')).toBe('');
+  expect(h('is-11')).toBe('');
+  expect(i('is-11')).toBe('');
 });
 
 test('columns A to G are exactly the template’s, for all 118 rows', async () => {
@@ -73,10 +73,11 @@ test('a plan item with no row in the template fails and names the ID', async () 
   await expect(attempt).rejects.toThrow(/zz-9/);
 });
 
-test('with nothing picked, builder defaults are N and everything else is blank', async () => {
+test('with nothing picked, builder defaults are N and only the questions are blank', async () => {
   const sheet = await readBack(await fillSspWorkbook(await demoPlan([]), { templatePath: TEMPLATE }));
   expect(cellText(rowOf(sheet, 'as-1').getCell(8))).toBe('N');
-  expect(cellText(rowOf(sheet, 'as-4').getCell(8))).toBe('');
+  expect(cellText(rowOf(sheet, 'as-4').getCell(8))).toBe('N');
+  expect(cellText(rowOf(sheet, 'is-11').getCell(8))).toBe('');
 });
 
 const ABOUT: AboutInfo = {

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-10-28T00:00:00Z",
-  "title": "Design System: Build plan for CPFB app builders",
+  "title": "Design System: Blueprint for CPFB app builders",
   "extensions": {
     "colorMeta": {
       "blueprint": { "role": "primary", "displayName": "Blueprint Blue", "canonical": "#1d4e89", "tonalRamp": ["#0b1f38", "#123158", "#163c6b", "#1d4e89", "#4a74a8", "#8eaacb", "#c7d6e8", "#e7eef8"] },
@@ -9,6 +9,10 @@
       "blueprint-wash": { "role": "primary", "displayName": "Blueprint Wash", "canonical": "#e7eef8" },
       "redline": { "role": "secondary", "displayName": "Redline", "canonical": "#b8322a", "tonalRamp": ["#4a1411", "#74201b", "#962922", "#b8322a", "#cf6a63", "#e3a39e", "#f2d0cd", "#fbedeb"] },
       "redline-wash": { "role": "secondary", "displayName": "Redline Wash", "canonical": "#fbedeb" },
+      "done": { "role": "secondary", "displayName": "Done Green", "canonical": "#2c7a56" },
+      "done-wash": { "role": "secondary", "displayName": "Done Wash", "canonical": "#e4f2ea" },
+      "working": { "role": "secondary", "displayName": "Working Amber", "canonical": "#d08f1d" },
+      "working-wash": { "role": "secondary", "displayName": "Working Wash", "canonical": "#fdf3dd" },
       "ink": { "role": "neutral", "displayName": "Drafting Ink", "canonical": "#0f2a4a", "tonalRamp": ["#0f2a4a", "#2c4566", "#4a6280", "#6f89ad", "#9fb3cc", "#c3d1e2", "#dce6f2", "#edf2f8"] },
       "ink-soft": { "role": "neutral", "displayName": "Soft Ink", "canonical": "#4a6280" },
       "rule": { "role": "neutral", "displayName": "Rule", "canonical": "#c3d1e2" },

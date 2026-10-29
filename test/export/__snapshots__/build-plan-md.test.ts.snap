@@ -12,7 +12,7 @@ Generated 2026-10-27 by the CPFB build plan app. IDs in brackets are IM8 require
 - Before building anything section 2 asks about, ask the person you're working with.
 - Never build what section 3 lists. Use the platform's feature instead.
 
-## 1. What you need to do (11)
+## 1. What you need to do (17)
 
 ### Check every input before you use it (as-1)
 Why it matters: Unchecked input is how attackers inject code or crash your app, which can lead to unauthorised access or an outage.
@@ -69,14 +69,38 @@ Why it matters: If the app is compromised, a non-root user limits what the attac
 What to do: Create a non-root user in the image and make it the default user.
 Status: To do
 
-## 2. Ask a person first (9)
+### Have a plan for cyber incidents (pm-1)
+Why it matters: When something goes wrong, a ready plan saves hours.
+What to do: Have a documented cybersecurity incident plan for your organisation and share it with the team.
+Status: To do
 
-- **Does your organisation already have a cybersecurity incident plan that covers this app?** (pm-1). Why we ask: Depends on your app, and no tool you picked covers it.
-- **Has a risk assessment been written and approved for this app, and by whom?** (pm-2). Why we ask: Depends on your app, and no tool you picked covers it.
-- **Is someone already writing the security plan for this app, or is it on you?** (pm-3). Why we ask: Depends on your app, and no tool you picked covers it.
-- **Who in your organisation has to accept the leftover risks for this app, and have they?** (pm-4). Why we ask: Depends on your app, and no tool you picked covers it.
-- **Has the approved security plan been submitted to the central repository, and who does that?** (pm-5). Why we ask: Depends on your app, and no tool you picked covers it.
-- **Is the documentation for this app kept up to date, and where does it live?** (pm-6). Why we ask: Depends on your app, and no tool you picked covers it.
+### Assess the risks before launch (pm-2)
+Why it matters: It surfaces risks while they are cheap to fix.
+What to do: Document a risk assessment for the system and get it approved before the first full release.
+Status: To do
+
+### Write your security plan (pm-3)
+Why it matters: It is the record that reviewers and future teammates rely on.
+What to do: Write, and keep up to date, a plan describing the system and the protections in place.
+Status: To do
+
+### Get leftover risks formally accepted (pm-4)
+Why it matters: Someone with authority must own the risks you can't remove.
+What to do: Get the remaining risks accepted and approved by the right authority, and review that regularly.
+Status: To do
+
+### Submit the approved security plan centrally (pm-5)
+Why it matters: It gives government a view of security across all systems.
+What to do: Submit the approved security plan to the central repository.
+Status: To do
+
+### Keep your system documentation up to date (pm-6)
+Why it matters: Good documentation is essential for running and securing the system.
+What to do: Keep detailed, current documentation of the system, its architecture and its parts.
+Status: To do
+
+## 2. Ask a person first (3)
+
 - **Does your app use a .gov.sg or .edu.sg domain, and is it registered with GovTech?** (is-11). Why we ask: Depends on your app, and no tool you picked covers it.
 - **Will your app send SMS to members of the public? If so, is your sender ID registered?** (is-14). Why we ask: Depends on your app, and no tool you picked covers it.
 - **Will your app share shortened links? If so, are you using go.gov.sg?** (is-15). Why we ask: Depends on your app, and no tool you picked covers it.

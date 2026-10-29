@@ -12,7 +12,7 @@ export interface Room {
   todo: number;
   /** Questions nobody has answered yet. */
   openQuestions: number;
-  /** Questions answered "doesn't apply". */
+  /** Questions answered "doesn't apply", and requirements the app's answers rule out. */
   settled: number;
 }
 
@@ -57,7 +57,7 @@ export function floorPlanRooms(items: PlanItem[]): Room[] {
       if (status === 'done') room.done++;
       else if (status === 'in-progress') room.inProgress++;
       else room.todo++;
-    } else if (item.placement === 'answered-not-applicable') room.settled++;
+    } else if (item.placement === 'answered-not-applicable' || item.heading === 'skipped') room.settled++;
     else room.openQuestions++;
     rooms.set(item.family, room);
   }

@@ -1,5 +1,5 @@
 import type { Db } from 'mongodb';
-import type { Project, RequirementKey, TaskStatus } from '../../domain/types';
+import type { FactAnswers, Project, RequirementKey, TaskStatus } from '../../domain/types';
 import type { RiskAnswers } from '../../risk/assess';
 
 const KEY_PATTERN = /^[a-z0-9-]+:[a-z]{2,3}-\d+$/;
@@ -13,7 +13,7 @@ const projects = (db: Db) => db.collection<Project>('projects');
 
 export async function createProject(
   db: Db,
-  input: { name: string; ownerName: string; riskAnswers: RiskAnswers; toolIds: string[] },
+  input: { name: string; ownerName: string; riskAnswers: RiskAnswers; toolIds: string[]; facts?: FactAnswers },
 ): Promise<Project> {
   const name = input.name.trim();
   const ownerName = input.ownerName.trim();
@@ -28,6 +28,7 @@ export async function createProject(
     toolIds: input.toolIds,
     taskStatus: {},
     questionAnswers: {},
+    ...(input.facts && Object.keys(input.facts).length ? { facts: input.facts } : {}),
     createdAt: now,
     updatedAt: now,
   };

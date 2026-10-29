@@ -83,7 +83,7 @@ export function StartForm() {
           </fieldset>
 
           <div className="flex flex-wrap items-center gap-4">
-            {/* One primary action at a time: once the answer is shown, "See your build plan" takes over. */}
+            {/* One primary action at a time: once the answer is shown, "Next: about your app" takes over. */}
             <Button type="submit" variant={shown ? "secondary" : "primary"} disabled={!complete}>
               Work out my app type
             </Button>
@@ -117,7 +117,7 @@ function Outcome({ answers, result }: { answers: RiskAnswers; result: RiskResult
           </p>
           {supported ? (
             <div>
-              <ButtonLink href={`/plan?${planQuery(answers, [])}`}>See your build plan</ButtonLink>
+              <ButtonLink href={`/start/app?${planQuery(answers, [])}`}>Next: about your app</ButtonLink>
             </div>
           ) : (
             <Note tone="attention">We don&apos;t support this type of app yet.</Note>

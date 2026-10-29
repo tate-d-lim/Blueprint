@@ -63,6 +63,7 @@ export function PlanItemView({
     return (
       <li className="flex flex-col gap-1.5 border-b border-rule py-3 last:border-b-0">
         {heading}
+        {item.heading === "skipped" && <p className="max-w-measure text-body text-ink-soft">{item.reason}</p>}
         {explanations.length > 0 && <p className="max-w-measure text-body text-ink-soft">{explanations.map(c => c.explanation).join(" ")}</p>}
         {hasGovTechText && <p className="text-small text-ink-soft">GovTech&apos;s own notes are in the details: open this item to read them.</p>}
         {reference}

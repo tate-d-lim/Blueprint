@@ -88,6 +88,7 @@ export function renderBuildPlan(plan: Plan, meta: BuildPlanMeta): string {
   const you = level01.filter(i => i.heading === 'you');
   const asks = level01.filter(i => i.heading === 'questions' && ['redirect', 'conflict', 'open'].includes(i.placement));
   const platform = level01.filter(i => i.heading === 'platform');
+  const skipped = level01.filter(i => i.heading === 'skipped');
 
   const lines = [
     `# Build plan: ${oneLine(meta.title)}`,
@@ -114,6 +115,15 @@ export function renderBuildPlan(plan: Plan, meta: BuildPlanMeta): string {
     `## 3. Don't build this: your platform already does it (${platform.length})`,
     '',
     ...platformSection(platform),
+    ...(skipped.length
+      ? [
+          `## 4. Doesn't apply to this app (${skipped.length})`,
+          '',
+          "The person's answers about the app rule these out. Don't build them.",
+          '',
+          ...skipped.map(item => `- ${titleOf(item)} (${item.id}): ${oneLine(item.reason)}`),
+        ]
+      : []),
   ];
   return lines.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
 }

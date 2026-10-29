@@ -64,12 +64,14 @@ export function Checkbox({
 /** A group of radio options under one legend. */
 export function RadioGroup({
   legend,
+  hint,
   name,
   value,
   options,
   onChange,
 }: {
   legend: string;
+  hint?: string;
   name: string;
   value: string | undefined;
   options: Readonly<Record<string, string>>;
@@ -77,7 +79,8 @@ export function RadioGroup({
 }) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 font-display text-lead font-semibold text-ink">{legend}</legend>
+      <legend className={`font-display text-lead font-semibold text-ink ${hint ? "" : "mb-2"}`}>{legend}</legend>
+      {hint && <p className="mb-1 text-small text-ink-soft">{hint}</p>}
       {Object.entries(options).map(([option, label]) => (
         <label key={option} className="flex cursor-pointer items-center gap-2.5 text-body text-ink">
           <input

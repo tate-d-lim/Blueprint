@@ -11,7 +11,7 @@ import { DbStatus } from "./components/db-status";
 import { Header } from "./components/header";
 
 export const metadata: Metadata = {
-  title: "Build plan for CPFB app builders",
+  title: "Blueprint for CPFB app builders",
   description: "Know what's yours on day 0, hand it to your agent, and your security review fills itself in.",
 };
 

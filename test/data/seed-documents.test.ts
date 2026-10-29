@@ -4,7 +4,8 @@ import { pairVersions, selectPlanInput } from '@/lib/plan/select';
 import { sspValues } from '@/lib/export/ssp-values';
 import { SEED_NOW, loadSeed } from '../helpers/seed';
 
-const DEFAULT_BUILDER_IDS = ['as-1', 'as-2', 'as-3', 'as-7', 'as-9', 'sc-4', 'sc-6', 'st-4', 'st-5', 'cs-3', 'cs-4'];
+/** Only a person can answer these: no tool and no default decides them. */
+const TRUE_QUESTION_IDS = ['is-11', 'is-14', 'is-15'];
 
 const sampleFile: SeedProjectFile = {
   _id: 'p',
@@ -58,10 +59,10 @@ test('DBaaS (4) and IGA (11) are seeded, not approved', async () => {
   expect(Object.hasOwn(dbaas, 'approval')).toBe(false);
 });
 
-test('exactly the 11 defaults are app-builder', async () => {
+test('every must-or-should requirement is yours to build by default, except the 3 that only a person can answer', async () => {
   const profile = await lowRiskCloud();
-  const builderIds = profile.entries.filter(e => e.ifUncovered === 'app-builder').map(e => e.id);
-  expect(builderIds.sort()).toEqual([...DEFAULT_BUILDER_IDS].sort());
+  const asked = profile.entries.filter(e => e.level !== 2 && e.ifUncovered === 'ask').map(e => e.id);
+  expect(asked.sort()).toEqual([...TRUE_QUESTION_IDS].sort());
 });
 
 test('tools: appCentral, DBaaS, IGA, genCentral (which activates the GenAI profile), then sample libraries and the GovTech tools', async () => {

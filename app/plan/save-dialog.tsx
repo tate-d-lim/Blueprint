@@ -7,9 +7,10 @@ import { Button } from "@/app/ui/button";
 import { Dialog } from "@/app/ui/dialog";
 import { Field, inputClass } from "@/app/ui/field";
 import { Note } from "@/app/ui/note";
+import type { FactAnswers } from "@/lib/domain/types";
 import type { RiskAnswers } from "@/lib/risk/assess";
 
-export function SaveDialog({ answers, toolIds }: { answers: RiskAnswers; toolIds: string[] }) {
+export function SaveDialog({ answers, toolIds, facts }: { answers: RiskAnswers; toolIds: string[]; facts: FactAnswers }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -43,7 +44,7 @@ export function SaveDialog({ answers, toolIds }: { answers: RiskAnswers; toolIds
           onSubmit={e => {
             e.preventDefault();
             start(async () => {
-              const result = await createProjectAction({ name, ownerName, riskAnswers: answers, toolIds });
+              const result = await createProjectAction({ name, ownerName, riskAnswers: answers, toolIds, facts });
               if (result.ok) router.push(`/projects/${result.id}`);
               else setError(result.error);
             });

@@ -31,7 +31,7 @@ export function TitleBlock({ role, cells }: { role: Role; cells?: React.ReactNod
     <header className="flex divide-x divide-paper/25 border-b border-ink bg-blueprint text-paper">
       <TitleCell label="Drawing" className="shrink-0">
         <Link href="/start" className="font-display text-heading leading-none font-bold tracking-[0.04em] uppercase">
-          Build plan
+          Blueprint
         </Link>
         <span className="mt-1 block text-small text-paper/80">For CPFB app builders</span>
       </TitleCell>

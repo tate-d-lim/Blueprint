@@ -1,7 +1,7 @@
 import { withDb } from '../data/db';
 import { loadPlanData } from '../data/repos/plan-data';
 import { getProject } from '../data/repos/projects';
-import type { Project } from '../domain/types';
+import type { FactAnswers, Project } from '../domain/types';
 import { buildPlan, type Plan, type PlanData } from '../plan/engine';
 import { selectPlanInput } from '../plan/select';
 import { parsePlanQuery } from '../plan/url-state';
@@ -30,19 +30,21 @@ export async function resolvePlanRequest(sp: URLSearchParams): Promise<PlanReque
 
   let answers: RiskAnswers;
   let toolIds: string[];
+  let facts: FactAnswers;
   if (project) {
     const known = new Set(data.tools.map(t => t._id));
     answers = project.riskAnswers;
     toolIds = project.toolIds.filter(id => known.has(id));
+    facts = project.facts ?? {};
   } else {
     const parsed = parsePlanQuery(Object.fromEntries(sp), data.tools.map(t => t._id));
     if (!parsed) throw new BadPlanRequestError('The plan link is missing or has invalid answers.');
-    ({ answers, toolIds } = parsed);
+    ({ answers, toolIds, facts } = parsed);
   }
   const risk = assessRisk(answers);
   if (!risk.profileId) throw new BadPlanRequestError('This type of app is not supported yet.');
 
-  const input = selectPlanInput(data, { profileId: risk.profileId, toolIds }, project);
+  const input = selectPlanInput(data, { profileId: risk.profileId, toolIds, facts }, project);
   const profile = data.profiles.find(p => p._id === risk.profileId)!;
   return {
     plan: buildPlan(input),
