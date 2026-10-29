@@ -1,0 +1,110 @@
+import type { CoverageValue, Profile, Tool } from '../domain/types';
+import { roomName } from '../plan/floor-plan';
+import { metadata, profileResource, prop, uuid } from './oscal';
+
+/** The five answers a tool can give for a requirement, in the order the brief explains them. */
+export const ANSWERS: { value: CoverageValue; meaning: string }[] = [
+  { value: 'provided', meaning: 'The tool does all of it. The app team does nothing for this requirement.' },
+  { value: 'shared', meaning: "The tool does part of it. Put the app team's part in the `builder-part` prop." },
+  { value: 'app-builder', meaning: 'The tool does none of it. The app team does all of it.' },
+  { value: 'not-applicable', meaning: 'It cannot apply to an app built on this tool. Say why in the description.' },
+  { value: 'other-tool', meaning: "Another tool handles it. Put that tool's id in the `handled-by` prop." },
+];
+
+/** The empty component definition the agent fills in: one row per requirement, in profile order. */
+export function coverageTemplate(input: { tool: Tool; profile: Profile; generatedAt: string }): Record<string, unknown> {
+  const { tool, profile, generatedAt } = input;
+  const resource = profileResource(profile);
+  return {
+    'component-definition': {
+      uuid: uuid(`coverage-template|${tool._id}|${profile._id}`),
+      metadata: metadata(`What ${tool.name} covers in ${profile.title}`, generatedAt),
+      components: [
+        {
+          uuid: uuid(`component|${tool._id}`),
+          type: tool.oscalType,
+          title: tool.name,
+          description: tool.description || tool.name,
+          'control-implementations': [
+            {
+              uuid: uuid(`implementation|${tool._id}|${profile._id}|agent`),
+              source: `#${resource.uuid}`,
+              description: `What ${tool.name} covers in ${profile.title}.`,
+              'implemented-requirements': profile.entries.map(entry => ({
+                uuid: uuid(`requirement|${tool._id}|agent|${entry.key}`),
+                'control-id': entry.id,
+                description: '',
+                props: [prop('responsibility', ''), prop('evidence', '')],
+              })),
+            },
+          ],
+        },
+      ],
+      'back-matter': { resources: [resource] },
+    },
+  };
+}
+
+const cell = (text: string) => text.replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim();
+
+export function renderCoverageBrief(input: { tool: Tool; profile: Profile; otherTools: Tool[]; generatedAt: string }): string {
+  const { tool, profile, otherTools, generatedAt } = input;
+  const file = `${tool._id}-coverage.oscal.json`;
+  const lines = [
+    `# What ${tool.name} covers in ${profile.title}`,
+    '',
+    `Profile version ${profile.version}. Brief made on ${generatedAt.slice(0, 10)}.`,
+    '',
+    `This brief is for a coding agent that can read ${tool.name}'s code and docs. The agent fills in, for every requirement below, who handles it: ${tool.name}, the team that builds an app on it, or both. An admin then uploads the result to the build plan app, checks it, and submits it for approval.`,
+    '',
+    '## What to do',
+    '',
+    '1. Read this repository and its docs.',
+    '2. For every requirement in the table, choose one answer from "The five answers". Write one or two plain sentences in `description` that say what the tool does, or why the answer fits.',
+    '3. Give the evidence in the `evidence` prop: a file path in this repository, or a doc URL.',
+    '4. Fill every row. If you cannot tell, choose the closest answer and say why in the description. Do not leave a row out.',
+    `5. Write the filled-in template to \`${file}\` and give that file to the admin.`,
+    '',
+    '## The five answers',
+    '',
+    'Put one of these values in the `responsibility` prop. They are written from the tool\'s point of view.',
+    '',
+    ...ANSWERS.map(a => `- \`${a.value}\`: ${a.meaning}`),
+    '',
+    otherTools.length
+      ? `Valid tool ids for \`handled-by\`: ${otherTools.map(t => `\`${t._id}\` (${t.name})`).join(', ')}.`
+      : 'There are no other tools yet, so do not use `other-tool`.',
+    '',
+    'Add `builder-part` and `handled-by` as extra props on a row when that row needs them, in the same form as `responsibility`:',
+    '',
+    '```',
+    '{ "name": "builder-part", "ns": "urn:cpfb-build-plan", "value": "Turn on the lockout setting for your app." }',
+    '```',
+    '',
+    '## Requirements',
+    '',
+    '| ID | Room | Requirement | What to do | Why it matters |',
+    '|---|---|---|---|---|',
+    ...profile.entries.map(
+      e => `| ${e.id} | ${cell(roomName(e.family))} | ${cell(e.title)} | ${cell(e.plain?.task || e.statement)} | ${cell(e.plain?.why || e.rationale)} |`,
+    ),
+    '',
+    '## Template',
+    '',
+    `Fill this in and save it as \`${file}\`. Keep every row and every uuid as they are.`,
+    '',
+    '```json',
+    JSON.stringify(coverageTemplate({ tool, profile, generatedAt }), null, 2),
+    '```',
+    '',
+    '## Check before you hand it over',
+    '',
+    '- Every row has a `responsibility` value from the five answers.',
+    '- Every `shared` row has a `builder-part` prop.',
+    '- Every `other-tool` row has a `handled-by` prop with a valid tool id.',
+    '- Every row has `evidence`.',
+    '- The file is valid JSON.',
+    '',
+  ];
+  return lines.join('\n');
+}

@@ -13,9 +13,9 @@ const OSCAL_VERSION = '1.1.2';
 type Json = Record<string, unknown>;
 type ToolWithVersions = { tool: Tool; pair: VersionPair };
 
-const uuid = (name: string) => uuidv5(name, OSCAL_UUID_NAMESPACE);
-const prop = (name: string, value: string): Json => ({ name, ns: OSCAL_NS, value });
-const metadata = (title: string, generatedAt: string): Json => ({
+export const uuid = (name: string) => uuidv5(name, OSCAL_UUID_NAMESPACE);
+export const prop = (name: string, value: string): Json => ({ name, ns: OSCAL_NS, value });
+export const metadata = (title: string, generatedAt: string): Json => ({
   title,
   'last-modified': generatedAt,
   version: generatedAt.slice(0, 10),
@@ -23,7 +23,7 @@ const metadata = (title: string, generatedAt: string): Json => ({
 });
 
 /** The profile, described as a back-matter resource so documents never claim to link to GovTech's own file. */
-function profileResource(profile: Profile): Json {
+export function profileResource(profile: Profile): Json {
   return {
     uuid: uuid(`profile|${profile._id}|${profile.version}`),
     title: `${profile.title} (locally derived)`,
