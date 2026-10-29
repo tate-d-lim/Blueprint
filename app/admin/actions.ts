@@ -5,8 +5,10 @@ import { redirect } from "next/navigation";
 import { carrySources, validateNewVersion, type DraftRow } from "@/lib/admin/new-version";
 import { withDb } from "@/lib/data/db";
 import { createToolVersion, getCurrentVersion } from "@/lib/data/repos/tool-versions";
+import { loadPlanData } from "@/lib/data/repos/plan-data";
 import { createTool } from "@/lib/data/repos/tools";
 import type { Section } from "@/lib/domain/types";
+import { parseAgentOscal, type AgentParseResult } from "@/lib/import/parse-agent-oscal";
 import { getRole } from "@/lib/role";
 
 export type SaveResult =
@@ -34,6 +36,20 @@ export async function saveVersionAction(
   revalidatePath("/admin");
   revalidatePath("/verify");
   return { ok: true, version: saved.version };
+}
+
+const MAX_AGENT_FILE = 2 * 1024 * 1024;
+
+/** Reads a coding agent's coverage file into editor rows. It saves nothing: the admin reviews and submits. */
+export async function readAgentFileAction(toolId: string, profileId: string, formData: FormData): Promise<AgentParseResult & { fileName?: string }> {
+  await requireAdmin();
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0 || file.size > MAX_AGENT_FILE) return { ok: false, error: "Choose a JSON file under 2 MB." };
+  const data = await withDb(loadPlanData);
+  const profile = data.profiles.find(p => p._id === profileId);
+  if (!profile) return { ok: false, error: "No such profile." };
+  const otherIds = data.tools.map(t => t._id).filter(id => id !== toolId);
+  return { ...parseAgentOscal(await file.text(), profile, toolId, otherIds), fileName: file.name };
 }
 
 export async function createToolAction(_previous: { error: string } | null, formData: FormData): Promise<{ error: string } | null> {
