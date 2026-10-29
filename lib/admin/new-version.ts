@@ -42,13 +42,17 @@ export function carrySources(rows: DraftRow[], previous?: ToolVersion): DraftRow
   });
 }
 
-export function validateNewVersion(rows: DraftRow[], versionSource: string): NewVersionResult {
+/** `requireAll` is for a draft a coding agent filled in: there, a blank row is a gap to fill, not "says nothing". */
+export function validateNewVersion(rows: DraftRow[], versionSource: string, opts: { requireAll?: boolean } = {}): NewVersionResult {
   const errors: { key?: RequirementKey; message: string }[] = [];
   if (!versionSource.trim()) errors.push({ message: 'Add a source for this version.' });
 
   const entries: CoverageEntry[] = [];
   for (const row of rows) {
-    if (!row.value) continue;
+    if (!row.value) {
+      if (opts.requireAll) errors.push({ key: row.key, message: 'Choose an answer for this requirement.' });
+      continue;
+    }
     const otherToolId = row.value === 'other-tool' ? clean(row.otherToolId) : undefined;
     if (row.value === 'other-tool' && !otherToolId) {
       errors.push({ key: row.key, message: 'Pick which tool handles this.' });

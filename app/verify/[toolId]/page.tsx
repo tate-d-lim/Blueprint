@@ -45,6 +45,9 @@ async function Review({ params, searchParams }: Props) {
       <PageHeader title={`${tool.name}, version ${current.version}`}>
         {profile.title}, saved {current.createdAt.slice(0, 10)}, written against {current.writtenAgainst}. Source: {current.source}
       </PageHeader>
+      {current.importedFrom?.by === "coding-agent" && (
+        <Note>A coding agent filled this in from {current.importedFrom.fileName}. The admin reviewed it.</Note>
+      )}
       {current.changeNote && <Note title="What changed">{current.changeNote}</Note>}
 
       {current.approval ? (

@@ -128,7 +128,7 @@ export interface ToolVersion {
   createdAt: string;
   createdByRole: 'admin' | 'seed';
   approval?: Approval;
-  importedFrom?: { fileName: string; missingKeys: RequirementKey[] };
+  importedFrom?: { fileName: string; missingKeys: RequirementKey[]; by?: 'coding-agent' };
   entries: CoverageEntry[];
 }
 

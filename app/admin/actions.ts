@@ -25,12 +25,23 @@ export async function saveVersionAction(
   rows: DraftRow[],
   source: string,
   changeNote?: string,
+  fromAgentFile?: string,
 ): Promise<SaveResult> {
   await requireAdmin();
   const saved = await withDb(async db => {
-    const result = validateNewVersion(carrySources(rows, (await getCurrentVersion(db, toolId, profileId)) ?? undefined), source);
+    const result = validateNewVersion(carrySources(rows, (await getCurrentVersion(db, toolId, profileId)) ?? undefined), source, {
+      requireAll: !!fromAgentFile,
+    });
     if (!result.ok) return result;
-    return createToolVersion(db, { toolId, profileId, source: source.trim(), changeNote, entries: result.entries, createdByRole: "admin" });
+    return createToolVersion(db, {
+      toolId,
+      profileId,
+      source: source.trim(),
+      changeNote,
+      entries: result.entries,
+      createdByRole: "admin",
+      ...(fromAgentFile && { importedFrom: { fileName: fromAgentFile, missingKeys: [], by: "coding-agent" as const } }),
+    });
   });
   if ("ok" in saved) return saved;
   revalidatePath("/admin");

@@ -52,3 +52,17 @@ test('every problem is reported, not just the first', () => {
 test('a version with no rows is allowed (a new tool)', () => {
   expect(validateNewVersion([], 'first draft')).toEqual({ ok: true, entries: [] });
 });
+
+test('with requireAll, a blank row is an error on that row', () => {
+  expect(validateNewVersion([row('as-1', { value: '' }), row('as-2')], 's', { requireAll: true })).toEqual({
+    ok: false,
+    errors: [{ key: key('as-1'), message: 'Choose an answer for this requirement.' }],
+  });
+});
+
+test('without requireAll, blank rows are still dropped', () => {
+  expect(validateNewVersion([row('as-1', { value: '' }), row('as-2')], 's', {})).toEqual({
+    ok: true,
+    entries: [{ key: key('as-2'), value: 'provided' }],
+  });
+});
