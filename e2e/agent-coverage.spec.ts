@@ -44,9 +44,13 @@ test("an admin fills a new tool from a coding agent file and submits it for appr
   await page.getByRole("button", { name: "Show blank rows" }).click();
   await expect(page.getByText("Needs an answer")).toHaveCount(1);
   await page.getByText("Needs an answer").click();
-  await page.getByRole("combobox", { name: "Who handles it" }).selectOption({ label: "App Builder" });
+  // Answering a row in the blank-rows view keeps it open, so a "Shared" answer can still get its builder part.
+  await page.getByRole("combobox", { name: "Who handles it" }).selectOption({ label: "Shared (Agent Probe + App Builder)" });
+  await page.getByRole("textbox", { name: "App Builder's part" }).fill("Set the app's own limits.");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByText("Saved version 1. It is not yet verified")).toBeVisible();
+  // Once saved, the draft is no longer the agent's: a later save is the admin's own edit.
+  await expect(page.getByText(/Filled in from agent-probe-coverage/)).toHaveCount(0);
 
   // The verifier sees where the version came from.
   await asRole(page, "Verifier");

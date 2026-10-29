@@ -56,7 +56,8 @@ export function CoverageEditor({
   const [savedVersion, setSavedVersion] = useState<number | null>(null);
   // Set once a coding agent's file has filled the editor. From then on every row needs an answer before save.
   const [agent, setAgent] = useState<{ fileName: string; filled: number } | null>(null);
-  const [blankOnly, setBlankOnly] = useState(false);
+  // The rows that were blank when the filter went on. Fixed, so a row stays open while the admin answers it.
+  const [blankShown, setBlankShown] = useState<Set<RequirementKey> | null>(null);
 
   const families = [...new Set(requirements.map(r => r.family))];
   const update = (key: RequirementKey, patch: Partial<DraftRow>) =>
@@ -66,7 +67,7 @@ export function CoverageEditor({
       (!family || r.family === family) &&
       (!level || String(r.level) === level) &&
       (!coveredOnly || rows.get(r.key)!.value) &&
-      (!blankOnly || !rows.get(r.key)!.value),
+      (!blankShown || blankShown.has(r.key)),
   );
   const blankKeys = agent ? requirements.filter(r => !rows.get(r.key)!.value).map(r => r.key) : [];
   const fillFromAgent = (result: AgentFilled) => {
@@ -75,7 +76,7 @@ export function CoverageEditor({
     setSource(`Coding agent: ${result.fileName}`);
     setErrors([]);
     setSavedVersion(null);
-    setBlankOnly(false);
+    setBlankShown(null);
   };
   const covered = [...rows.values()].filter(r => r.value).length;
   const errorFor = (key: RequirementKey) => errors.find(e => e.key === key)?.message;
@@ -88,6 +89,8 @@ export function CoverageEditor({
       if (result.ok) {
         setErrors([]);
         setSavedVersion(result.version);
+        setAgent(null);
+        setBlankShown(null);
         setSaving(false);
         router.refresh();
       } else {
@@ -106,8 +109,8 @@ export function CoverageEditor({
               Filled in from {agent.fileName}: {agent.filled} of {requirements.length} rows.
               {blankKeys.length > 0 && ` Fill the ${blankKeys.length} blank row${blankKeys.length === 1 ? "" : "s"} before you submit.`}
             </span>
-            {blankKeys.length > 0 && !blankOnly && (
-              <Button variant="secondary" size="sm" onClick={() => setBlankOnly(true)}>
+            {blankKeys.length > 0 && !blankShown && (
+              <Button variant="secondary" size="sm" onClick={() => setBlankShown(new Set(blankKeys))}>
                 Show blank rows
               </Button>
             )}
@@ -140,7 +143,7 @@ export function CoverageEditor({
         </Field>
         <div className="flex flex-col gap-2 pb-2">
           <Checkbox label="Rows with coverage only" checked={coveredOnly} onChange={e => setCoveredOnly(e.target.checked)} />
-          {agent && <Checkbox label="Blank rows only" checked={blankOnly} onChange={e => setBlankOnly(e.target.checked)} />}
+          {agent && <Checkbox label="Blank rows only" checked={!!blankShown} onChange={e => setBlankShown(e.target.checked ? new Set(blankKeys) : null)} />}
         </div>
         <p className="tnum pb-2 text-small text-ink-soft">
           {visible.length} shown, {covered} with coverage

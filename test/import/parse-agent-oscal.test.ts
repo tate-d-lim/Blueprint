@@ -146,3 +146,21 @@ describe('what agents often get slightly wrong', () => {
     expect(result.rows[0]).toEqual({ key: key('as-3'), value: 'provided' });
   });
 });
+
+describe('review fixes', () => {
+  test('a code fence with Windows line endings', () => {
+    const result = parse('```json\r\n' + fill({ 'as-3': { r: 'provided' } }) + '\r\n```\r\n');
+    expect(result).toMatchObject({ ok: true, filled: 1 });
+  });
+
+  test('null entries are a plain refusal, not a crash', () => {
+    expect(error(JSON.stringify({ 'component-definition': { components: [null] } }))).toBe(
+      'This file has no component definition. Check that the agent followed the brief.',
+    );
+    const text = fill({ 'as-3': { r: 'provided' } }, doc => {
+      rowsOf(doc).push(null as unknown as Row);
+      rowsOf(doc)[0].props.push(null as unknown as Row['props'][number]);
+    });
+    expect(parse(text)).toMatchObject({ ok: true, filled: 1 });
+  });
+});

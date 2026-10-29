@@ -12,10 +12,11 @@ type Requirement = { 'control-id'?: unknown; description?: unknown; props?: unkn
 const VALUES = new Set<string>(ANSWERS.map(a => a.value));
 const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
 const refuse = (error: string): AgentParseResult => ({ ok: false, error });
+const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /** Agents often hand back the template the way the brief shows it: inside a code fence, sometimes with a BOM. */
 function unwrap(raw: string): string {
-  const trimmed = raw.replace(/^﻿/, '').trim();
+  const trimmed = raw.replace(/^﻿/, '').replace(/\r\n/g, '\n').trim();
   const fenced = trimmed.match(/^```[a-z]*\n([\s\S]*?)\n?```$/i);
   return fenced ? fenced[1] : trimmed;
 }
@@ -36,10 +37,11 @@ export function parseAgentOscal(raw: string, profile: Profile, toolId: string, o
   const components = Array.isArray(definition.components) ? definition.components : [];
   if (components.length !== 1) return refuse(`This file describes ${components.length} tools. Upload one tool at a time.`);
 
-  const implementations = (components[0] as Record<string, unknown>)['control-implementations'];
-  const requirements: Requirement[] = (Array.isArray(implementations) ? implementations : []).flatMap(i =>
-    Array.isArray(i?.['implemented-requirements']) ? i['implemented-requirements'] : [],
-  );
+  if (!isObject(components[0])) return refuse('This file has no component definition. Check that the agent followed the brief.');
+  const implementations = components[0]['control-implementations'];
+  const requirements: Requirement[] = (Array.isArray(implementations) ? implementations : [])
+    .flatMap(i => (isObject(i) && Array.isArray(i['implemented-requirements']) ? i['implemented-requirements'] : []))
+    .filter(isObject);
 
   const byId = new Map(profile.entries.map(e => [e.id.toLowerCase(), e]));
   const unknown = requirements.map(r => text(r['control-id'])).filter(id => !byId.has(id.toLowerCase()));
@@ -52,7 +54,7 @@ export function parseAgentOscal(raw: string, profile: Profile, toolId: string, o
     if (found.has(entry.key)) return refuse(`${entry.id} appears twice.`);
 
     const props = new Map<string, string>();
-    for (const p of (Array.isArray(requirement.props) ? requirement.props : []) as Prop[]) {
+    for (const p of (Array.isArray(requirement.props) ? requirement.props : []).filter(isObject) as Prop[]) {
       if (text(p?.value)) props.set(text(p?.name), text(p.value));
     }
     const value = (props.get('responsibility') ?? '').toLowerCase();
