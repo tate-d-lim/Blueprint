@@ -73,7 +73,7 @@ UUIDs stay v5 over stable names: `provided|{scope}|{toolId}|{key}`, `responsibil
 
 Only for a tool whose **current** coverage version is approved (`verified` or `govtech-published`):
 - `uuid`: v5 over `leveraged|{scope}|{toolId}|v{version}`.
-- `title`: "{tool} coverage, version {n}".
+- `title`: "{tool} coverage for {profile}, version {n}" (one per profile, so titles differ).
 - `party-uuid`: the tool's party.
 - `date-authorized`: the approval date (`approval.at`, first 10 characters).
 
@@ -174,7 +174,7 @@ Check descriptions:
 - `ship-hats-compliance-template`: "The project's pipeline includes the SHIP-HATS compliance template."
 - `cf-level-4`: "The project's CI/CD variable CF_LEVEL is 4, or is not set (default 4)."
 
-appCentral already says `provided` for sc-5, sd-4 and sd-5. If a builder picks both tools, both claims are decisive, and the SSP gets one P from each tool. This is not a conflict in the engine. The security team must review the mapping before anyone relies on it. The "not yet verified" label says this.
+appCentral already says `provided` for sc-5, sd-4 and sd-5. The engine ranks `provided` above `shared`, so if a builder picks both tools, only appCentral is decisive on those three rows. The SHIP-HATS claim stays in the plan's claims but gets no P or R, and its builder part and check do not show in the SSP. SHIP-HATS decides sc-7 and sc-8 on its own. This is not a conflict in the engine. Showing the SHIP-HATS parts next to a `provided` claim needs an engine change, and that is not part of this work. The security team must review the mapping before anyone relies on it. The "not yet verified" label says this.
 
 ## Later (not built)
 

@@ -24,7 +24,7 @@
 ## Review Focus
 
 1. **A picked tool with no coverage for any profile in use** (genCentral). Today the route drops it from the SSP. Expected: it is still an SSP component, with no by-components and no leveraged authorization. It is not in the component definition. → test in Task 5.
-2. **Two tools decide one shared item** (appCentral + SHIP-HATS on sd-4). Expected: two P/R pairs, and this-system has two `inherited` and two `satisfied` entries, each linking to its own tool. → test in Task 6.
+2. **Two tools decide one shared item.** Note: appCentral + SHIP-HATS on sd-4 is not such a case (provided outranks shared; only appCentral decides). Use two tools that both say `shared`. Expected: two P/R pairs, and this-system has two `inherited` and two `satisfied` entries, each linking to its own tool. → test in Task 6.
 3. **A shared claim with no `builderPart` and no plain task.** Expected: the R description falls back to the requirement title and is never empty. An empty `description` fails the schema. → test in Task 6.
 4. **The current version is not approved, but an older one is.** Expected: no leveraged authorization. The rule uses `pair.current.approval`, not `lastApproved`. → test in Task 5.
 5. **A new version saved from the editor or the agent upload.** Expected: the rows keep their checks. A row that is now blank keeps none. → test in Task 1.
