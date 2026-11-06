@@ -76,3 +76,14 @@ describe('itemVerification', () => {
     expect(itemVerification({ decisive: [claim('verified'), claim('govtech-published')] })).toBe('govtech-published');
   });
 });
+
+test('sameCoverage treats a changed, added or removed check as a change', () => {
+  const c1 = { id: 'a-rule', kind: 'code-rule' as const, description: 'x' };
+  const c2 = { id: 'b-rule', kind: 'sbom' as const, description: 'y' };
+  const base = makeEntry('as-1', { checks: [c1, c2] });
+  expect(sameCoverage(base, makeEntry('as-1', { checks: [c1, { ...c2, description: 'z' }] }))).toBe(false);
+  expect(sameCoverage(base, makeEntry('as-1', { checks: [c1] }))).toBe(false);
+  expect(sameCoverage(makeEntry('as-1'), base)).toBe(false);
+  expect(sameCoverage(base, makeEntry('as-1', { checks: [c2, c1] }))).toBe(true);
+  expect(sameCoverage(makeEntry('as-1'), makeEntry('as-1', { checks: [] }))).toBe(true);
+});

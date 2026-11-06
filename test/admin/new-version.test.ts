@@ -66,3 +66,10 @@ test('without requireAll, blank rows are still dropped', () => {
     entries: [{ key: key('as-2'), value: 'provided' }],
   });
 });
+
+test('validateNewVersion copies a non-empty checks list to the entry', () => {
+  const checks = [{ id: 'c', kind: 'pipeline' as const, description: 'd' }];
+  const result = validateNewVersion([row('as-1', { checks }), row('as-2', { checks: [] })], 'src');
+  expect(result.ok && result.entries[0].checks).toEqual(checks);
+  expect(result.ok && 'checks' in result.entries[1]).toBe(false);
+});

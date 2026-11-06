@@ -287,3 +287,9 @@ describe('answers about the app', () => {
     expect(Object.values(plan.counts).reduce((a, b) => a + b, 0)).toBe(plan.items.length);
   });
 });
+
+test('claims carry the row’s checks', () => {
+  const checks = [{ id: 'c', kind: 'code-rule' as const, description: 'd' }];
+  const plan = planOf(oneReq, [{ id: 'a', entries: [makeEntry('as-1', { value: 'shared', checks })] }]);
+  expect(item(plan, 'as-1').claims[0].checks).toEqual(checks);
+});

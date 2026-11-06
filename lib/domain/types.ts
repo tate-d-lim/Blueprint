@@ -5,6 +5,9 @@ export type Level = 0 | 1 | 2;
 export type CoverageValue = 'provided' | 'shared' | 'app-builder' | 'not-applicable' | 'other-tool';
 export type Section = 'cpf' | 'wog' | 'code';
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
+/** Who vouches for a builder's status: the builder (`self-declared`) or a pipeline check (`machine-checked`). */
+export type EvidenceKind = 'self-declared' | 'machine-checked';
+export interface TaskState { status: TaskStatus; note?: string; evidence?: EvidenceKind }
 
 export interface Catalog {
   _id: string;
@@ -101,6 +104,17 @@ export interface Tool {
   activatesProfiles?: string[];
 }
 
+export type CheckKind = 'code-rule' | 'sbom' | 'pipeline';
+
+/** A link to a test that runs somewhere else. Blueprint never runs it, and it never changes a placement or a status. */
+export interface CoverageCheck {
+  /** Stable, lower-kebab, unique within the tool. */
+  id: string;
+  /** One sentence: what passes. */
+  description: string;
+  kind: CheckKind;
+}
+
 export interface CoverageEntry {
   key: RequirementKey;
   value: CoverageValue;
@@ -109,6 +123,7 @@ export interface CoverageEntry {
   builderPart?: string;
   source?: string;
   originalText?: string;
+  checks?: CoverageCheck[];
 }
 
 export interface Approval {
@@ -138,7 +153,7 @@ export interface Project {
   ownerName: string;
   riskAnswers: RiskAnswers;
   toolIds: string[];
-  taskStatus: Record<RequirementKey, { status: TaskStatus; note?: string }>;
+  taskStatus: Record<RequirementKey, TaskState>;
   questionAnswers: Record<RequirementKey, { applies: boolean; reason: string }>;
   /** Answers about the app. Projects saved before these existed have none, and every requirement applies. */
   facts?: FactAnswers;

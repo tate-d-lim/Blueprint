@@ -1,4 +1,5 @@
 import type {
+  CoverageCheck,
   CoverageValue,
   FactAnswers,
   Level,
@@ -7,7 +8,7 @@ import type {
   ProfileEntry,
   Project,
   RequirementKey,
-  TaskStatus,
+  TaskState,
   Tool,
 } from '../domain/types';
 import { checkRule } from './facts';
@@ -37,11 +38,12 @@ export interface Claim {
   otherToolName?: string;
   explanation?: string;
   builderPart?: string;
+  checks?: CoverageCheck[];
   source: string;
   verification: Verification;
 }
 
-export type ItemStatus = { status: TaskStatus; note?: string } | { applies: boolean; reason: string };
+export type ItemStatus = TaskState | { applies: boolean; reason: string };
 
 export interface PlanItem {
   key: RequirementKey;
@@ -175,6 +177,7 @@ export function buildPlan(input: PlanInput): Plan {
         }
         if (row.explanation !== undefined) claim.explanation = row.explanation;
         if (row.builderPart !== undefined) claim.builderPart = row.builderPart;
+        if (row.checks?.length) claim.checks = row.checks;
         claims.push(claim);
       }
 

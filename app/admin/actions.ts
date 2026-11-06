@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { carrySources, validateNewVersion, type DraftRow } from "@/lib/admin/new-version";
+import { carryChecks, carrySources, validateNewVersion, type DraftRow } from "@/lib/admin/new-version";
 import { withDb } from "@/lib/data/db";
 import { createToolVersion, getCurrentVersion } from "@/lib/data/repos/tool-versions";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
@@ -29,7 +29,8 @@ export async function saveVersionAction(
 ): Promise<SaveResult> {
   await requireAdmin();
   const saved = await withDb(async db => {
-    const result = validateNewVersion(carrySources(rows, (await getCurrentVersion(db, toolId, profileId)) ?? undefined), source, {
+    const previous = (await getCurrentVersion(db, toolId, profileId)) ?? undefined;
+    const result = validateNewVersion(carryChecks(carrySources(rows, previous), previous), source, {
       requireAll: !!fromAgentFile,
     });
     if (!result.ok) return result;

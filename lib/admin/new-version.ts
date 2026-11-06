@@ -1,4 +1,4 @@
-import type { CoverageEntry, CoverageValue, RequirementKey, ToolVersion } from '../domain/types';
+import type { CoverageCheck, CoverageEntry, CoverageValue, RequirementKey, ToolVersion } from '../domain/types';
 import { sameCoverage } from '../plan/verification';
 
 /** One row of the coverage editor as the admin left it. A blank value means "this tool says nothing about it". */
@@ -9,6 +9,7 @@ export interface DraftRow {
   explanation?: string;
   builderPart?: string;
   source?: string;
+  checks?: CoverageCheck[];
 }
 
 export type NewVersionResult =
@@ -42,6 +43,17 @@ export function carrySources(rows: DraftRow[], previous?: ToolVersion): DraftRow
   });
 }
 
+/** A row that still has a value keeps the checks it had, unless the draft brings its own. The editor has no input for checks. */
+export function carryChecks(rows: DraftRow[], previous?: ToolVersion): DraftRow[] {
+  if (!previous) return rows;
+  const before = new Map(previous.entries.map(e => [e.key, e]));
+  return rows.map(row => {
+    const old = before.get(row.key);
+    if (!row.value || row.checks?.length || !old?.checks?.length) return row;
+    return { ...row, checks: old.checks };
+  });
+}
+
 /** `requireAll` is for a draft a coding agent filled in: there, a blank row is a gap to fill, not "says nothing". */
 export function validateNewVersion(rows: DraftRow[], versionSource: string, opts: { requireAll?: boolean } = {}): NewVersionResult {
   const errors: { key?: RequirementKey; message: string }[] = [];
@@ -64,6 +76,7 @@ export function validateNewVersion(rows: DraftRow[], versionSource: string, opts
       const value = clean(row[field]);
       if (value) entry[field] = value;
     }
+    if (row.checks?.length) entry.checks = row.checks;
     entries.push(entry);
   }
   return errors.length ? { ok: false, errors } : { ok: true, entries };

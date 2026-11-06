@@ -1,4 +1,4 @@
-import type { Approval, CoverageEntry, RequirementKey, ToolVersion } from '../domain/types';
+import type { Approval, CoverageCheck, CoverageEntry, RequirementKey, ToolVersion } from '../domain/types';
 
 export type Verification = 'verified' | 'govtech-published' | 'not-yet-verified';
 
@@ -10,13 +10,20 @@ export interface VersionPair {
 
 const blank = (s: string | undefined) => s ?? '';
 
+const checksKey = (checks: CoverageCheck[] | undefined) =>
+  [...(checks ?? [])]
+    .sort((x, y) => (x.id < y.id ? -1 : x.id > y.id ? 1 : 0))
+    .map(c => `${c.id}|${c.kind}|${c.description}`)
+    .join('\n');
+
 export function sameCoverage(a?: CoverageEntry, b?: CoverageEntry): boolean {
   if (!a || !b) return false;
   return (
     a.value === b.value &&
     blank(a.otherToolId) === blank(b.otherToolId) &&
     blank(a.explanation) === blank(b.explanation) &&
-    blank(a.builderPart) === blank(b.builderPart)
+    blank(a.builderPart) === blank(b.builderPart) &&
+    checksKey(a.checks) === checksKey(b.checks)
   );
 }
 

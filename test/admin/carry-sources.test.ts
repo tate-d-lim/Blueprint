@@ -1,4 +1,4 @@
-import { carrySources, type DraftRow } from '@/lib/admin/new-version';
+import { carryChecks, carrySources, type DraftRow } from '@/lib/admin/new-version';
 import { key, makeEntry, makeVersion } from '../helpers/factories';
 
 const previous = {
@@ -34,4 +34,16 @@ test('new rows and rows with no value are left alone; with nothing before, every
   const rows = [row('as-9'), row('as-4', { value: '' })];
   expect(carrySources(rows, previous)).toEqual(rows);
   expect(carrySources([row('as-4')], undefined)).toEqual([row('as-4')]);
+});
+
+test('carryChecks keeps the previous row’s checks on rows that still have a value', () => {
+  const checks = [{ id: 'zod-schema-on-every-route', kind: 'code-rule' as const, description: 'x' }];
+  const before = makeVersion('t', 'p', 1, [makeEntry('as-1', { checks })]);
+  const carried = carryChecks([row('as-1', { value: 'shared' })], before);
+  expect(carried[0].checks).toEqual(checks);
+  expect(carryChecks([row('as-1', { value: '' })], before)[0].checks).toBeUndefined();
+  const own = [{ id: 'own', kind: 'sbom' as const, description: 'o' }];
+  expect(carryChecks([row('as-1', { checks: own })], before)[0].checks).toEqual(own);
+  const rows = [row('as-1')];
+  expect(carryChecks(rows, undefined)).toEqual(rows);
 });
