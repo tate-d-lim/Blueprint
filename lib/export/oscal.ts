@@ -1,7 +1,7 @@
 import { v5 as uuidv5 } from 'uuid';
-import type { CoverageCheck, CoverageEntry, CoverageValue, Profile, TaskStatus, Tool } from '../domain/types';
+import type { CoverageCheck, CoverageEntry, CoverageValue, Profile, TaskState, Tool } from '../domain/types';
 import type { Plan, PlanItem } from '../plan/engine';
-import { LOCALLY_DERIVED } from '../plan/labels';
+import { LOCALLY_DERIVED, STATUS_LABEL } from '../plan/labels';
 import { rowVerification, type VersionPair } from '../plan/verification';
 import { OPTION_LABELS, type RiskAnswers } from '../risk/assess';
 import { sspValues } from './ssp-values';
@@ -177,9 +177,9 @@ export function buildComponentDefinition(input: { tools: ToolWithVersions[]; pro
   };
 }
 
-const STATE_BY_STATUS: Record<TaskStatus, string> = { todo: 'planned', 'in-progress': 'partial', done: 'implemented' };
+const STATE_BY_STATUS: Record<TaskState['status'], string> = { todo: 'planned', 'in-progress': 'partial', done: 'implemented' };
 
-function taskStatus(item: PlanItem): { status: TaskStatus; note?: string } {
+function taskStatus(item: PlanItem): TaskState {
   return item.status && 'status' in item.status ? item.status : { status: 'todo' };
 }
 
@@ -222,43 +222,96 @@ export function buildSsp(input: {
   );
   const toolComponent = new Map(tools.map(t => [t.tool._id, uuid(`ssp-component|${scope}|${t.tool._id}`)]));
 
-  const byComponent = (key: string, componentUuid: string, state: string, description: string): Json => ({
+  const byComponent = (key: string, componentUuid: string, state: string, description: string, extra: Json = {}): Json => ({
     'component-uuid': componentUuid,
     uuid: uuid(`by|${scope}|${key}|${componentUuid}`),
     description,
     'implementation-status': { state },
+    ...extra,
   });
   const claimText = (c: PlanItem['claims'][number], lead: string) =>
     `${lead}${c.explanation ? `: ${c.explanation}` : ''} (source: ${c.source}; ${c.verification.replace(/-/g, ' ')})`;
+  const providerRole = (toolId: string): Json[] => [{ 'role-id': 'provider', 'party-uuids': [toolParty.get(toolId)] }];
+  const customerRole: Json[] = [{ 'role-id': 'customer', 'party-uuids': [builderParty] }];
 
   const requirements = plan.items
     .filter(item => profileIds.has(item.profileId))
     .map(item => {
       const requirement: Json = { uuid: uuid(`ssp-requirement|${scope}|${item.key}`), 'control-id': item.id };
       const by: Json[] = [];
-      const forTools = (state: string, lead: (toolName: string) => string) => {
-        for (const c of item.decisive) {
-          const component = toolComponent.get(c.toolId);
-          if (component) by.push(byComponent(item.key, component, state, claimText(c, lead(c.toolName))));
-        }
+      const claims = item.decisive.filter(c => toolComponent.has(c.toolId));
+      const state = taskStatus(item);
+      const evidence = state.evidence ?? 'self-declared';
+
+      const forTools = (stateName: string, lead: (toolName: string) => string) => {
+        for (const c of claims) by.push(byComponent(item.key, toolComponent.get(c.toolId)!, stateName, claimText(c, lead(c.toolName))));
       };
-      const own = (state: string) => by.push(byComponent(item.key, thisSystem, state, sspValues(item).explanation));
+      const ref = (kind: string, c: PlanItem['claims'][number]) => uuid(`${kind}|${scope}|${c.toolId}|${item.key}`);
+      const sourceProps = (c: PlanItem['claims'][number]) => [prop('verification', c.verification), prop('source', c.source)];
+      const provided = (c: PlanItem['claims'][number], lead: string, rules: boolean): Json => ({
+        uuid: ref('provided', c),
+        description: claimText(c, lead),
+        props: [...sourceProps(c), ...(rules ? ruleIdProps(c.checks) : [])],
+        'responsible-roles': providerRole(c.toolId),
+      });
+      const responsibility = (c: PlanItem['claims'][number], linked: boolean): Json => ({
+        uuid: ref('responsibility', c),
+        ...(linked && { 'provided-uuid': ref('provided', c) }),
+        description: c.builderPart?.trim() || item.plain?.task || item.title,
+        props: [...sourceProps(c), ...ruleIdProps(c.checks)],
+        'responsible-roles': customerRole,
+      });
+      const inherited = (c: PlanItem['claims'][number]): Json => ({
+        uuid: ref('inherited', c),
+        'provided-uuid': ref('provided', c),
+        description: `Inherited from ${c.toolName}`,
+        'responsible-roles': providerRole(c.toolId),
+      });
+      const satisfied = (c: PlanItem['claims'][number]): Json => ({
+        uuid: ref('satisfied', c),
+        'responsibility-uuid': ref('responsibility', c),
+        description: `${STATUS_LABEL[state.status]} (${evidence}).${state.note?.trim() ? ` ${state.note.trim().replace(/([^.!?])$/, '$1.')}` : ''}`,
+        props: [...ruleIdProps(c.checks), prop('evidence-kind', evidence)],
+        'responsible-roles': customerRole,
+      });
+      const own = (stateName: string, extra: Json = {}) =>
+        by.push(byComponent(item.key, thisSystem, stateName, sspValues(item).explanation, extra));
 
       switch (item.placement) {
         case 'provided':
-          forTools('implemented', t => `Provided by ${t}`);
+          for (const c of claims) {
+            const text = `Provided by ${c.toolName}`;
+            by.push(byComponent(item.key, toolComponent.get(c.toolId)!, 'implemented', claimText(c, text), { export: { provided: [provided(c, text, true)] } }));
+          }
+          own('implemented', claims.length ? { inherited: claims.map(inherited) } : {});
           break;
         case 'not-applicable':
           forTools('not-applicable', t => `Not applicable when using ${t}`);
           break;
         case 'shared':
-          forTools('implemented', t => `${t} handles its part`);
-          own(STATE_BY_STATUS[taskStatus(item).status]);
+          for (const c of claims) {
+            const text = `${c.toolName} handles its part`;
+            by.push(
+              byComponent(item.key, toolComponent.get(c.toolId)!, 'implemented', claimText(c, text), {
+                export: { provided: [provided(c, text, false)], responsibilities: [responsibility(c, true)] },
+              }),
+            );
+          }
+          own(STATE_BY_STATUS[state.status], claims.length ? { inherited: claims.map(inherited), satisfied: claims.map(satisfied) } : {});
           break;
         case 'app-builder':
+          for (const c of claims) {
+            by.push(
+              byComponent(item.key, toolComponent.get(c.toolId)!, 'implemented', claimText(c, `${c.toolName} leaves this to the app builder`), {
+                export: { responsibilities: [responsibility(c, false)] },
+              }),
+            );
+          }
+          own(STATE_BY_STATUS[state.status], claims.length ? { satisfied: claims.map(satisfied) } : {});
+          break;
         case 'default-builder':
         case 'answered-applies':
-          own(STATE_BY_STATUS[taskStatus(item).status]);
+          own(STATE_BY_STATUS[state.status], { props: [prop('evidence-kind', evidence)] });
           break;
         case 'answered-not-applicable':
         case 'not-for-app':

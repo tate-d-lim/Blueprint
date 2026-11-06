@@ -2,7 +2,7 @@ import { COMPASS_NS, OSCAL_NS, buildComponentDefinition, buildSsp } from '@/lib/
 import { buildPlan, type PlanData } from '@/lib/plan/engine';
 import { pairVersions, selectPlanInput } from '@/lib/plan/select';
 import type { RiskAnswers } from '@/lib/risk/assess';
-import { approved, makeEntry, makeVersion, pair } from '../helpers/factories';
+import { approved, makeEntry, makeProfile, makeTool, makeVersion, pair } from '../helpers/factories';
 import { oscalValidator } from '../helpers/oscal-validate';
 import { loadSeed } from '../helpers/seed';
 
@@ -54,15 +54,18 @@ test('a requirement a platform provides is implemented by that tool', async () =
   const by = requirement(doc, 'as-4')['by-components'] as Json[];
   const appcentral = by.find(b => b['component-uuid'] === componentUuid(doc, 'appCentral'))!;
   expect(appcentral['implementation-status'].state).toBe('implemented');
-  expect(by).toHaveLength(1);
+  expect(by.map(b => b['component-uuid'])).toEqual([componentUuid(doc, 'appCentral'), componentUuid(doc, 'This app')]);
 });
 
-test('a requirement that is the builder’s has only this-system, planned', async () => {
+test('a requirement that is the builder’s own has only this-system, planned', async () => {
   const { ssp: doc } = await build();
-  const by = requirement(doc, 'as-1')['by-components'] as Json[];
+  const by = requirement(doc, 'pm-1')['by-components'] as Json[];
   expect(by).toHaveLength(1);
   expect(by[0]['component-uuid']).toBe(componentUuid(doc, 'This app'));
   expect(by[0]['implementation-status'].state).toBe('planned');
+  expect(by[0].inherited).toBeUndefined();
+  expect(by[0].satisfied).toBeUndefined();
+  expect(by[0].props).toEqual([{ name: 'evidence-kind', ns: OSCAL_NS, value: 'self-declared' }]);
 });
 
 test('a requirement that needs a person has no components and says why', async () => {
@@ -211,4 +214,136 @@ test('ssp: an unapproved current version is not leveraged, even if an older one 
   const doc = buildSsp({ plan, profiles, tools: [{ tool: tools[0].tool, pairs: [pair(v2, v1)] }], answers, generatedAt: GENERATED });
   expect(ssp(doc)['system-implementation']['leveraged-authorizations']).toBeUndefined();
   expect(oscalValidator('ssp')(doc).errors).toEqual([]);
+});
+
+const byOf = (doc: Json, id: string) => (requirement(doc, id)['by-components'] as Json[]) ?? [];
+const toolBy = (doc: Json, id: string, title: string) => byOf(doc, id).find(b => b['component-uuid'] === componentUuid(doc, title))!;
+const thisBy = (doc: Json, id: string) => byOf(doc, id).find(b => b['component-uuid'] === componentUuid(doc, 'This app'))!;
+const propValues = (item: Json, name: string) => ((item.props ?? []) as Json[]).filter(p => p.name === name).map(p => p.value);
+
+test('ssp: a provided item is inherited from the tool’s provided export', async () => {
+  const { ssp: doc } = await build();
+  const tool = toolBy(doc, 'as-4', 'appCentral');
+  expect(tool.export.provided).toHaveLength(1);
+  expect(tool.export.provided[0]['responsible-roles'][0]['role-id']).toBe('provider');
+  const mine = thisBy(doc, 'as-4');
+  expect(mine['implementation-status'].state).toBe('implemented');
+  expect(mine.inherited).toHaveLength(1);
+  expect(mine.inherited[0]['provided-uuid']).toBe(tool.export.provided[0].uuid);
+  expect(mine.satisfied).toBeUndefined();
+});
+
+test('ssp: a shared item has provided + responsibility on the tool and inherited + satisfied on this-system', async () => {
+  const { ssp: doc } = await build(['appcentral', 'zod']);
+  const tool = toolBy(doc, 'as-1', 'Zod');
+  const [p] = tool.export.provided;
+  const [r] = tool.export.responsibilities;
+  expect(r['provided-uuid']).toBe(p.uuid);
+  expect(r['responsible-roles'][0]['role-id']).toBe('customer');
+  expect(propValues(r, 'Rule_Id')).toEqual(['zod-schema-on-every-route']);
+  const mine = thisBy(doc, 'as-1');
+  expect(mine.inherited[0]['provided-uuid']).toBe(p.uuid);
+  expect(mine.satisfied[0]['responsibility-uuid']).toBe(r.uuid);
+  expect(propValues(mine.satisfied[0], 'Rule_Id')).toEqual(['zod-schema-on-every-route']);
+  expect(propValues(mine.satisfied[0], 'evidence-kind')).toEqual(['self-declared']);
+  expect(mine.satisfied[0].description).toMatch(/^To do \(self-declared\)\./);
+  expect(mine['implementation-status'].state).toBe('planned');
+  expect(r.description).toMatch(/Define a Zod schema/);
+});
+
+test('ssp: an item the tool leaves to the builder has a responsibility and no provided', async () => {
+  const { ssp: doc } = await build();
+  const tool = toolBy(doc, 'as-1', 'appCentral');
+  expect(tool.export.provided).toBeUndefined();
+  expect(tool.export.responsibilities).toHaveLength(1);
+  expect(tool.export.responsibilities[0]['provided-uuid']).toBeUndefined();
+  const mine = thisBy(doc, 'as-1');
+  expect(mine.inherited).toBeUndefined();
+  expect(mine.satisfied[0]['responsibility-uuid']).toBe(tool.export.responsibilities[0].uuid);
+});
+
+test('ssp: SHIP-HATS decides sc-7 and sc-8 alone; appCentral’s provided claim outranks it on sd-4', async () => {
+  const { ssp: doc } = await build(['appcentral', 'ship-hats']);
+  expect(toolBy(doc, 'sc-7', 'SHIP-HATS (compliance level 4)').export.provided).toHaveLength(1);
+  expect(propValues(thisBy(doc, 'sc-7').satisfied[0], 'Rule_Id')).toEqual(['cf-level-4']);
+  expect(byOf(doc, 'sd-4').map(b => b['component-uuid'])).toEqual([componentUuid(doc, 'appCentral'), componentUuid(doc, 'This app')]);
+});
+
+function twoSharedTools() {
+  const profile = makeProfile('low-risk-cloud', [{ id: 'as-1' }]);
+  const tools = ['a', 'b'].map(id => makeTool(id, { name: id.toUpperCase() }));
+  const versions = tools.map(tool => makeVersion(tool._id, profile._id, 1, [makeEntry('as-1', { value: 'shared', builderPart: tool._id === 'a' ? undefined : 'B part' })], approved()));
+  const pairs = versions.map(v => pair(v, v));
+  const plan = buildPlan({ profiles: [profile], pickedTools: tools, allTools: tools, versions: pairs });
+  const doc = buildSsp({ plan, profiles: [profile], tools: tools.map((tool, i) => ({ tool, pairs: [pairs[i]] })), answers, generatedAt: GENERATED });
+  return { doc, plan, profile };
+}
+
+test('ssp: two tools on one shared item give two links each', () => {
+  const { doc } = twoSharedTools();
+  const [mine] = (requirement(doc, 'as-1')['by-components'] as Json[]).filter(b => b['component-uuid'] === (ssp(doc)['system-implementation'].components as Json[]).find(c => c.type === 'this-system')!.uuid);
+  expect(mine.inherited).toHaveLength(2);
+  expect(mine.satisfied).toHaveLength(2);
+  expect(new Set(mine.inherited.map((i: Json) => i['provided-uuid'])).size).toBe(2);
+  expect(new Set(mine.satisfied.map((i: Json) => i['responsibility-uuid'])).size).toBe(2);
+  expect(oscalValidator('ssp')(doc).errors).toEqual([]);
+});
+
+test('ssp: a responsibility never has an empty description', () => {
+  const { doc } = twoSharedTools();
+  const responsibilities = (requirement(doc, 'as-1')['by-components'] as Json[]).flatMap(b => (b.export?.responsibilities ?? []) as Json[]);
+  expect(responsibilities.map(r => r.description)).toEqual(['Title as-1', 'B part']);
+});
+
+function everyBy(doc: Json): Json[] {
+  return sspRequirements(doc).flatMap(r => (r['by-components'] ?? []) as Json[]);
+}
+
+const SETS: [string[], string[]][] = [
+  [['appcentral', 'dbaas', 'iga'], ['low-risk-cloud']],
+  [['appcentral', 'zod', 'prisma', 'ship-hats'], ['low-risk-cloud']],
+  [['appcentral', 'gencentral'], ['low-risk-cloud', 'generative-ai']],
+];
+
+test('ssp: every link resolves inside the file, and every role and party reference too', async () => {
+  for (const [toolIds, profileIds] of SETS) {
+    const { ssp: doc } = await build(toolIds, profileIds);
+    expect(oscalValidator('ssp')(doc).errors).toEqual([]);
+    const bys = everyBy(doc);
+    const provided = new Set(bys.flatMap(b => (b.export?.provided ?? []).map((x: Json) => x.uuid)));
+    const responsibilities = new Set(bys.flatMap(b => (b.export?.responsibilities ?? []).map((x: Json) => x.uuid)));
+    const links = { p: 0, r: 0 };
+    for (const b of bys) {
+      for (const x of [...(b.inherited ?? []), ...(b.export?.responsibilities ?? [])]) {
+        if (x['provided-uuid']) { links.p++; expect(provided.has(x['provided-uuid'])).toBe(true); }
+      }
+      for (const x of b.satisfied ?? []) { links.r++; expect(responsibilities.has(x['responsibility-uuid'])).toBe(true); }
+    }
+    expect(links.p).toBeGreaterThan(0);
+    const roles = new Set((ssp(doc).metadata.roles as Json[]).map(r => r.id));
+    const parties = new Set((ssp(doc).metadata.parties as Json[]).map(p => p.uuid));
+    for (const b of bys) {
+      for (const x of [...(b.inherited ?? []), ...(b.satisfied ?? []), ...(b.export?.provided ?? []), ...(b.export?.responsibilities ?? [])]) {
+        for (const role of (x['responsible-roles'] ?? []) as Json[]) {
+          expect(roles.has(role['role-id'])).toBe(true);
+          for (const party of role['party-uuids'] ?? []) expect(parties.has(party)).toBe(true);
+        }
+      }
+    }
+  }
+});
+
+test('ssp: every Rule_Id in the SSP is a rule in that tool’s component definition', async () => {
+  const { ssp: doc, component } = await build(['appcentral', 'zod', 'prisma', 'ship-hats']);
+  const components = ssp(doc)['system-implementation'].components as Json[];
+  let seen = 0;
+  for (const b of everyBy(doc)) {
+    const title = components.find(c => c.uuid === b['component-uuid'])!.title;
+    if (title === 'This app') continue;
+    const defined = new Set(propValues(cdComponents(component).find(c => c.title === title)!, 'Rule_Id'));
+    for (const x of [...(b.export?.provided ?? []), ...(b.export?.responsibilities ?? [])]) {
+      for (const id of propValues(x, 'Rule_Id')) { seen++; expect(defined.has(id)).toBe(true); }
+    }
+  }
+  expect(seen).toBeGreaterThan(0);
 });
