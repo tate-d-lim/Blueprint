@@ -2,6 +2,7 @@ import { COMPASS_NS, OSCAL_NS, buildComponentDefinition, buildSsp } from '@/lib/
 import { buildPlan, type PlanData } from '@/lib/plan/engine';
 import { pairVersions, selectPlanInput } from '@/lib/plan/select';
 import type { RiskAnswers } from '@/lib/risk/assess';
+import { approved, makeEntry, makeVersion, pair } from '../helpers/factories';
 import { oscalValidator } from '../helpers/oscal-validate';
 import { loadSeed } from '../helpers/seed';
 
@@ -22,6 +23,8 @@ async function build(toolIds = ['appcentral', 'dbaas', 'iga'], profileIds = ['lo
     component: buildComponentDefinition({ tools, profiles, generatedAt: GENERATED }),
     ssp: buildSsp({ plan, profiles, tools, answers, generatedAt: GENERATED }),
     tools,
+    plan,
+    profiles,
   };
 }
 
@@ -185,4 +188,27 @@ test('ssp: a picked tool with no coverage is still a component', async () => {
   expect(gen).toBeDefined();
   expect(gen.props).toBeUndefined();
   expect((ssp(doc).metadata.parties as Json[]).map(p => p.name)).toContain('genCentral');
+});
+
+test('ssp: an approved tool version is a leveraged authorization', async () => {
+  const { ssp: doc } = await build(['appcentral', 'zod']);
+  const entries = ssp(doc)['system-implementation']['leveraged-authorizations'] as Json[];
+  expect(entries).toHaveLength(1);
+  const party = (ssp(doc).metadata.parties as Json[]).find(p => p.name === 'appCentral')!;
+  expect(entries[0]['party-uuid']).toBe(party.uuid);
+  expect(entries[0]['date-authorized']).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  const component = (ssp(doc)['system-implementation'].components as Json[]).find(c => c.title === 'appCentral')!;
+  expect((component.props as Json[]).find(p => p.name === 'leveraged-authorization-uuid')).toEqual({ name: 'leveraged-authorization-uuid', value: entries[0].uuid });
+  const zod = (ssp(doc)['system-implementation'].components as Json[]).find(c => c.title === 'Zod')!;
+  expect((zod.props as Json[]).some(p => p.name === 'leveraged-authorization-uuid')).toBe(false);
+  expect(oscalValidator('ssp')(doc).errors).toEqual([]);
+});
+
+test('ssp: an unapproved current version is not leveraged, even if an older one was', async () => {
+  const { plan, profiles, tools } = await build(['appcentral']);
+  const v1 = makeVersion('appcentral', 'low-risk-cloud', 1, [makeEntry('as-4')], approved());
+  const v2 = makeVersion('appcentral', 'low-risk-cloud', 2, [makeEntry('as-4')]);
+  const doc = buildSsp({ plan, profiles, tools: [{ tool: tools[0].tool, pairs: [pair(v2, v1)] }], answers, generatedAt: GENERATED });
+  expect(ssp(doc)['system-implementation']['leveraged-authorizations']).toBeUndefined();
+  expect(oscalValidator('ssp')(doc).errors).toEqual([]);
 });

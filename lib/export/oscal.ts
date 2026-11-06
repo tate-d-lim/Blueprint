@@ -200,6 +200,26 @@ export function buildSsp(input: {
   const thisSystem = uuid(`ssp-this-system|${scope}`);
   const toolParty = new Map(tools.map(t => [t.tool._id, uuid(`party|${scope}|${t.tool._id}`)]));
   const builderParty = uuid(`party|${scope}|builder`);
+  // A tool version that was approved is an authorization the app leverages. Only the current version counts: an older approved one does not.
+  const profileById = new Map(profiles.map(p => [p._id, p]));
+  const leveraged = tools.flatMap(({ tool, pairs }) =>
+    pairs.flatMap(pair => {
+      const { approval, profileId, version } = pair.current;
+      const profile = profileById.get(profileId);
+      if (!approval || !profile) return [];
+      return [
+        {
+          toolId: tool._id,
+          entry: {
+            uuid: uuid(`leveraged|${scope}|${tool._id}|${profileId}|v${version}`),
+            title: `${tool.name} coverage for ${profile.title}, version ${version}`,
+            'party-uuid': toolParty.get(tool._id),
+            'date-authorized': approval.at.slice(0, 10),
+          },
+        },
+      ];
+    }),
+  );
   const toolComponent = new Map(tools.map(t => [t.tool._id, uuid(`ssp-component|${scope}|${t.tool._id}`)]));
 
   const byComponent = (key: string, componentUuid: string, state: string, description: string): Json => ({
@@ -283,6 +303,7 @@ export function buildSsp(input: {
       },
       'system-implementation': {
         users: [{ uuid: uuid(`ssp-user|${scope}`), title: 'App builder', description: 'The team that builds and runs the app.' }],
+        ...(leveraged.length && { 'leveraged-authorizations': leveraged.map(l => l.entry) }),
         components: [
           { uuid: thisSystem, type: 'this-system', title: name, description: 'The app being built.', status: { state: 'under-development' } },
           ...tools.map(t => ({
@@ -291,7 +312,12 @@ export function buildSsp(input: {
             title: t.tool.name,
             description: t.tool.description || t.tool.name,
             status: { state: 'operational' },
-            ...(t.pairs.length && { props: [prop('coverage-version', String(t.pairs[0].current.version))] }),
+            ...(t.pairs.length && {
+              props: [
+                prop('coverage-version', String(t.pairs[0].current.version)),
+                ...leveraged.filter(l => l.toolId === t.tool._id).map(l => ({ name: 'leveraged-authorization-uuid', value: l.entry.uuid })),
+              ],
+            }),
           })),
         ],
       },
