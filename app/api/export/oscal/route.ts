@@ -2,6 +2,7 @@ import { buildComponentDefinition, buildSsp } from "@/lib/export/oscal";
 import { errorResponse, resolvePlanRequest } from "@/lib/export/plan-request";
 
 const PROFILE_ID = "low-risk-cloud";
+const GENAI_PROFILE_ID = "generative-ai";
 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
@@ -11,15 +12,20 @@ export async function GET(request: Request) {
   }
   try {
     const { plan, data, toolIds, project, answers } = await resolvePlanRequest(params);
-    const profile = data.profiles.find(p => p._id === PROFILE_ID)!;
-    const tools = data.tools
-      .filter(t => toolIds.includes(t._id))
-      .map(tool => ({ tool, pairs: data.versions.filter(v => v.current.toolId === tool._id && v.current.profileId === PROFILE_ID) }))
+    // The same rule as the spreadsheet route: GenAI is in when the plan has GenAI items.
+    const profileIds = [PROFILE_ID, ...(plan.items.some(i => i.profileId === GENAI_PROFILE_ID) ? [GENAI_PROFILE_ID] : [])];
+    const profiles = profileIds.map(id => data.profiles.find(p => p._id === id)!);
+    const tools = toolIds.flatMap(id => {
+      const tool = data.tools.find(t => t._id === id);
+      if (!tool) return [];
+      const pairs = profileIds.flatMap(profileId => data.versions.filter(v => v.current.toolId === id && v.current.profileId === profileId));
+      return [{ tool, pairs }];
+    });
     const generatedAt = new Date().toISOString();
     const document =
       kind === "ssp"
-        ? buildSsp({ plan, profiles: [profile], tools, answers, project: project && { id: project._id, name: project.name }, generatedAt })
-        : buildComponentDefinition({ tools, profiles: [profile], generatedAt });
+        ? buildSsp({ plan, profiles, tools, answers, project: project && { id: project._id, name: project.name }, generatedAt })
+        : buildComponentDefinition({ tools, profiles, generatedAt });
     return new Response(JSON.stringify(document, null, 2), {
       headers: {
         "Content-Type": "application/json",
