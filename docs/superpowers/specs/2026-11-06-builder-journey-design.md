@@ -29,6 +29,11 @@ Blueprint must give an app builder confidence to build with CPF tools: what the 
 
 The visual world is replaced. A direction round runs before any UI code (Impeccable seed reference `seed:2721ecae0fe04aab`). This spec fixes structure, content and behaviour, not the look.
 
+Demo notes:
+- **The floor plan was the demo's memorable moment.** The visual round must design a new one. The natural candidate is step 4, where the counts change as tools are ticked. `docs/run-through.md` and the Playwright files in `e2e/` that use the floor plan or the picker on `/plan` are rewritten as part of this work.
+- **The demo uses a Low-Risk app.** Medium and High are built but not shown on stage.
+- **Admin and verifier screens** are redesigned in the new world as sub-project 2, right after this one.
+
 ## Copy rules
 
 - The builder-language rule in PRODUCT.md stays: no "IM8", "SSP", "OSCAL", "control" or "agency" in our own builder copy.
@@ -46,7 +51,13 @@ The visual world is replaced. A direction round runs before any UI code (Impecca
 6 Your plan                /plan, /projects/[id]   the workspace
 ```
 
-- Steps 1–5 show "Step n of 5". Every answer (risk, facts, tools) travels in the link both ways. Back and every "edit" link keep all answers, so the builder never sees an empty form again.
+- Steps 1–5 show "Step n of 5". Every answer travels in the link both ways: risk answers, facts, tools, and question answers. Back and every "edit" link keep all answers, so the builder never sees an empty form again.
+- **Question answers on an unsaved plan.** Step 5 lets the builder answer questions before saving. Thus each answer (applies yes or no, plus the reason, at most 280 characters) is in the link, for example `q=is-11.n.<url-encoded reason>`. "Save as a project" copies them into `questionAnswers`.
+- **Editing a saved project.** "Change answers or tools" on a saved project opens step 1, 3 or 4 with `project=<id>` in the link, and the saved answers loaded. Every step keeps `project=<id>`.
+  - On step 5, the main action becomes "Save changes to {project name}". It writes `riskAnswers`, `facts`, `toolIds` and the question answers to the **same** project. It never creates a new one.
+  - Task statuses are keyed by requirement, so they stay.
+  - "Give your agent the build plan" and "Open the full plan" work on the edited answers. If the builder leaves with unsaved changes, the browser asks first.
+- **The app type of a saved project can change.** If the edited answers give another profile, step 5 says so before the save. For example: "Your app type changes from Low-Risk Cloud to Medium-Risk Cloud. 4 tasks are added. Tasks you marked done stay done." Statuses for requirements that are not in the new profile are kept on the project but not shown. They come back if the profile changes back.
 - `/start/review` redirects to `/start/go` with its query string.
 
 ### Step 1: Tell us about your app
@@ -55,14 +66,18 @@ The risk questions are as today. Each option gets a short hint. CII and SII get 
 
 ### Step 2: Verdict
 
-`assessRisk` keeps its rules and returns the level. The profile comes from data, not code (see "Profiles"):
+`assessRisk` keeps its rules and returns the level. The profile comes from data, not code (see "Profiles").
+
+**Cloud eligibility is checked first.** A new pure `cloudEligible(answers)` is false when the classification is Confidential (not cloud-eligible) or S-class. Then the verdict is "This data can't be hosted on the cloud, so Blueprint can't plan it with CPF's cloud tools." The screen shows the reasons, the contact, and the answer summary. No profile is picked, whatever the risk level. Today `assessRisk` makes Confidential (not cloud-eligible) Medium, which would wrongly lead to Medium-Risk **Cloud**. Every cloud profile gets `hosting: 'cloud'`, and `profileFor` only picks a cloud profile when `cloudEligible` is true.
+
+Then, for cloud-eligible data:
 
 | Result | Profile | Verdict text (intent) |
 |---|---|---|
 | Low | Low-Risk Cloud | You can plan this app with Blueprint. |
 | Medium | Medium-Risk Cloud | You can plan it. Your tools don't cover Medium-Risk yet, so more of the work is yours. Involve your security team early. |
 | High and CII | High-Risk Cloud CII | You can plan it. Involve your security team from the start. |
-| High, not CII (Critical impact or S-class) | none | Blueprint can't plan this app yet. It shows the reasons, the contact, and a summary of the answers to send them. |
+| High, not CII (Critical impact) | none | Blueprint can't plan this app yet. It shows the reasons, the contact, and a summary of the answers to send them. |
 
 - The screen shows the reasons from `assessRisk` and a link to edit the answers.
 - The contact text is kept by an admin. For the demo it is seed data (`data/seed/contacts.json`), with no editor yet.
@@ -75,14 +90,21 @@ As today (`/start/app`), with stage-neutral words. No new questions.
 
 There are **no rules on tools**. The recommendation comes from the coverage that already exists, so it stays right when tools or coverage change.
 
-**Effect of a tool `T` for this app.** Count only the items that apply to this app: headings `you` and `questions`. `skipped`, `good-to-have` and `platform` are not counted.
-- If `T` is ticked: the effect is `plan(ticked − T)` minus `plan(ticked)`. This is the number of tasks and questions that `T` removes now.
-- If `T` is unticked: the effect is `plan(ticked)` minus `plan(ticked + T)`.
-- Unverified part: of the items that the effect moves, the number where `T`'s decisive claim is `not-yet-verified`.
+**Effect of a tool `T` for this app.** Compare two plans: `without` and `with`.
+- If `T` is ticked: `without = plan(ticked − T)` and `with = plan(ticked)`.
+- If `T` is unticked: `without = plan(ticked)` and `with = plan(ticked + T)`.
+
+Only the items that apply to this app count: headings `you` and `questions`. `skipped`, `good-to-have` and `platform` do not count.
+- **Removed:** items that are `you` or `questions` in `without` and are neither in `with`. Split into tasks and questions.
+- **Added:** items that are neither in `without` and are `you` or `questions` in `with`, plus items that move from `you` to `questions`. For example, a claim that points to another tool, or a conflict with another tool's claim. Split into tasks and questions.
+- **Unverified part:** of the removed items, the number where `T`'s decisive claim is `not-yet-verified`.
+- **Net** = removed − added.
 
 **What the screen shows:**
-- **Recommended** (listed first): tools whose effect is ≥ 1, sorted by effect, then verified tools before unverified ones, then by name. Each shows, for example, "Removes 6 tasks, answers 2 questions (4 not yet verified)".
-- **Other tools:** tools with effect 0 ("Nothing for your app"), and tools with no coverage for the profile ("No Medium-Risk Cloud coverage yet").
+- **Recommended** (listed first): tools with net ≥ 1, sorted by net, then verified tools before unverified ones, then by name.
+- Each tool states both sides. For example: "Removes 6 tasks, answers 2 questions (4 not yet verified)". When something is added, it also says, for example, "· adds 1 question". It never shows only the good side.
+- **Every requirement counts as one.** The screen says so once, under the running line: "Each requirement counts as one, whatever its size." The counts are never called effort, time or a score.
+- **Other tools:** tools with net ≤ 0 ("Nothing for your app", or the added items when net < 0), and tools with no coverage for the profile ("No Medium-Risk Cloud coverage yet").
 - **Nothing is ticked by default.** A button "Use the recommended tools" ticks every recommended tool. The builder can untick any tool.
 - **A running line:** "{yours} are yours · {platform} your tools do ({unverified} not yet verified) · {questions} questions". It updates on every tick.
 - The tools are sections as today (CPF tools, Whole-of-government tools, Code components) inside each group, with the Sample and verification badges as today.
@@ -111,7 +133,12 @@ There are **no rules on tools**. The recommendation comes from the coverage that
   - High-Risk Cloud CII: the same 118 plus 20 more, 19 with a different level.
   - Both are labelled locally derived.
 - **Wording.** Low-Risk Cloud keeps `low-risk-cloud-ssp.xlsx`, which has resolved parameter values. Medium and High use the lite-catalog wording, with parameters as written there. The plan says so in one line.
-- **Plain text and About-your-app rules** are reused by requirement ID across the cloud profiles. Requirements with no plain text (the 20 High-only ones) show the official wording.
+- **Plain text and About-your-app rules are checked per profile.** They are written for one profile and can be wrong for another. For example, a plain task can say "every 365 days" where a stricter profile sets a shorter time, or a rule can remove a requirement that applies in all cases at High risk.
+  - Each plain entry gets `checkedFor: string[]` (profile IDs). Today's entries get `['low-risk-cloud']`.
+  - **Plain text** shows for a profile in two cases. Case 1: the profile is in `checkedFor`. Case 2: the requirement's official statement in that profile has no parameter, and its wording fingerprint is the same as in a profile in `checkedFor`. In every other case the builder sees the official wording for that profile, with the line "A plain version isn't checked for this risk level yet."
+  - **`appliesWhen` rules** apply only in profiles in `checkedFor`. They never carry over automatically. In any other profile the requirement always applies. This keeps the rule that an unknown never removes a requirement.
+  - The admin adds a profile to `checkedFor` after a check. For the demo that is seed data. The editor comes with the platform workspace.
+  - Requirements with no plain entry (for example the 20 High-only ones) show the official wording.
 - **Defaults** (`defaults.json`, the requirements that default to the builder) are reused by requirement ID.
 - **Coverage is per profile only.** A tool covers a profile only through a version for that profile. There is no carry-over from Low-Risk.
 - **Risk level → profile is data.** Each profile record gets `riskLevel: 'low' | 'medium' | 'high'`, `requiresCii?: boolean`, and `release: string` (the release version; today the file version). `assessRisk` returns the level only, and a pure `profileFor(result, profiles)` picks the profile. Remove the fixed `'low-risk-cloud'` IDs from `plan-view.tsx`, `app/api/export/oscal/route.ts`, `app/api/export/ssp/route.ts`, `lib/export/ssp-xlsx.ts`, `lib/risk/assess.ts` and the verifier page default.
@@ -122,8 +149,9 @@ There are **no rules on tools**. The recommendation comes from the coverage that
 
 ## Change notice on saved projects (after the demo)
 
-- The project stores `seen: { at, items: Record<RequirementKey, { placement, wording: string /* hash of the official statement */ }> }`. It is written when the project is saved and when the builder clicks "Mark as seen".
+- The project stores `seen: { at, profileId, items: Record<RequirementKey, { placement, wording: string /* hash of the official statement */ }> }`. It is written when the project is saved and when the builder clicks "Mark as seen".
 - On open, Blueprint compares the current plan with `seen` and lists the groups that have items:
+  - your app type changed (from {profile} to {profile}). `seen` also stores the profile ID.
   - new tasks or questions (To do)
   - a done task whose wording changed (stays Done with a "Check again" mark)
   - a tool now covers it (moves to "What your tools do")
@@ -138,7 +166,9 @@ There are **no rules on tools**. The recommendation comes from the coverage that
 - `Profile`: `riskLevel`, `requiresCii?`, `release`.
 - `lib/data/load-sources.ts`: `loadLiteProfile(name, id, riskLevel)` for the two new profiles. The plain-language, facts and defaults loaders read by requirement ID for every cloud profile.
 - `lib/risk/assess.ts`: drop `profileId` from `RiskResult`; add `profileFor`.
-- `lib/plan/effect.ts` (new, pure): `toolEffects(input: PlanInput, ticked: string[]): Record<toolId, { tasks: number; questions: number; unverified: number; noCoverage: boolean }>`.
+- `lib/plan/effect.ts` (new, pure): `toolEffects(input: PlanInput, ticked: string[]): Record<toolId, { removed: { tasks: number; questions: number }; added: { tasks: number; questions: number }; unverified: number; net: number; noCoverage: boolean }>`.
+- `lib/risk/assess.ts`: also `cloudEligible(answers): boolean`.
+- Plain entries: `checkedFor: string[]`, and a wording fingerprint per profile entry (a hash of the official statement).
 - URL state: carry risk answers, facts and tools through `/start/*` both ways (`lib/plan/url-state.ts`).
 - `data/seed/contacts.json`: the contact for the "can't plan yet" verdict.
 - `Project.seen` (after the demo).
@@ -157,9 +187,13 @@ There are **no rules on tools**. The recommendation comes from the coverage that
 
 ## Tests
 
-- `assessRisk` + `profileFor`: each row of the verdict table, including "High, not CII → none".
+- `assessRisk` + `cloudEligible` + `profileFor`: each row of the verdict table, including "High, not CII → none". Confidential (not cloud-eligible) and S-class → not cloud-eligible, with no profile. Confidential (Cloud Eligible) → Medium-Risk Cloud.
+- Plain text per profile: an entry with `checkedFor: ['low-risk-cloud']` shows its plain text on Low. On Medium it shows the official wording when the statement has a parameter, and the plain text when the statement has no parameter and the same fingerprint. An `appliesWhen` rule never removes a requirement on a profile that is not in `checkedFor`.
+- `toolEffects` with a claim that points to another tool: `added.questions` ≥ 1, and the screen text names it.
+- Question answers in the link: round trip with a reason that has spaces, `&` and non-ASCII. A reason over 280 characters is cut at 280.
+- Editing a saved project: the save goes to the same project ID. A profile change shows the "app type changes" line, and statuses stay.
 - Profile loading: Medium has 118 entries with 9 level changes; High has 138. The levels match the lite catalog tags.
-- `toolEffects`: on the seed demo, appCentral's effect matches the plan difference. A tool with no coverage for the profile gives `noCoverage: true`. Only `you` + `questions` count. The unverified count matches the claims.
+- `toolEffects`: on the seed demo, appCentral's removed count matches the plan difference. A tool with no coverage for the profile gives `noCoverage: true`. Only `you` + `questions` count. The unverified count matches the claims. `net = removed − added`.
 - URL state round trip: from step 5 back to step 1 and forward again, nothing is lost.
 - Builder-language e2e test: steps 1–5 still pass. Add a stage-neutral check that bans "will use", "before you build" and "to build" in steps 1–5.
 - Exports: `BUILD-PLAN.md`, OSCAL (schema-valid) and the spreadsheet for a Medium plan.
