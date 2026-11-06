@@ -1,5 +1,5 @@
 import { v5 as uuidv5 } from 'uuid';
-import type { CoverageEntry, Profile, TaskStatus, Tool } from '../domain/types';
+import type { CoverageCheck, CoverageEntry, CoverageValue, Profile, TaskStatus, Tool } from '../domain/types';
 import type { Plan, PlanItem } from '../plan/engine';
 import { LOCALLY_DERIVED } from '../plan/labels';
 import { rowVerification, type VersionPair } from '../plan/verification';
@@ -10,11 +10,26 @@ export const OSCAL_NS = 'urn:cpfb-build-plan';
 export const OSCAL_UUID_NAMESPACE = '6b0c1f1e-3c5a-4d1e-9a51-2f4f9c8e7d10';
 const OSCAL_VERSION = '1.1.2';
 
+/**
+ * The namespace of the oscal-compass props (`Rule_Id`, `Rule_Description`, `Check_Id`, `Check_Description`). The sample
+ * component definition in oscal-compass/compliance-to-policy (plugins_public/tests/data/kyverno/component-definition.json)
+ * uses `${COMPASS_NS}/ibmcloud`. We use the generic form, because C2P matches these props by name, not by namespace.
+ */
+export const COMPASS_NS = 'http://oscal-compass.github.io/compliance-trestle/schemas/oscal/cd';
+
 type Json = Record<string, unknown>;
-type ToolWithVersions = { tool: Tool; pair: VersionPair };
+/** A tool and its coverage pairs: one for each profile the tool covers. A tool with no pair says nothing about any profile. */
+export type ToolWithVersions = { tool: Tool; pairs: VersionPair[] };
+
+/** "provider" runs a tool and says what it covers. "customer" builds the app on the tools. */
+export const ROLES: Json[] = [
+  { id: 'provider', title: 'Tool provider' },
+  { id: 'customer', title: 'App builder' },
+];
 
 export const uuid = (name: string) => uuidv5(name, OSCAL_UUID_NAMESPACE);
-export const prop = (name: string, value: string): Json => ({ name, ns: OSCAL_NS, value });
+export const prop = (name: string, value: string, remarks?: string): Json => ({ name, ns: OSCAL_NS, value, ...(remarks && { remarks }) });
+export const compassProp = (name: string, value: string, remarks?: string): Json => ({ name, ns: COMPASS_NS, value, ...(remarks && { remarks }) });
 export const metadata = (title: string, generatedAt: string): Json => ({
   title,
   'last-modified': generatedAt,
@@ -32,6 +47,48 @@ export function profileResource(profile: Profile): Json {
   };
 }
 
+/** One resource for all the profiles in use. With one profile it is exactly that profile's resource. */
+export function profilesResource(profiles: Profile[]): Json {
+  if (profiles.length === 1) return profileResource(profiles[0]);
+  const titles = profiles.map(p => p.title).join(' + ');
+  return {
+    uuid: uuid(`profiles|${profiles.map(p => `${p._id}@${p.version}`).join(',')}`),
+    title: `${titles} (locally derived)`,
+    description: `${LOCALLY_DERIVED} Combined profile: ${profiles.map(p => `${p.title}, version ${p.version}`).join('; ')}.`,
+  };
+}
+
+/** The oscal-compass rule sets for some checks: four props that share a `rule_set_n` remark, plus our check kind. */
+export function ruleSetProps(checks: CoverageCheck[], start: number): Json[] {
+  return checks.flatMap((check, i) => {
+    const set = `rule_set_${start + i}`;
+    return [
+      compassProp('Rule_Id', check.id, set),
+      compassProp('Rule_Description', check.description, set),
+      compassProp('Check_Id', check.id, set),
+      compassProp('Check_Description', check.description, set),
+      prop('check-kind', check.kind, set),
+    ];
+  });
+}
+
+const ruleIdProps = (checks: CoverageCheck[] | undefined): Json[] => (checks ?? []).map(c => compassProp('Rule_Id', c.id));
+
+function rolesFor(value: CoverageValue): Json[] {
+  const provider = { 'role-id': 'provider' };
+  const customer = { 'role-id': 'customer' };
+  switch (value) {
+    case 'provided':
+      return [provider];
+    case 'app-builder':
+      return [customer];
+    case 'shared':
+      return [provider, customer];
+    default:
+      return [];
+  }
+}
+
 function requirementDescription(entry: CoverageEntry, toolName: string): string {
   switch (entry.value) {
     case 'provided':
@@ -47,51 +104,75 @@ function requirementDescription(entry: CoverageEntry, toolName: string): string 
   }
 }
 
-export function buildComponentDefinition(input: { tools: ToolWithVersions[]; profile: Profile; generatedAt: string }): Json {
-  const { tools, profile, generatedAt } = input;
-  const resource = profileResource(profile);
-  const title = tools.length ? `Component definition: ${tools.map(t => t.tool.name).join(', ')}` : 'Component definition';
+export function buildComponentDefinition(input: { tools: ToolWithVersions[]; profiles: Profile[]; generatedAt: string }): Json {
+  const { profiles, generatedAt } = input;
+  const order = new Map(profiles.map((p, i) => [p._id, i]));
+  const byId = new Map(profiles.map(p => [p._id, p]));
+  const covered = input.tools
+    .map(({ tool, pairs }) => ({
+      tool,
+      pairs: pairs.filter(p => order.has(p.current.profileId)).sort((a, b) => order.get(a.current.profileId)! - order.get(b.current.profileId)!),
+    }))
+    .filter(t => t.pairs.length > 0);
+  const title = covered.length ? `Component definition: ${covered.map(t => t.tool.name).join(', ')}` : 'Component definition';
 
-  const components = tools.map(({ tool, pair }) => {
-    const version = pair.current;
+  const used = new Set<string>();
+  const components = covered.map(({ tool, pairs }) => {
+    const first = pairs[0].current;
+    const ruleSets = new Map<string, CoverageCheck>();
+    for (const pair of pairs) for (const entry of pair.current.entries) for (const c of entry.checks ?? []) if (!ruleSets.has(c.id)) ruleSets.set(c.id, c);
+    const props = [
+      prop('profile-version', first.writtenAgainst),
+      prop('coverage-version', String(first.version)),
+      prop('coverage-source', first.source),
+      ...ruleSetProps([...ruleSets.values()], 0),
+    ];
     return {
       uuid: uuid(`component|${tool._id}`),
       type: tool.oscalType,
       title: tool.name,
       description: tool.description || tool.name,
-      props: [prop('profile-version', version.writtenAgainst), prop('coverage-version', String(version.version)), prop('coverage-source', version.source)],
-      'control-implementations': [
-        {
+      props,
+      'control-implementations': pairs.map(pair => {
+        const version = pair.current;
+        const profile = byId.get(version.profileId)!;
+        used.add(profile._id);
+        return {
           uuid: uuid(`implementation|${tool._id}|${profile._id}|v${version.version}`),
-          source: `#${resource.uuid}`,
+          source: `#${profileResource(profile).uuid}`,
           description: `What ${tool.name} covers in ${profile.title}, version ${version.version} of its coverage.`,
           'implemented-requirements': version.entries.map(entry => {
-            const props = [
+            const reqProps = [
               prop('responsibility', entry.value),
               prop('verification', rowVerification(entry.key, pair)),
               prop('source', entry.source ?? version.source),
+              ...ruleIdProps(entry.checks),
             ];
-            if (entry.otherToolId) props.push(prop('handled-by', entry.otherToolId));
+            if (entry.otherToolId) reqProps.push(prop('handled-by', entry.otherToolId));
             const requirement: Json = {
               uuid: uuid(`requirement|${tool._id}|v${version.version}|${entry.key}`),
               'control-id': entry.key.split(':')[1],
               description: requirementDescription(entry, tool.name),
-              props,
+              props: reqProps,
             };
+            const roles = rolesFor(entry.value);
+            if (roles.length) requirement['responsible-roles'] = roles;
             if (entry.builderPart) requirement.remarks = entry.builderPart;
             return requirement;
           }),
-        },
-      ],
+        };
+      }),
     };
   });
 
+  const resourceProfiles = profiles.filter(p => used.has(p._id));
+  const versions = covered.flatMap(t => t.pairs.map(pair => `${t.tool._id}@${pair.current.profileId}:${pair.current.version}`));
   return {
     'component-definition': {
-      uuid: uuid(`component-definition|${profile._id}|${tools.map(t => `${t.tool._id}@${t.pair.current.version}`).join(',')}`),
-      metadata: metadata(title, generatedAt),
+      uuid: uuid(`component-definition|${profiles.map(p => p._id).join(',')}|${versions.join(',')}`),
+      metadata: { ...metadata(title, generatedAt), roles: ROLES },
       components,
-      'back-matter': { resources: [resource] },
+      'back-matter': { resources: (resourceProfiles.length ? resourceProfiles : profiles).map(profileResource) },
     },
   };
 }
@@ -199,7 +280,7 @@ export function buildSsp(input: {
             title: t.tool.name,
             description: t.tool.description || t.tool.name,
             status: { state: 'operational' },
-            props: [prop('coverage-version', String(t.pair.current.version))],
+            props: t.pairs.length ? [prop('coverage-version', String(t.pairs[0].current.version))] : [],
           })),
         ],
       },

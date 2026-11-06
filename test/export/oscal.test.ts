@@ -1,4 +1,4 @@
-import { OSCAL_NS, buildComponentDefinition, buildSsp } from '@/lib/export/oscal';
+import { COMPASS_NS, OSCAL_NS, buildComponentDefinition, buildSsp } from '@/lib/export/oscal';
 import { buildPlan, type PlanData } from '@/lib/plan/engine';
 import { pairVersions, selectPlanInput } from '@/lib/plan/select';
 import type { RiskAnswers } from '@/lib/risk/assess';
@@ -8,16 +8,19 @@ import { loadSeed } from '../helpers/seed';
 const GENERATED = '2026-10-27T09:00:00.000Z';
 const answers: RiskAnswers = { classification: 'restricted', sensitivity: 'sensitive-normal', impact: 'slight', downstream: 'minimal', cii: false, sii: false };
 
-async function build(toolIds = ['appcentral', 'dbaas', 'iga']) {
+async function build(toolIds = ['appcentral', 'dbaas', 'iga'], profileIds = ['low-risk-cloud']) {
   const seed = await loadSeed();
   const data: PlanData = { profiles: seed.profiles, tools: seed.tools, versions: pairVersions(seed.toolVersions) };
   const input = selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds });
-  const profile = seed.profiles.find(p => p._id === 'low-risk-cloud')!;
-  const tools = input.pickedTools.map(tool => ({ tool, pair: data.versions.find(v => v.current.toolId === tool._id && v.current.profileId === profile._id)! }));
+  const profiles = profileIds.map(id => seed.profiles.find(p => p._id === id)!);
+  const tools = input.pickedTools.map(tool => ({
+    tool,
+    pairs: profileIds.flatMap(id => data.versions.filter(v => v.current.toolId === tool._id && v.current.profileId === id)),
+  }));
   const plan = buildPlan(input);
   return {
-    component: buildComponentDefinition({ tools, profile, generatedAt: GENERATED }),
-    ssp: buildSsp({ plan, profile, tools, answers, generatedAt: GENERATED }),
+    component: buildComponentDefinition({ tools, profiles, generatedAt: GENERATED }),
+    ssp: buildSsp({ plan, profile: profiles[0], tools, answers, generatedAt: GENERATED }),
     tools,
   };
 }
@@ -87,7 +90,7 @@ test('every custom prop is in the app’s namespace', async () => {
   walk(component);
   walk(sspDoc);
   expect(props.length).toBeGreaterThan(100);
-  expect(props.every(p => p.ns === OSCAL_NS)).toBe(true);
+  expect(props.every(p => p.ns === OSCAL_NS || p.ns === COMPASS_NS || (p.ns === undefined && p.name === 'leveraged-authorization-uuid'))).toBe(true);
   expect(OSCAL_NS).toBe('urn:cpfb-build-plan');
 });
 
@@ -107,4 +110,45 @@ test('each tool becomes one component, with a prop for how verified its claims a
   expect(dbaas.props.find((p: Json) => p.name === 'verification').value).toBe('not-yet-verified');
   const appcentral = components[0]['control-implementations'][0]['implemented-requirements'].find((r: Json) => r['control-id'] === 'dp-1');
   expect(appcentral.props.find((p: Json) => p.name === 'handled-by').value).toBe('dbaas');
+});
+
+const cdComponents = (doc: Json) => (doc['component-definition'].components as Json[]);
+const cdRows = (doc: Json, title: string) => cdComponents(doc).find(c => c.title === title)!['control-implementations'].flatMap((ci: Json) => ci['implemented-requirements'] as Json[]) as Json[];
+const cdRow = (doc: Json, title: string, id: string) => cdRows(doc, title).find(r => r['control-id'] === id)!;
+const rolesOf = (row: Json) => (row['responsible-roles'] as Json[] | undefined)?.map(r => r['role-id']);
+
+test('component definition: rows carry provider/customer roles by value', async () => {
+  const { component } = await build(['appcentral', 'zod']);
+  expect(rolesOf(cdRow(component, 'appCentral', 'as-4'))).toEqual(['provider']);
+  expect(rolesOf(cdRow(component, 'Zod', 'as-1'))).toEqual(['provider', 'customer']);
+  expect(rolesOf(cdRow(component, 'appCentral', 'dp-1'))).toBeUndefined();
+});
+
+test('component definition: metadata declares the provider and customer roles', async () => {
+  const { component } = await build();
+  expect((component as Json)['component-definition'].metadata.roles.map((r: Json) => r.id)).toEqual(['provider', 'customer']);
+});
+
+test('component definition: Zod’s check becomes an oscal-compass rule set', async () => {
+  const { component } = await build(['appcentral', 'zod']);
+  const zod = cdComponents(component).find(c => c.title === 'Zod')!;
+  const set = (zod.props as Json[]).filter(p => p.remarks === 'rule_set_0' && p.ns === COMPASS_NS);
+  expect(Object.fromEntries(set.map(p => [p.name, p.value]))).toMatchObject({
+    Rule_Id: 'zod-schema-on-every-route',
+    Check_Id: 'zod-schema-on-every-route',
+  });
+  const row = cdRow(component, 'Zod', 'as-1');
+  expect((row.props as Json[]).find(p => p.name === 'Rule_Id')).toMatchObject({ ns: COMPASS_NS, value: 'zod-schema-on-every-route' });
+  expect(oscalValidator('component')(component).errors).toEqual([]);
+});
+
+test('component definition: a tool with no coverage is left out', async () => {
+  const { component } = await build(['appcentral', 'gencentral'], ['low-risk-cloud', 'generative-ai']);
+  expect(cdComponents(component).map(c => c.title)).toEqual(['appCentral']);
+});
+
+test('component definition: one control implementation for each profile a tool covers', async () => {
+  const { component } = await build(['appcentral'], ['low-risk-cloud', 'generative-ai']);
+  expect(cdComponents(component)[0]['control-implementations']).toHaveLength(1);
+  expect((component as Json)['component-definition']['back-matter'].resources).toHaveLength(1);
 });

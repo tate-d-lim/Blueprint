@@ -14,15 +14,13 @@ export async function GET(request: Request) {
     const profile = data.profiles.find(p => p._id === PROFILE_ID)!;
     const tools = data.tools
       .filter(t => toolIds.includes(t._id))
-      .flatMap(tool => {
-        const pair = data.versions.find(v => v.current.toolId === tool._id && v.current.profileId === PROFILE_ID);
-        return pair ? [{ tool, pair }] : [];
-      });
+      .map(tool => ({ tool, pairs: data.versions.filter(v => v.current.toolId === tool._id && v.current.profileId === PROFILE_ID) }))
+      .filter(t => t.pairs.length > 0);
     const generatedAt = new Date().toISOString();
     const document =
       kind === "ssp"
         ? buildSsp({ plan, profile, tools, answers, project: project && { id: project._id, name: project.name }, generatedAt })
-        : buildComponentDefinition({ tools, profile, generatedAt });
+        : buildComponentDefinition({ tools, profiles: [profile], generatedAt });
     return new Response(JSON.stringify(document, null, 2), {
       headers: {
         "Content-Type": "application/json",
