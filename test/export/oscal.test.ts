@@ -20,7 +20,7 @@ async function build(toolIds = ['appcentral', 'dbaas', 'iga'], profileIds = ['lo
   const plan = buildPlan(input);
   return {
     component: buildComponentDefinition({ tools, profiles, generatedAt: GENERATED }),
-    ssp: buildSsp({ plan, profile: profiles[0], tools, answers, generatedAt: GENERATED }),
+    ssp: buildSsp({ plan, profiles, tools, answers, generatedAt: GENERATED }),
     tools,
   };
 }
@@ -151,4 +151,38 @@ test('component definition: one control implementation for each profile a tool c
   const { component } = await build(['appcentral'], ['low-risk-cloud', 'generative-ai']);
   expect(cdComponents(component)[0]['control-implementations']).toHaveLength(1);
   expect((component as Json)['component-definition']['back-matter'].resources).toHaveLength(1);
+});
+
+const sspRequirements = (doc: Json) => ssp(doc)['control-implementation']['implemented-requirements'] as Json[];
+
+test('ssp: GenAI requirements are in when the generative-ai profile is passed', async () => {
+  const both = await build(['appcentral', 'gencentral'], ['low-risk-cloud', 'generative-ai']);
+  expect(sspRequirements(both.ssp).some(r => String(r['control-id']).startsWith('ga-'))).toBe(true);
+  expect(oscalValidator('ssp')(both.ssp).errors).toEqual([]);
+  const one = await build(['appcentral', 'gencentral'], ['low-risk-cloud']);
+  expect(sspRequirements(one.ssp).some(r => String(r['control-id']).startsWith('ga-'))).toBe(false);
+  expect(oscalValidator('ssp')(one.ssp).errors).toEqual([]);
+});
+
+test('ssp: one combined profile resource names both profiles', async () => {
+  const { ssp: doc } = await build(['appcentral', 'gencentral'], ['low-risk-cloud', 'generative-ai']);
+  const resources = ssp(doc)['back-matter'].resources as Json[];
+  expect(resources).toHaveLength(1);
+  expect(resources[0].title).toBe('Low-Risk Cloud + Generative AI (locally derived)');
+  expect(resources[0].description).toMatch(/^Locally derived from GovTech files/);
+  expect(ssp(doc)['import-profile'].href).toBe(`#${resources[0].uuid}`);
+});
+
+test('ssp: parties are one per tool plus the app builder, and roles are declared', async () => {
+  const { ssp: doc } = await build();
+  expect((ssp(doc).metadata.parties as Json[]).map(p => p.name)).toEqual(['appCentral', 'DBaaS', 'IGA', 'App builder']);
+  expect((ssp(doc).metadata.roles as Json[]).map(r => r.id)).toEqual(['provider', 'customer']);
+});
+
+test('ssp: a picked tool with no coverage is still a component', async () => {
+  const { ssp: doc } = await build(['appcentral', 'gencentral'], ['low-risk-cloud']);
+  const gen = (ssp(doc)['system-implementation'].components as Json[]).find(c => c.title === 'genCentral')!;
+  expect(gen).toBeDefined();
+  expect(gen.props).toBeUndefined();
+  expect((ssp(doc).metadata.parties as Json[]).map(p => p.name)).toContain('genCentral');
 });

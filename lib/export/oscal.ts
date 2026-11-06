@@ -185,17 +185,21 @@ function taskStatus(item: PlanItem): { status: TaskStatus; note?: string } {
 
 export function buildSsp(input: {
   plan: Plan;
-  profile: Profile;
+  profiles: Profile[];
   tools: ToolWithVersions[];
   answers: RiskAnswers;
   project?: { id: string; name: string };
   generatedAt: string;
 }): Json {
-  const { plan, profile, tools, answers, project, generatedAt } = input;
+  const { plan, profiles, tools, answers, project, generatedAt } = input;
   const scope = `${project?.id ?? 'unsaved'}|${tools.map(t => t.tool._id).join(',')}`;
-  const resource = profileResource(profile);
+  const resource = profilesResource(profiles);
+  const profileIds = new Set(profiles.map(p => p._id));
+  const profileTitles = profiles.map(p => p.title).join(' + ');
   const name = project?.name ?? 'This app';
   const thisSystem = uuid(`ssp-this-system|${scope}`);
+  const toolParty = new Map(tools.map(t => [t.tool._id, uuid(`party|${scope}|${t.tool._id}`)]));
+  const builderParty = uuid(`party|${scope}|builder`);
   const toolComponent = new Map(tools.map(t => [t.tool._id, uuid(`ssp-component|${scope}|${t.tool._id}`)]));
 
   const byComponent = (key: string, componentUuid: string, state: string, description: string): Json => ({
@@ -208,7 +212,7 @@ export function buildSsp(input: {
     `${lead}${c.explanation ? `: ${c.explanation}` : ''} (source: ${c.source}; ${c.verification.replace(/-/g, ' ')})`;
 
   const requirements = plan.items
-    .filter(item => item.profileId === profile._id)
+    .filter(item => profileIds.has(item.profileId))
     .map(item => {
       const requirement: Json = { uuid: uuid(`ssp-requirement|${scope}|${item.key}`), 'control-id': item.id };
       const by: Json[] = [];
@@ -254,7 +258,14 @@ export function buildSsp(input: {
   return {
     'system-security-plan': {
       uuid: uuid(`ssp|${scope}`),
-      metadata: metadata(`Security plan for ${name}`, generatedAt),
+      metadata: {
+        ...metadata(`Security plan for ${name}`, generatedAt),
+        roles: ROLES,
+        parties: [
+          ...tools.map(t => ({ uuid: toolParty.get(t.tool._id), type: 'organization', name: t.tool.name })),
+          { uuid: builderParty, type: 'organization', name: 'App builder' },
+        ],
+      },
       'import-profile': { href: `#${resource.uuid}` },
       'system-characteristics': {
         'system-ids': [{ id: project?.id ?? 'unsaved-plan' }],
@@ -280,12 +291,12 @@ export function buildSsp(input: {
             title: t.tool.name,
             description: t.tool.description || t.tool.name,
             status: { state: 'operational' },
-            props: t.pairs.length ? [prop('coverage-version', String(t.pairs[0].current.version))] : [],
+            ...(t.pairs.length && { props: [prop('coverage-version', String(t.pairs[0].current.version))] }),
           })),
         ],
       },
       'control-implementation': {
-        description: `How ${name} meets the ${profile.title} requirements, from the tools it uses and the builder's own work. Builder statuses are self-declared.`,
+        description: `How ${name} meets the ${profileTitles} requirements, from the tools it uses and the builder's own work. Builder statuses are self-declared.`,
         'implemented-requirements': requirements,
       },
       'back-matter': { resources: [resource] },
