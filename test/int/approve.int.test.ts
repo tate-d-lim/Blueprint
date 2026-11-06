@@ -16,7 +16,7 @@ const newAppcentralVersion = async () =>
 
 test('after seeding, DBaaS, IGA and the sample libraries await approval; appCentral and the GovTech guides do not', async () => {
   const waiting = await listAwaitingApproval(await getDb());
-  expect(waiting.map(w => w.tool._id).sort()).toEqual(['dbaas', 'iga', 'prisma', 'zod']);
+  expect(waiting.map(w => w.tool._id).sort()).toEqual(['dbaas', 'iga', 'prisma', 'ship-hats', 'zod']);
 });
 
 test('a new appCentral version joins the list, and approving the old one is refused', async () => {

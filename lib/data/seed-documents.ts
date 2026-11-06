@@ -5,6 +5,7 @@ import type { RiskAnswers } from '../risk/assess';
 import type {
   Approval,
   Catalog,
+  CoverageCheck,
   CoverageEntry,
   CoverageValue,
   Fact,
@@ -44,6 +45,7 @@ export interface SeedVersionFile {
     otherToolId?: string;
     explanation?: string;
     builderPart?: string;
+    checks?: CoverageCheck[];
   }[];
 }
 
@@ -71,6 +73,7 @@ export function expandSeedVersion(
       if (group.otherToolId !== undefined) entry.otherToolId = group.otherToolId;
       if (group.explanation !== undefined) entry.explanation = group.explanation;
       if (group.builderPart !== undefined) entry.builderPart = group.builderPart;
+      if (group.checks?.length) entry.checks = group.checks.map(c => ({ ...c }));
       entries.push(entry);
     }
   }
@@ -223,6 +226,7 @@ export async function buildSeedDocuments(
     ['appcentral-slide12.json', await readVersionFiles(path.join(dataDir, 'seed', 'appcentral-slide12.json'))],
     ['dbaas-iga-slide12.json', await readVersionFiles(path.join(dataDir, 'seed', 'dbaas-iga-slide12.json'))],
     ['libraries.json', await readVersionFiles(path.join(dataDir, 'seed', 'libraries.json'))],
+    ['ship-hats.json', await readVersionFiles(path.join(dataDir, 'seed', 'ship-hats.json'))],
   ] as const;
   const toolVersions = versionFiles.flatMap(([name, seeds]) =>
     seeds.map(seed => {

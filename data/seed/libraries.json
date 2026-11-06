@@ -12,7 +12,14 @@
         ],
         "value": "shared",
         "explanation": "Zod checks data against a schema you define.",
-        "builderPart": "Define a Zod schema for every input and parse it before use."
+        "builderPart": "Define a Zod schema for every input and parse it before use.",
+        "checks": [
+          {
+            "id": "zod-schema-on-every-route",
+            "kind": "code-rule",
+            "description": "Every route handler parses its input with a Zod schema before use."
+          }
+        ]
       }
     ]
   },
@@ -29,7 +36,14 @@
         ],
         "value": "shared",
         "explanation": "Prisma's query API sends parameterised queries.",
-        "builderPart": "Use Prisma's query API instead of building SQL strings, and don't use $queryRawUnsafe."
+        "builderPart": "Use Prisma's query API instead of building SQL strings, and don't use $queryRawUnsafe.",
+        "checks": [
+          {
+            "id": "no-query-raw-unsafe",
+            "kind": "code-rule",
+            "description": "No call to $queryRawUnsafe or $executeRawUnsafe."
+          }
+        ]
       }
     ]
   }

@@ -49,5 +49,13 @@
     "section": "code",
     "oscalType": "software",
     "isSample": true
+  },
+  {
+    "_id": "ship-hats",
+    "name": "SHIP-HATS (compliance level 4)",
+    "description": "GovTech CI/CD pipeline with the compliance framework at level 4",
+    "section": "wog",
+    "oscalType": "service",
+    "isSample": true
   }
 ]

@@ -35,7 +35,8 @@ async function Review({ params, searchParams }: Props) {
   const idOf = (key: string) => key.split(":")[1];
   const describe = (e: CoverageEntry) => {
     const other = e.otherToolId ? data.tools.find(t => t._id === e.otherToolId)?.name : undefined;
-    return [VALUE_LABEL(e.value, tool.name, other), e.explanation, e.builderPart && `App Builder's part: ${e.builderPart}`].filter(Boolean).join(". ");
+    const checks = e.checks?.length ? `Checks: ${e.checks.map(c => `${c.id} (${c.kind})`).join(", ")}` : undefined;
+    return [VALUE_LABEL(e.value, tool.name, other), e.explanation, e.builderPart && `App Builder's part: ${e.builderPart}`, checks].filter(Boolean).join(". ");
   };
   const diff = diffVersions(current, lastApproved);
 

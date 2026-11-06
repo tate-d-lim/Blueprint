@@ -65,9 +65,9 @@ test('every must-or-should requirement is yours to build by default, except the 
   expect(asked.sort()).toEqual([...TRUE_QUESTION_IDS].sort());
 });
 
-test('tools: appCentral, DBaaS, IGA, genCentral (which activates the GenAI profile), then sample libraries and the GovTech tools', async () => {
+test('tools: appCentral, DBaaS, IGA, genCentral (which activates the GenAI profile), then sample libraries, the SHIP-HATS sample and the GovTech tools', async () => {
   const { tools, profiles, catalogs, requirements } = await loadSeed();
-  expect(tools.map(t => t._id)).toEqual(['appcentral', 'dbaas', 'iga', 'gencentral', 'zod', 'prisma', 'websg', 'isomer']);
+  expect(tools.map(t => t._id)).toEqual(['appcentral', 'dbaas', 'iga', 'gencentral', 'zod', 'prisma', 'ship-hats', 'websg', 'isomer']);
   expect(tools.find(t => t._id === 'gencentral')).toMatchObject({ isSample: true, activatesProfiles: ['generative-ai'] });
   expect(profiles.map(p => p._id)).toEqual(['low-risk-cloud', 'generative-ai']);
   expect(catalogs.map(c => c._id)).toEqual(['im8-reform', 'genai']);
@@ -169,5 +169,37 @@ describe('the "two weeks in" sample project', () => {
     const seed = await loadSeed();
     const bad = { ...sampleFile, tasks: { 'zz-9': { status: 'done' as const } } };
     expect(() => expandSeedProject('projects.json', bad, seed.profiles, new Set(['appcentral']), SEED_NOW)).toThrow(/zz-9.*projects\.json/);
+  });
+});
+
+describe('checks in the seed', () => {
+  const entryOf = async (toolId: string, id: string) => {
+    const seed = await loadSeed();
+    const version = seed.toolVersions.find(v => v.toolId === toolId)!;
+    return { seed, version, entry: version.entries.find(e => e.key === `im8-reform:${id}`) };
+  };
+
+  test('zod and prisma rows carry their sample check', async () => {
+    expect((await entryOf('zod', 'as-1')).entry?.checks).toEqual([
+      { id: 'zod-schema-on-every-route', kind: 'code-rule', description: 'Every route handler parses its input with a Zod schema before use.' },
+    ]);
+    expect((await entryOf('prisma', 'as-2')).entry?.checks).toEqual([
+      { id: 'no-query-raw-unsafe', kind: 'code-rule', description: 'No call to $queryRawUnsafe or $executeRawUnsafe.' },
+    ]);
+  });
+
+  test('ship-hats has five shared rows with pipeline checks and no approval', async () => {
+    const { seed, version } = await entryOf('ship-hats', 'sc-5');
+    expect(version.entries.map(e => e.key.split(':')[1]).sort()).toEqual(['sc-5', 'sc-7', 'sc-8', 'sd-4', 'sd-5']);
+    for (const e of version.entries) {
+      expect(e.value).toBe('shared');
+      expect(e.checks?.length).toBeGreaterThanOrEqual(1);
+      expect(e.checks?.every(c => c.kind === 'pipeline')).toBe(true);
+      expect(e.explanation).toBeTruthy();
+      expect(e.builderPart).toBeTruthy();
+    }
+    expect(new Set(version.entries.map(e => e.explanation)).size).toBe(5);
+    expect(version.approval).toBeUndefined();
+    expect(seed.tools.find(t => t._id === 'ship-hats')?.isSample).toBe(true);
   });
 });

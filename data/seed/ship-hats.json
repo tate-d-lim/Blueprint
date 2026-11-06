@@ -1,0 +1,86 @@
+[
+  {
+    "toolId": "ship-hats",
+    "profileId": "low-risk-cloud",
+    "version": 1,
+    "source": "Sample from the SHIP-HATS docs, not confirmed by a CPFB team",
+    "writtenAgainst": "SHIP-HATS docs, read 2026-11-06",
+    "groups": [
+      {
+        "ids": [
+          "sc-5"
+        ],
+        "value": "shared",
+        "explanation": "Pipeline templates make build records and SLSA provenance.",
+        "builderPart": "Use the SHIP-HATS compliance template for every release.",
+        "checks": [
+          {
+            "id": "ship-hats-compliance-template",
+            "kind": "pipeline",
+            "description": "The project's pipeline includes the SHIP-HATS compliance template."
+          }
+        ]
+      },
+      {
+        "ids": [
+          "sc-7"
+        ],
+        "value": "shared",
+        "explanation": "Level 3+ signs artefacts during the build.",
+        "builderPart": "Keep CF_LEVEL at 3 or higher.",
+        "checks": [
+          {
+            "id": "cf-level-4",
+            "kind": "pipeline",
+            "description": "The project's CI/CD variable CF_LEVEL is 4, or is not set (default 4)."
+          }
+        ]
+      },
+      {
+        "ids": [
+          "sc-8"
+        ],
+        "value": "shared",
+        "explanation": "Level 3+ verifies signatures before deployment.",
+        "builderPart": "Keep CF_LEVEL at 3 or higher.",
+        "checks": [
+          {
+            "id": "cf-level-4",
+            "kind": "pipeline",
+            "description": "The project's CI/CD variable CF_LEVEL is 4, or is not set (default 4)."
+          }
+        ]
+      },
+      {
+        "ids": [
+          "sd-4"
+        ],
+        "value": "shared",
+        "explanation": "Level 1+ runs SAST in the pipeline.",
+        "builderPart": "Fix or risk-accept true positives.",
+        "checks": [
+          {
+            "id": "cf-level-4",
+            "kind": "pipeline",
+            "description": "The project's CI/CD variable CF_LEVEL is 4, or is not set (default 4)."
+          }
+        ]
+      },
+      {
+        "ids": [
+          "sd-5"
+        ],
+        "value": "shared",
+        "explanation": "Level 1+ runs dependency scans.",
+        "builderPart": "Fix or risk-accept findings in time.",
+        "checks": [
+          {
+            "id": "cf-level-4",
+            "kind": "pipeline",
+            "description": "The project's CI/CD variable CF_LEVEL is 4, or is not set (default 4)."
+          }
+        ]
+      }
+    ]
+  }
+]
