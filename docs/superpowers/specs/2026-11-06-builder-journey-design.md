@@ -27,18 +27,18 @@ Blueprint must give an app builder confidence to build with CPF tools: what the 
 | Change notice on saved projects | | Yes |
 | Medium-Risk and High-Risk profiles | Yes | |
 
-The Blueprint world stays, in a **light** execution (user, 2026-11-09). A direction round to replace the world ran (Impeccable seed reference `seed:2721ecae0fe04aab`), and the user declined all its directions. The surface round inside the Blueprint world sets the structure of the steps. This spec fixes structure, content and behaviour, not the look.
+The Blueprint world stays, in a **light** execution (user, 2026-11-09). A direction round to replace the world ran (Impeccable seed reference `seed:2721ecae0fe04aab`), and the user declined all its directions. The surface round (seed reference `seed:36f5bde92930a801`) and the research with the user then chose a **hotel cutaway** for step 4 (see "The hotel" below). This spec fixes structure, content and behaviour. The look of each step comes from the shape brief.
 
 Light Blueprint means:
-- Keep white paper, navy ink, blueprint blue only for what is built or done and for the main action, and redline red only for what needs attention.
-- Keep at most three drawing conventions for state (for example, solid for done or covered, dashed for yours), so that no legend is necessary.
+- The palette is free: blueprint blue is no longer required (user, 2026-11-09). Red stays only for what needs attention.
+- No legend. State is said in words on the label of each part, not in a key.
 - The grid shows only on the one drawing that has a meaning, not on every page.
 - The title block becomes a simple header. No uppercase label cells.
 - Fewer boxes, more space, and no side-by-side scrolling panels.
-- The drawing carries meaning, not decoration. No "rooms".
+- The drawing carries meaning, not decoration.
 
 Demo notes:
-- **The floor plan was the demo's memorable moment.** The visual round must design a new one. The natural candidate is step 4, where the counts change as tools are ticked. `docs/run-through.md` and the Playwright files in `e2e/` that use the floor plan or the picker on `/plan` are rewritten as part of this work.
+- **The hotel replaces the floor plan as the demo's memorable moment.** It is in step 4, where the counts change as tools are ticked. `docs/run-through.md` and the Playwright files in `e2e/` that use the floor plan or the picker on `/plan` are rewritten as part of this work.
 - **The demo uses a Low-Risk app.** Medium and High are built but not shown on stage.
 - **Admin and verifier screens** are redesigned in the new world as sub-project 2, right after this one.
 
@@ -116,6 +116,43 @@ Only the items that apply to this app count: headings `you` and `questions`. `sk
 - **Nothing is ticked by default.** A button "Use the recommended tools" ticks every recommended tool. The builder can untick any tool.
 - **A running line:** "{yours} are yours · {platform} your tools do ({unverified} not yet verified) · {questions} questions". It updates on every tick.
 - The tools are sections as today (CPF tools, Whole-of-government tools, Code components) inside each group, with the Sample and verification badges as today.
+
+### The hotel (step 4)
+
+The app is a hotel. Each family of requirements is one part of the hotel, so a builder can see what each family protects. The hotel is a 3D cutaway: the front and right walls are cut away, the roof opens like a lid, and the hotel sits on a block of ground that is cut at the front so the basement shows. The camera is orthographic (isometric) and does not move.
+
+| Part | Families |
+|---|---|
+| Foundation and frame | Infrastructure (`is`), Datacentre (`dc`) |
+| Entrance security | Network (`ns`) |
+| Room keycards | Access (`ac`) |
+| Hotel safe | Data (`dp`), Cryptography (`ck`) |
+| Standby generator | Backup (`br`) |
+| CCTV | Logging (`lm`) |
+| Walls, windows and doors | App security (`as`) |
+| Building materials and deliveries | Secure development (`sd`), Supply chain (`sc`), Third parties (`tp`) |
+| Hotel rooms | Containers (`cs`) |
+| Safety inspection | Testing (`st`) |
+| Hotel rules | Security programme (`pm`) |
+| Smart assistant | Generative AI (`ga`), shown only when the app uses GenAI |
+
+A part shows only when its families have items that count (headings `you` and `questions`, or `platform`). A family code that is not in the table goes to "Hotel rules", and a unit test fails so that the table gets the new code.
+
+**Three looks, said in words on each label:**
+- **Drawing** (pale blue lines): the builder does all of this part. Label: "{part} · {n} yours".
+- **Solid**: the ticked tools do some of this part. Label: "{part} · {n} yours · {tool} does {m}".
+- **Solid and lit** (warm light): nothing of this part is left for the builder. Label: "{part} · {tool}". With more than one tool: "{part} · your tools".
+- An open question adds a red dot and "· {q} questions" to the label, whatever the look.
+
+The look comes from a pure `partState(part, plan)` from the same plan that gives the running line, so the hotel and the counts always agree.
+
+**Behaviour:**
+- When a tick changes a part's look, the part drops in by 0.35 units and its light fades on over 0.7 s. On load, the roof opens over 1.4 s. With `prefers-reduced-motion`, the change is immediate.
+- Pointing at a part, or focusing its label, shows that part on its own: the other parts and the floors fade. A card shows the part, its families, its counts, and who does it.
+- Each label is a button with an accessible name equal to its text. Under the hotel, a plain list of the parts with the same words is the text equal of the picture, for screen readers and for tests.
+- No WebGL: the step shows a still image of the hotel with nothing ticked, plus the same list. The tool list and the counts work as normal.
+
+**Assets and stack:** Three.js (exact version pinned) with an orthographic camera, in a client component that loads only on step 4. Models are the Kenney Building Kit and Furniture Kit (CC0, 2026-11-09 downloads from kenney.nl). Only the GLB files in use and their colour maps go in `public/models/hotel/`, with the CC0 licence text. The safe, the generator, the gate, the inspection board and the CCTV screens are simple shapes, because the kits have no such models. Everything works offline. The reference test is `.impeccable/mocks/hotel-b/index.html` (sample coverage, not real data).
 
 ### Step 5: Your go
 
@@ -195,6 +232,7 @@ Only the items that apply to this app count: headings `you` and `questions`. `sk
 
 ## Tests
 
+- Hotel: every code in `FAMILIES` maps to a part. `partState` gives drawing, solid, and solid and lit on the seed demo as appCentral is ticked and unticked, and its counts add up to the running line. The parts list under the hotel has the same words as the labels. With WebGL off, step 4 shows the still image and the list.
 - `assessRisk` + `cloudEligible` + `profileFor`: each row of the verdict table, including "High, not CII → none". Confidential (not cloud-eligible) and S-class → not cloud-eligible, with no profile. Confidential (Cloud Eligible) → Medium-Risk Cloud.
 - Plain text per profile: an entry with `checkedFor: ['low-risk-cloud']` shows its plain text on Low. On Medium it shows the official wording when the statement has a parameter, and the plain text when the statement has no parameter and the same fingerprint. An `appliesWhen` rule never removes a requirement on a profile that is not in `checkedFor`.
 - `toolEffects` with a claim that points to another tool: `added.questions` ≥ 1, and the screen text names it.
@@ -218,3 +256,4 @@ Only the items that apply to this app count: headings `you` and `questions`. `sk
 - The full name of SII.
 - The contact text for the "can't plan yet" verdict.
 - The final stage-neutral words (visual round).
+- Whether step 5 also shows the hotel, as a still in its final look.
