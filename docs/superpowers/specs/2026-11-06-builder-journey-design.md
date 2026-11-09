@@ -1,6 +1,6 @@
 # Builder journey — design
 
-Date: 2026-11-06. Status: sections 1–6 approved in chat; written spec waiting for review.
+Date: 2026-11-06. Status: sections 1–6 approved in chat. The hotel direction was added and then revised after an Impeccable critique (2026-11-09, 24/40); the revised spec is waiting for review.
 Sub-project 1 of 3 in the frontend redesign (2: platform workspace, 3: visual system, which is decided inside this sub-project's visual round).
 
 ## Why
@@ -23,22 +23,21 @@ Blueprint must give an app builder confidence to build with CPF tools: what the 
 | | Build for the demo (2026-11-17) | Design now, build after |
 |---|---|---|
 | Steps 1–5 (start to go) | Yes | |
-| Step 6 (plan page) | It keeps today's layout but takes the new look; the floor plan goes | Yes, the full redesign |
+| Step 6 (plan page) | It keeps today's layout but takes the new look; the hotel (who does each part) replaces the floor plan | Yes, the full redesign, with the hotel as progress |
 | Change notice on saved projects | | Yes |
 | Medium-Risk and High-Risk profiles | Yes | |
 
-The Blueprint world stays, in a **light** execution (user, 2026-11-09). A direction round to replace the world ran (Impeccable seed reference `seed:2721ecae0fe04aab`), and the user declined all its directions. The surface round (seed reference `seed:36f5bde92930a801`) and the research with the user then chose a **hotel cutaway** for step 4 (see "The hotel" below). This spec fixes structure, content and behaviour. The look of each step comes from the shape brief.
+The Blueprint world stays, in a **light** execution (user, 2026-11-09). A direction round to replace the world ran (Impeccable seed reference `seed:2721ecae0fe04aab`), and the user declined all its directions. The surface round (seed reference `seed:36f5bde92930a801`) and the research with the user then chose a **hotel cutaway** for step 4 (see "The hotel" below). This spec fixes structure, content and behaviour. The look of each step comes from the shape brief. The colours, type and timings in "The hotel" are starting values that the shape brief can change. The cream paper and Inter from the reference test are not decided yet (the detector flags both as overused).
 
 Light Blueprint means:
 - The palette is free: blueprint blue is no longer required (user, 2026-11-09). Red stays only for what needs attention.
 - No legend. State is said in words on the label of each part, not in a key.
-- The grid shows only on the one drawing that has a meaning, not on every page.
 - The title block becomes a simple header. No uppercase label cells.
-- Fewer boxes, more space, and no side-by-side scrolling panels.
+- Fewer boxes and more space. Only one column scrolls: on step 4 the hotel stays in place and the tool list scrolls beside it.
 - The drawing carries meaning, not decoration.
 
 Demo notes:
-- **The hotel replaces the floor plan as the demo's memorable moment.** It is in step 4, where the counts change as tools are ticked. `docs/run-through.md` and the Playwright files in `e2e/` that use the floor plan or the picker on `/plan` are rewritten as part of this work.
+- **The hotel replaces the floor plan as the demo's memorable moment, everywhere** (user, 2026-11-09). It is live in step 4, where it changes as tools are ticked. Steps 5 and 6 and saved projects show the same hotel, and its part names are the area names in step 6 and in `BUILD-PLAN.md`. `docs/run-through.md` and the Playwright files in `e2e/` that use the floor plan or the picker on `/plan` are rewritten as part of this work.
 - **The demo uses a Low-Risk app.** Medium and High are built but not shown on stage.
 - **Admin and verifier screens** are redesigned in the new world as sub-project 2, right after this one.
 
@@ -70,7 +69,7 @@ Demo notes:
 
 ### Step 1: Tell us about your app
 
-The risk questions are as today. Each option gets a short hint. CII and SII get "Not sure? Ask your ACISO or MCISO." The full name of SII is still not confirmed, and the screen keeps "SII" until it is.
+The risk questions are as today. Each option gets a short hint. CII and SII get "Not sure? Ask your IT security officer (ACISO or MCISO)." The full name of SII is still not confirmed, and the screen keeps "SII" until it is.
 
 ### Step 2: Verdict
 
@@ -83,7 +82,7 @@ Then, for cloud-eligible data:
 | Result | Profile | Verdict text (intent) |
 |---|---|---|
 | Low | Low-Risk Cloud | You can plan this app with Blueprint. |
-| Medium | Medium-Risk Cloud | You can plan it. Your tools don't cover Medium-Risk yet, so more of the work is yours. Involve your security team early. |
+| Medium | Medium-Risk Cloud | You can plan it. Involve your security team early. When no tool has coverage for the profile, it adds: "No tool covers Medium-Risk Cloud yet, so more of the work is yours." This is computed from coverage, not written as a fact. |
 | High and CII | High-Risk Cloud CII | You can plan it. Involve your security team from the start. |
 | High, not CII (Critical impact) | none | Blueprint can't plan this app yet. It shows the reasons, the contact, and a summary of the answers to send them. |
 
@@ -92,7 +91,7 @@ Then, for cloud-eligible data:
 
 ### Step 3: About your app
 
-As today (`/start/app`), with stage-neutral words. No new questions.
+As today (`/start/app`), with stage-neutral words. One new question for every profile: **"Does your app use generative AI, for example a chatbot or a text summary?"** (fact `uses-genai`). A yes adds the GenAI requirements and the Smart assistant part. A tool no longer adds requirements: `activatesProfiles` is removed, so genCentral is judged like any other tool, against a plan that already has the GenAI requirements.
 
 ### Step 4: Your tools
 
@@ -109,11 +108,12 @@ Only the items that apply to this app count: headings `you` and `questions`. `sk
 - **Net** = removed − added.
 
 **What the screen shows:**
-- **Recommended** (listed first): tools with net ≥ 1, sorted by net, then verified tools before unverified ones, then by name.
+- **The question is "Tick the tools that are part of your app."** A tick means one thing only: the tool is part of the app (chosen or already in use). Each tool row has one line from the tool data, "It is part of your app if …" (`partOfAppWhen`), so the builder can tell.
+- **Could take more off you** (listed first): tools with net ≥ 1 when the step opens, sorted by net, then verified tools before unverified ones, then by name. The order is set when the step opens and does not change on a tick; only the numbers change in place. So rows never move under the pointer or the keyboard focus.
 - Each tool states both sides. For example: "Removes 6 tasks, answers 2 questions (4 not yet verified)". When something is added, it also says, for example, "· adds 1 question". It never shows only the good side.
 - **Every requirement counts as one.** The screen says so once, under the running line: "Each requirement counts as one, whatever its size." The counts are never called effort, time or a score.
 - **Other tools:** tools with net ≤ 0 ("Nothing for your app", or the added items when net < 0), and tools with no coverage for the profile ("No Medium-Risk Cloud coverage yet").
-- **Nothing is ticked by default.** A button "Use the recommended tools" ticks every recommended tool. The builder can untick any tool.
+- **Nothing is ticked by default, and no button ticks many tools.** The builder ticks each tool on its own.
 - **A running line:** "{yours} are yours · {platform} your tools do ({unverified} not yet verified) · {questions} questions". It updates on every tick.
 - The tools are sections as today (CPF tools, Whole-of-government tools, Code components) inside each group, with the Sample and verification badges as today.
 
@@ -136,26 +136,53 @@ The app is a hotel. Each family of requirements is one part of the hotel, so a b
 | Hotel rules | Security programme (`pm`) |
 | Smart assistant | Generative AI (`ga`), shown only when the app uses GenAI |
 
-A part shows only when its families have items that count (headings `you` and `questions`, or `platform`). A family code that is not in the table goes to "Hotel rules", and a unit test fails so that the table gets the new code.
+Every part shows, except the Smart assistant, which shows only when `uses-genai` is yes. A part whose families have no items that count for this app stays in place (so the hotel never has a hole) and says "Nothing for your app". A family code that is not in the table goes to "Hotel rules", and a unit test fails so that the table gets the new code.
 
-**Three looks, said in words on each label:**
-- **Drawing** (pale blue lines): the builder does all of this part. Label: "{part} · {n} yours".
-- **Solid**: the ticked tools do some of this part. Label: "{part} · {n} yours · {tool} does {m}".
-- **Solid and lit** (warm light): nothing of this part is left for the builder. Label: "{part} · {tool}". With more than one tool: "{part} · your tools".
-- An open question adds a red dot and "· {q} questions" to the label, whatever the look.
+**Pieces.** Each part's model is a fixed, ordered list of pieces (for example, each hotel room has a bed, a table, a lamp and a TV). The share of a part that the tools do is `platform / (you + questions + platform)` for its families. That share of the pieces, rounded, is solid; the rest are drawn. A share above 0 shows at least one solid piece, and a share below 1 leaves at least one piece drawn. So "partly done" is visible in the model, not only in the words. The walls and the frame follow the same rule.
 
-The look comes from a pure `partState(part, plan)` from the same plan that gives the running line, so the hotel and the counts always agree.
+**Looks, said in words on each label:**
+- **Drawing** (pale blue lines): the builder does all of this part.
+- **Partly solid**: the ticked tools do some of this part.
+- **Solid**: the tools do all of this part, but at least one claim is not yet verified.
+- **Solid and lit** (warm light): the tools do all of this part, and every claim that covers it is Verified. Only this look has the light.
+- An open question adds a red dot, whatever the look. Red is used for nothing else in the hotel.
+
+**Labels** have two lines. Line 1 is the part and its family names, for example "CCTV · Logging". Line 2 is the state:
+- "{n} yours"
+- "{n} yours · {tool} does {m}" (with more than one tool: "your tools do {m}")
+- "{tool} does all · {k} not yet verified"
+- "{tool} does all"
+- "Nothing for your app"
+- plus "· {q} questions" when there are open questions.
+
+Each part has a fixed label place and a thin line to the part. The places are set so that no two labels overlap at 1280×800 or 1440×900.
+
+The looks come from a pure `partState(part, plan)`, from the same plan that gives the running line, so the hotel and the counts always agree. `partState` returns the look, the counts, the share and the tool names.
 
 **Behaviour:**
-- When a tick changes a part's look, the part drops in by 0.35 units and its light fades on over 0.7 s. On load, the roof opens over 1.4 s. With `prefers-reduced-motion`, the change is immediate.
-- Pointing at a part, or focusing its label, shows that part on its own: the other parts and the floors fade. A card shows the part, its families, its counts, and who does it.
-- Each label is a button with an accessible name equal to its text. Under the hotel, a plain list of the parts with the same words is the text equal of the picture, for screen readers and for tests.
-- No WebGL: the step shows a still image of the hotel with nothing ticked, plus the same list. The tool list and the counts work as normal.
+- While the models load, the step shows a still image of the hotel. If WebGL is not available or a model fails to load, the still image stays with the parts list, and the tool list and the counts work as normal.
+- When a tick changes a part, the changed pieces drop in by 0.35 units and the light fades on over 0.7 s. The walls and the frame change without the drop. On load, the roof opens over 1.4 s.
+- With `prefers-reduced-motion`, the roof is open from the start and every change is immediate.
+- Pointing at a part shows that part on its own: the other parts and the floors fade. A card next to the part shows the part, its families, its counts and who does it.
 
-**Assets and stack:** Three.js (exact version pinned) with an orthographic camera, in a client component that loads only on step 4. Models are the Kenney Building Kit and Furniture Kit (CC0, 2026-11-09 downloads from kenney.nl). Only the GLB files in use and their colour maps go in `public/models/hotel/`, with the CC0 licence text. The safe, the generator, the gate, the inspection board and the CCTV screens are simple shapes, because the kits have no such models. Everything works offline. The reference test is `.impeccable/mocks/hotel-b/index.html` (sample coverage, not real data).
+**Parts list (keyboard and screen readers).** Under the hotel, a compact visible list "Parts of your app" has one row per part, in order from the top floor to the basement, with the same two lines as the label.
+- Each row is a button with `aria-pressed`. Pressing it shows that part on its own with its card, the same as pointing at it. Pressing it again, or Esc, shows the whole hotel.
+- The labels on the picture are for the pointer only (`aria-hidden`), so a screen reader hears each part once.
+- The running line is `aria-live="polite"`.
+
+**Medium-Risk and High-Risk.** When no tool covers the profile, one line above the hotel says "No tool covers {profile} yet, so every part is yours." The hotel shows in the Drawing look.
+
+**The hotel after step 4 (one component, three modes):**
+- **Step 5 (go):** the hotel in its final look, not interactive, under one sentence: "Your plan is ready. {yours} are yours, and your tools do {platform}."
+- **Step 6 and saved projects, for the demo:** the same still as step 5 replaces the floor plan.
+- **Step 6 and saved projects, after the demo:** the hotel shows progress. The share becomes `(platform + done) / (you + questions + platform)`. Parts with tasks in progress get the in-progress word on the label, and pointing at a part filters the task list to it.
+- **Area names:** the step 6 area filter and the `BUILD-PLAN.md` sections use "{part} ({families})", for example "CCTV (Logging)", in hotel order.
+
+**Assets and stack:** Three.js (exact version pinned) with an orthographic camera, in one client component that loads only on the pages that show the hotel (steps 4, 5 and 6, and saved projects). Models are the Kenney Building Kit and Furniture Kit (CC0, 2026-11-09 downloads from kenney.nl). Only the GLB files in use and their colour maps go in `public/models/hotel/`, with the CC0 licence text. The safe, the generator, the gate, the inspection board and the CCTV screens are simple shapes, because the kits have no such models. Everything works offline. The reference test is `.impeccable/mocks/hotel-b/index.html`. It has sample coverage, not real data, and only the Drawing and Solid-and-lit looks, so it is not the reference for counts, labels or accessibility.
 
 ### Step 5: Your go
 
+- **The go:** the hotel in its final look under "Your plan is ready. {yours} are yours, and your tools do {platform}." (see "The hotel after step 4").
 - **Summary line:** app type · picked tools. It links to steps 1, 3 and 4.
 - **Three counts:** yours · your tools do (with the not-yet-verified number named inside) · questions to answer first.
 - **Questions first:** each open question can be answered here, and the counts update. Questions do not block the go.
@@ -166,10 +193,11 @@ The look comes from a pure `partState(part, plan)` from the same plan that gives
 
 - **Header:** the step 5 summary plus progress ("9 of 17 done · 2 in progress · 0 questions"), "Change answers or tools", and an Export menu (build plan for your agent, security review spreadsheet, OSCAL files last).
 - **Questions block** above the tasks while any question is open.
-- **Your tasks:** one list, the main area. Filters: status (default "Not done"), area (requirement family), and search. A row is one line: title, area, status control. An open row shows what to do, why it matters, who says it is yours, the tool tip from the existing hints, the note, and the official wording. Only one row is open at a time.
+- **Your tasks:** one list, the main area. Filters: status (default "Not done"), area (hotel part with its families, for example "CCTV (Logging)"), and search. A row is one line: title, area, status control. An open row shows what to do, why it matters, who says it is yours, the tool tip from the existing hints, the note, and the official wording. Only one row is open at a time.
 - **What your tools do** (closed by default, grouped by tool, each claim with its verification and source), **Good to have** (closed), and **Doesn't apply to your app** (closed, each with its reason).
+- **The hotel** at the top shows progress (see "The hotel after step 4").
 - **Removed:** the floor plan and the tool picker on this page. Tools are changed in step 4.
-- **For the demo:** the page keeps today's structure without the floor plan and the picker, in the new look.
+- **For the demo:** the page keeps today's structure without the floor plan and the picker, in the new look, with the step 5 hotel still in place of the floor plan.
 
 ## Profiles
 
@@ -187,7 +215,7 @@ The look comes from a pure `partState(part, plan)` from the same plan that gives
 - **Defaults** (`defaults.json`, the requirements that default to the builder) are reused by requirement ID.
 - **Coverage is per profile only.** A tool covers a profile only through a version for that profile. There is no carry-over from Low-Risk.
 - **Risk level → profile is data.** Each profile record gets `riskLevel: 'low' | 'medium' | 'high'`, `requiresCii?: boolean`, and `release: string` (the release version; today the file version). `assessRisk` returns the level only, and a pure `profileFor(result, profiles)` picks the profile. Remove the fixed `'low-risk-cloud'` IDs from `plan-view.tsx`, `app/api/export/oscal/route.ts`, `app/api/export/ssp/route.ts`, `lib/export/ssp-xlsx.ts`, `lib/risk/assess.ts` and the verifier page default.
-- **GenAI** is still added by genCentral at any risk level.
+- **GenAI** is added by the `uses-genai` fact at any risk level, not by a tool.
 - **Exports.**
   - `BUILD-PLAN.md` and OSCAL work for every profile.
   - The security review spreadsheet uses the Low-Risk template for Low-Risk Cloud. For other profiles it builds a sheet with the same columns from the profile, and the About sheet says "No official template for this profile; columns follow the Low-Risk Cloud template."
@@ -216,6 +244,10 @@ The look comes from a pure `partState(part, plan)` from the same plan that gives
 - Plain entries: `checkedFor: string[]`, and a wording fingerprint per profile entry (a hash of the official statement).
 - URL state: carry risk answers, facts and tools through `/start/*` both ways (`lib/plan/url-state.ts`).
 - `data/seed/contacts.json`: the contact for the "can't plan yet" verdict.
+- `lib/plan/hotel.ts` (new, pure): the part table, `partOf(family)`, the piece lists, and `partState(part, plan, mode: 'tools' | 'progress')`.
+- Facts: `uses-genai` for every profile. `lib/plan/select.ts` adds the `generative-ai` profile when it is yes. Remove `activatesProfiles` from `Tool` and from the genCentral seed.
+- Tools: `partOfAppWhen: string` (one line) in `data/seed/tools.json`.
+- `BUILD-PLAN.md`: sections by hotel part, named "{part} ({families})".
 - `Project.seen` (after the demo).
 
 ## Later (other sub-projects)
@@ -232,7 +264,15 @@ The look comes from a pure `partState(part, plan)` from the same plan that gives
 
 ## Tests
 
-- Hotel: every code in `FAMILIES` maps to a part. `partState` gives drawing, solid, and solid and lit on the seed demo as appCentral is ticked and unticked, and its counts add up to the running line. The parts list under the hotel has the same words as the labels. With WebGL off, step 4 shows the still image and the list.
+- Hotel: every code in `FAMILIES` maps to a part. On the real seed demo (not sample numbers), `partState` gives each look as appCentral is ticked and unticked, and its counts add up to the running line.
+  - A part whose covering claims are all done by tools but one is not yet verified is Solid, not lit, and its label says "· 1 not yet verified".
+  - The solid-piece count follows the share, with at least one solid piece above 0 and at least one drawn piece below 1.
+  - A part with no counting items stays and says "Nothing for your app". The Smart assistant shows only with `uses-genai` yes.
+  - With no coverage for the profile, every part is Drawing and the line names the profile.
+  - Progress mode: a done task raises the share.
+  - Playwright: no two label boxes overlap at 1280×800 and 1440×900, with nothing ticked and with appCentral ticked. Each parts-list row is a button with `aria-pressed` and the same words as its label. Esc shows the whole hotel. With WebGL off, step 4 shows the still image and the list.
+- GenAI: `uses-genai` yes adds the GenAI requirements with no tool ticked. genCentral's effect is then removed ≥ 1, not net < 0.
+- Tool order: on step 4, ticking a tool does not change the order of the rows.
 - `assessRisk` + `cloudEligible` + `profileFor`: each row of the verdict table, including "High, not CII → none". Confidential (not cloud-eligible) and S-class → not cloud-eligible, with no profile. Confidential (Cloud Eligible) → Medium-Risk Cloud.
 - Plain text per profile: an entry with `checkedFor: ['low-risk-cloud']` shows its plain text on Low. On Medium it shows the official wording when the statement has a parameter, and the plain text when the statement has no parameter and the same fingerprint. An `appliesWhen` rule never removes a requirement on a profile that is not in `checkedFor`.
 - `toolEffects` with a claim that points to another tool: `added.questions` ≥ 1, and the screen text names it.
@@ -243,7 +283,7 @@ The look comes from a pure `partState(part, plan)` from the same plan that gives
 - URL state round trip: from step 5 back to step 1 and forward again, nothing is lost.
 - Builder-language e2e test: steps 1–5 still pass. Add a stage-neutral check that bans "will use", "before you build" and "to build" in steps 1–5.
 - Exports: `BUILD-PLAN.md`, OSCAL (schema-valid) and the spreadsheet for a Medium plan.
-- Playwright smoke: start → verdict → app → tools (Use the recommended tools) → go → download the build plan.
+- Playwright smoke: start → verdict → app → tools (tick appCentral) → go (the hotel and "Your plan is ready") → download the build plan.
 
 ## Constraints
 
@@ -256,4 +296,4 @@ The look comes from a pure `partState(part, plan)` from the same plan that gives
 - The full name of SII.
 - The contact text for the "can't plan yet" verdict.
 - The final stage-neutral words (visual round).
-- Whether step 5 also shows the hotel, as a still in its final look.
+- The palette and type of the hotel and the steps (shape brief). The cream paper and Inter are not decided.
