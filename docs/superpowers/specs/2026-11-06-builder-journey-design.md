@@ -27,7 +27,15 @@ Blueprint must give an app builder confidence to build with CPF tools: what the 
 | Change notice on saved projects | | Yes |
 | Medium-Risk and High-Risk profiles | Yes | |
 
-The visual world is replaced. A direction round runs before any UI code (Impeccable seed reference `seed:2721ecae0fe04aab`). This spec fixes structure, content and behaviour, not the look.
+The Blueprint world stays, in a **light** execution (user, 2026-11-09). A direction round to replace the world ran (Impeccable seed reference `seed:2721ecae0fe04aab`), and the user declined all its directions. The surface round inside the Blueprint world sets the structure of the steps. This spec fixes structure, content and behaviour, not the look.
+
+Light Blueprint means:
+- Keep white paper, navy ink, blueprint blue only for what is built or done and for the main action, and redline red only for what needs attention.
+- Keep at most three drawing conventions for state (for example, solid for done or covered, dashed for yours), so that no legend is necessary.
+- The grid shows only on the one drawing that has a meaning, not on every page.
+- The title block becomes a simple header. No uppercase label cells.
+- Fewer boxes, more space, and no side-by-side scrolling panels.
+- The drawing carries meaning, not decoration. No "rooms".
 
 Demo notes:
 - **The floor plan was the demo's memorable moment.** The visual round must design a new one. The natural candidate is step 4, where the counts change as tools are ticked. `docs/run-through.md` and the Playwright files in `e2e/` that use the floor plan or the picker on `/plan` are rewritten as part of this work.
