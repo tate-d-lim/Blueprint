@@ -7,17 +7,33 @@ import { Checkbox, RadioGroup } from "@/app/ui/field";
 import type { FactAnswers } from "@/lib/domain/types";
 import { factsToAsk, type FactProfile } from "@/lib/plan/facts";
 import { startQuery } from "@/lib/plan/url-state";
+import { useUnsavedGuard } from "@/lib/plan/unsaved";
 import type { RiskAnswers } from "@/lib/risk/assess";
 
-export function AppForm({ risk, initial, profile, projectId }: { risk: RiskAnswers; initial: FactAnswers; profile: FactProfile; projectId: string | null }) {
+export function AppForm({
+  risk,
+  initial,
+  profile,
+  projectId,
+  dirty,
+}: {
+  risk: RiskAnswers;
+  initial: FactAnswers;
+  profile: FactProfile;
+  projectId: string | null;
+  /** Editing a saved project, and the answers differ from the saved ones. */
+  dirty: boolean;
+}) {
   const router = useRouter();
+  useUnsavedGuard(dirty);
   const [answers, setAnswers] = useState<FactAnswers>(initial);
   // Keep the answers in the address as they change (replacing the history entry, not adding one), so Back from the
-  // next step finds them again.
+  // next step finds them again. Next restores a page from the data of its history entry, so the address alone is not
+  // enough: the entry must be refetched with the new address.
   const update = (patch: FactAnswers) => {
     const next = { ...answers, ...patch };
     setAnswers(next);
-    window.history.replaceState(null, "", `/start/app?${startQuery(risk, next, projectId ?? undefined)}`);
+    router.replace(`/start/app?${startQuery(risk, next, projectId ?? undefined)}`, { scroll: false });
   };
   const shown = factsToAsk(profile, answers);
   const choices = shown.filter(f => f.kind === "choice");

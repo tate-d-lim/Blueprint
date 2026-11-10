@@ -166,7 +166,7 @@ export function CoverageEditor({
               key={req.key}
               summary={
                 <span className="flex flex-col">
-                  <span className=" text-lead font-semibold">{req.title}</span>
+                  <span className="text-lead font-semibold">{req.title}</span>
                   <span className="tnum text-small text-ink-soft">
                     {req.id}, level {req.level}
                   </span>

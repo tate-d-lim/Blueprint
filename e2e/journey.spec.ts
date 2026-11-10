@@ -1,16 +1,9 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { DEMO_QUERY, LOW_QUERY, answerDemoFacts, answerLowRisk } from "./helpers";
 
 test.beforeEach(async ({ request }) => {
   await request.post("/api/reset");
 });
-
-/** Restricted, Sensitive Normal, Slight, None or minimal. */
-async function answerLowRisk(page: Page) {
-  await page.getByRole("radio", { name: "Restricted" }).check();
-  await page.getByRole("radio", { name: "Sensitive Normal" }).check();
-  await page.getByRole("radio", { name: "Slight" }).check();
-  await page.getByRole("radio", { name: "None or minimal" }).check();
-}
 
 test("step 1 to step 2, and back keeps every answer", async ({ page }) => {
   await page.goto("/start");
@@ -43,17 +36,6 @@ test("a verdict link with a broken answer opens step 1 with the rest filled in",
   await expect(page.getByRole("radio", { name: "Sensitive Normal" })).toBeChecked();
 });
 
-const LOW_QUERY = "c=restricted&s=sn&i=slight&d=min&k=";
-
-/** Public, web, sign-in and SMS ticked, no domain, no short links, GenAI no. */
-async function answerDemoFacts(page: Page) {
-  await page.getByRole("radio", { name: "Members of the public" }).check();
-  await page.getByRole("checkbox", { name: "People use it in a web browser" }).check();
-  await page.getByRole("checkbox", { name: "People sign in to it" }).check();
-  await page.getByRole("checkbox", { name: "It sends SMS text messages" }).check();
-  await page.getByRole("group", { name: "Does your app use generative AI, for example a chatbot or a text summary?" }).getByRole("radio", { name: "No" }).check();
-}
-
 test("step 3 asks about GenAI and keeps the answers on the way back", async ({ page }) => {
   await page.goto(`/start/app?${LOW_QUERY}`);
   await expect(page.getByText("Step 3 of 5")).toBeVisible();
@@ -63,4 +45,78 @@ test("step 3 asks about GenAI and keeps the answers on the way back", async ({ p
   await expect(page).toHaveURL(/\/start\/needs\?.*f=/);
   await page.goBack();
   await expect(page.getByRole("checkbox", { name: "It sends SMS text messages" })).toBeChecked();
+});
+
+test("step 4: the line, CCTV details, and the save opens step 5", async ({ page }) => {
+  await page.goto(`/start/needs?${DEMO_QUERY}`);
+  await expect(page.getByText("Step 4 of 5")).toBeVisible();
+  await expect(page.getByText("This is everything your app needs: 84 requirements in 11 parts. Next, you choose the tools that meet part of it.")).toBeVisible();
+  await expect(page.getByText("Point at a part, or pick it in the list, to see what it asks for.")).toBeVisible();
+  const cctv = page.getByRole("button", { name: /CCTV · Logging/ });
+  await cctv.click();
+  await expect(cctv).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText("A record of who did what, and when, so problems can be found and traced.")).toBeVisible();
+  await page.getByText("Show all 10 requirements").click();
+  await expect(page.getByText("Official wording")).toHaveCount(10);
+  await page.keyboard.press("Escape");
+  await expect(cctv).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByLabel("Plan name")).toHaveValue("Low-Risk Cloud app");
+  await expect(page.getByRole("link", { name: /build plan/i })).toHaveCount(0);
+  await page.getByRole("button", { name: "Save this plan" }).dblclick();
+  await expect(page).toHaveURL(/\/projects\/[^/]+\/tools$/);
+  await page.goto("/projects");
+  await expect(page.getByRole("link", { name: "Low-Risk Cloud app" })).toHaveCount(1);
+});
+
+test("Back from step 5 lands on step 3", async ({ page }) => {
+  await page.goto(`/start/app?${LOW_QUERY}`);
+  await answerDemoFacts(page);
+  await page.getByRole("button", { name: "Next: what your app needs" }).click();
+  await page.getByRole("button", { name: "Save this plan" }).click();
+  await expect(page).toHaveURL(/\/tools$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/start\/app\?/);
+});
+
+test("old links go to step 4 with their answers", async ({ page }) => {
+  await page.goto(`/plan?${DEMO_QUERY}&t=appcentral`);
+  await expect(page).toHaveURL(/\/start\/needs\?.*c=restricted/);
+  await page.goto(`/start/review?${DEMO_QUERY}`);
+  await expect(page).toHaveURL(/\/start\/needs\?/);
+});
+
+test("a step 4 link with an unknown project is not found", async ({ page }) => {
+  const res = await page.goto(`/start/needs?${DEMO_QUERY}&project=nope`);
+  expect(res?.status()).toBe(404);
+});
+
+test("editing a saved project writes to the same project and keeps statuses", async ({ page }) => {
+  await page.goto("/projects/sample-two-weeks-in");
+  await page.getByRole("link", { name: "Change answers" }).click();
+  await expect(page).toHaveURL(/\/start\/needs\?.*project=sample-two-weeks-in/);
+  await page.getByRole("link", { name: "Change app details" }).click();
+  await page.getByRole("radio", { name: "Government staff only" }).check();
+  await page.getByRole("group", { name: "Does your app use generative AI, for example a chatbot or a text summary?" }).getByRole("radio", { name: "No" }).check();
+  await page.getByRole("button", { name: "Next: what your app needs" }).click();
+  await page.getByRole("button", { name: "Save changes to Sample project (two weeks in)" }).click();
+  await expect(page).toHaveURL(/\/projects\/sample-two-weeks-in$/);
+  await expect(page.getByRole("heading", { name: "Your build plan" })).toBeVisible();
+  await page.goto("/projects");
+  await expect(page.getByRole("link", { name: /Sample project/ })).toHaveCount(1);
+});
+
+// Needs the Medium-Risk Cloud profile (Task 16); the fixme is removed there.
+test.fixme("a profile change is announced and the save opens step 5", async ({ page }) => {
+  await page.goto(`/start/needs?c=restricted&s=sh&i=slight&d=min&k=&project=sample-two-weeks-in`);
+  await expect(page.getByText(/^Your app type changes from Low-Risk Cloud to Medium-Risk Cloud\. \d+ tasks are added\. Tasks you marked done stay done\.$/)).toBeVisible();
+  await page.getByRole("button", { name: /^Save changes to / }).click();
+  await expect(page).toHaveURL(/\/projects\/sample-two-weeks-in\/tools$/);
+});
+
+test("leaving with unsaved changes asks first", async ({ page }) => {
+  await page.goto(`/start/needs?c=restricted&s=sn&i=none&d=min&k=&f=reach.public&project=sample-two-weeks-in`);
+  await page.getByRole("button", { name: /CCTV · Logging/ }).click(); // the browser asks only after a user action on the page
+  const dialog = page.waitForEvent("dialog");
+  await page.close({ runBeforeUnload: true });
+  expect((await dialog).type()).toBe("beforeunload");
 });

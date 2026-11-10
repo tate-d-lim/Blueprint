@@ -26,7 +26,7 @@ export function Note({
 }) {
   return (
     <div role={role ?? (tone === "error" ? "alert" : undefined)} className={`flex flex-col gap-2 rounded-sm border px-4 py-3 ${TONES[tone]}`}>
-      {title && <p className=" text-lead font-semibold text-ink">{title}</p>}
+      {title && <p className="text-lead font-semibold text-ink">{title}</p>}
       {children && <div className="text-body text-ink">{children}</div>}
       {action && <div>{action}</div>}
     </div>

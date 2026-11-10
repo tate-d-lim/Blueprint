@@ -30,7 +30,7 @@ async function Awaiting() {
           {awaiting.map(({ tool, current }) => (
             <tr key={current._id}>
               <Cell>
-                <span className=" text-lead font-semibold">{tool.name}</span>
+                <span className="text-lead font-semibold">{tool.name}</span>
               </Cell>
               <Cell nowrap>
                 {profiles.find(p => p._id === current.profileId)?.title}, version {current.version}

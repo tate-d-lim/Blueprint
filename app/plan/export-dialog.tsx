@@ -18,7 +18,7 @@ export function ExportDialog({ query }: { query: string }) {
       <Dialog open={open} onClose={() => setOpen(false)} title="Export your plan" description="Take your plan out of the app.">
         <div className="flex flex-col gap-8">
           <section className="flex flex-col gap-3">
-            <h3 className=" text-lead font-semibold">For your coding agent</h3>
+            <h3 className="text-lead font-semibold">For your coding agent</h3>
             <p className="text-ink-soft">A plan your agent can read, written as tasks. Add the text below to AGENTS.md or CLAUDE.md so it finds the plan.</p>
             <div>
               <DownloadButton href={`/api/export/build-plan?${query}`}>Build plan for your agent</DownloadButton>
@@ -27,7 +27,7 @@ export function ExportDialog({ query }: { query: string }) {
           </section>
 
           <section className="flex flex-col gap-3 border-t border-rule pt-6">
-            <h3 className=" text-lead font-semibold">For security review</h3>
+            <h3 className="text-lead font-semibold">For security review</h3>
             <p className="text-ink-soft">The same plan, filled in for the people who review your app.</p>
             <div>
               <DownloadButton variant="secondary" href={`/api/export/ssp?${query}`}>

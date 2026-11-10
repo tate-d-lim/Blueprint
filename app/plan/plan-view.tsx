@@ -17,7 +17,7 @@ import { HEADING_TITLES, STATUS_LABEL } from "@/lib/plan/labels";
 import { planProgress, taskStatusOf } from "@/lib/plan/progress";
 import { runSave, type SaveOutcome } from "@/lib/plan/save";
 import { selectPlanInput } from "@/lib/plan/select";
-import { parsePlanQuery, planQuery } from "@/lib/plan/url-state";
+import { parsePlanQuery, planQuery, startQuery } from "@/lib/plan/url-state";
 import { versionVerification, type Verification } from "@/lib/plan/verification";
 import { assessRisk, type RiskAnswers } from "@/lib/risk/assess";
 import { ExportDialog } from "./export-dialog";
@@ -25,7 +25,6 @@ import { FloorPlan } from "./floor-plan";
 import type { ItemControls } from "./item-controls";
 import { ItemDetail } from "./item-detail";
 import { PlanItemView } from "./plan-item";
-import { SaveDialog } from "./save-dialog";
 import { ToolHints, ToolPicker } from "./tool-picker";
 
 const PROFILE_ID = "low-risk-cloud";
@@ -178,11 +177,10 @@ export function PlanView({
         actions={
           <>
             <ExportDialog query={query} />
-            {!project && <SaveDialog answers={answers} toolIds={toolIds} facts={facts} />}
           </>
         }
       >
-        {assessRisk(answers).appType}. <TextLink href="/start">Change your answers</TextLink>
+        {assessRisk(answers).appType}. <TextLink href={project ? `/start/needs?${startQuery(project.riskAnswers, project.facts ?? {}, project._id)}` : "/start"}>Change answers</TextLink>
       </PageHeader>
 
       <div className="grid grid-cols-[minmax(0,5fr)_minmax(0,4fr)] items-start gap-8">
@@ -223,7 +221,7 @@ export function PlanView({
                   {platformGroups.map(g => (
                     <Disclosure
                       key={g.title}
-                      summary={<span className=" text-lead font-semibold">{g.title}</span>}
+                      summary={<span className="text-lead font-semibold">{g.title}</span>}
                       aside={<Tag>{g.items.length}</Tag>}
                     >
                       <ul className="flex flex-col">{g.items.map(i => view(i, true))}</ul>
@@ -243,7 +241,7 @@ export function PlanView({
                   <p className="text-ink-soft">{emptyInRoom}</p>
                 ) : (
                   <div className="rounded-sm border border-rule bg-paper px-4">
-                    <Disclosure summary={<span className=" text-lead font-semibold">Show all {skipped.length}</span>}>
+                    <Disclosure summary={<span className="text-lead font-semibold">Show all {skipped.length}</span>}>
                       <ul className="flex flex-col">{skipped.map(i => view(i, true))}</ul>
                     </Disclosure>
                   </div>
@@ -256,7 +254,7 @@ export function PlanView({
                 <p className="text-ink-soft">{emptyInRoom}</p>
               ) : (
                 <div className="rounded-sm border border-rule bg-paper px-4">
-                  <Disclosure summary={<span className=" text-lead font-semibold">Show all {extras.length}</span>}>
+                  <Disclosure summary={<span className="text-lead font-semibold">Show all {extras.length}</span>}>
                     <ul className="flex flex-col">{extras.map(i => view(i, true))}</ul>
                   </Disclosure>
                 </div>

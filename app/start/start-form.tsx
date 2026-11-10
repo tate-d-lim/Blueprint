@@ -6,6 +6,7 @@ import { Button } from "@/app/ui/button";
 import { Checkbox, RadioGroup } from "@/app/ui/field";
 import type { FactAnswers } from "@/lib/domain/types";
 import { startQuery } from "@/lib/plan/url-state";
+import { useUnsavedGuard } from "@/lib/plan/unsaved";
 import { OPTION_LABELS, type RiskAnswers } from "@/lib/risk/assess";
 
 type Draft = Partial<Pick<RiskAnswers, "classification" | "sensitivity" | "impact" | "downstream">> & Pick<RiskAnswers, "cii" | "sii">;
@@ -69,10 +70,22 @@ const SYSTEM_FLAGS = [
 ] as const;
 
 /** Step 1. The answers go into the link, so Back and every "change answers" link keep them. */
-export function StartForm({ initial, facts, projectId }: { initial: Partial<RiskAnswers>; facts: FactAnswers; projectId: string | null }) {
+export function StartForm({
+  initial,
+  facts,
+  projectId,
+  stored,
+}: {
+  initial: Partial<RiskAnswers>;
+  facts: FactAnswers;
+  projectId: string | null;
+  /** The saved project's answers, when a project is being edited. */
+  stored?: RiskAnswers;
+}) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>({ ...initial, cii: initial.cii ?? false, sii: initial.sii ?? false });
   const complete = QUESTIONS.every(q => draft[q.field] !== undefined);
+  useUnsavedGuard(!!stored && JSON.stringify(draft) !== JSON.stringify(stored));
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();

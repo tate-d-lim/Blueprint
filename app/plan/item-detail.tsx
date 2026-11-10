@@ -55,7 +55,7 @@ export function ItemDetail({
               {item.claims.map(c => (
                 <li key={c.toolId} className="rounded-sm border border-rule">
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rule px-4 py-2.5">
-                    <span className=" text-lead font-semibold">{c.toolName}</span>
+                    <span className="text-lead font-semibold">{c.toolName}</span>
                     <Badge verification={c.verification} />
                   </div>
                   <div className="flex flex-col gap-2 px-4 py-3 text-body">
@@ -83,7 +83,7 @@ function Field({ label, text }: { label: string; text: string }) {
   if (!text.trim()) return null;
   return (
     <div className="grid grid-cols-[180px_1fr] gap-4 border-b border-rule py-3">
-      <dt className=" text-small font-semibold">{label}</dt>
+      <dt className="text-small font-semibold">{label}</dt>
       <dd className="max-w-measure whitespace-pre-line text-body text-ink">{resolveParameters(text)}</dd>
     </div>
   );

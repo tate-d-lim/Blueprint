@@ -253,7 +253,7 @@ export function partState(part: HotelPart, plan: Plan, mode: HotelMode): PartSta
     nothingForApp,
     counts: { you: you.length, platform: platform.length, questions: questions.length, unverified, done, inProgress },
     toolNames,
-    families: familyCodes,
+    families,
     line1: `${part.name} · ${families.join(', ')}`,
     line2,
     areaName: `${part.name} (${families.join(', ')})`,

@@ -10,7 +10,7 @@ export default async function AppFactsPage({ searchParams }: { searchParams: Pro
   const { answers, complete, facts, projectId } = parseStartQuery(await searchParams);
   const query = startQuery(complete ?? answers, facts, projectId ?? undefined);
   if (!complete) redirect(`/start?${query}`);
-  return withPlanData(data => {
+  return withPlanData((data, project) => {
     const profile = data.profiles.find(p => p._id === profileFor(complete, data.profiles));
     if (!profile) redirect(`/start?${query}`);
     return (
@@ -23,9 +23,10 @@ export default async function AppFactsPage({ searchParams }: { searchParams: Pro
           risk={complete}
           initial={facts}
           projectId={projectId}
+          dirty={!!project && JSON.stringify(project.facts ?? {}) !== JSON.stringify(facts)}
           profile={{ facts: profile.facts, entries: profile.entries.map(e => ({ plain: e.plain?.appliesWhen ? { appliesWhen: e.plain.appliesWhen } : undefined })) }}
         />
       </div>
     );
-  });
+  }, projectId);
 }

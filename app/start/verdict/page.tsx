@@ -46,7 +46,7 @@ export default async function VerdictPage({ searchParams }: { searchParams: Prom
         )}
       </div>
     );
-  });
+  }, projectId);
 }
 
 function CannotPlan({ answers }: { answers: RiskAnswers }) {
