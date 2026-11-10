@@ -41,3 +41,44 @@ export async function saveDemoPlan(page: Page): Promise<string> {
   await page.waitForURL(/\/projects\/[^/]+\/tools$/);
   return new URL(page.url()).pathname.split("/")[2];
 }
+
+type Box = { id: string; x: number; y: number; w: number; h: number };
+
+/** The bounding boxes of every hotel label, by part. */
+async function labelBoxes(page: Page): Promise<Box[]> {
+  return page.locator("[data-label]").evaluateAll(els =>
+    els.map(e => {
+      const r = e.getBoundingClientRect();
+      return { id: (e as HTMLElement).dataset.label!, x: r.x, y: r.y, w: r.width, h: r.height };
+    }),
+  );
+}
+
+/** Pairs of hotel labels whose boxes intersect. Empty means the labels do not overlap. */
+export async function overlaps(page: Page): Promise<string[]> {
+  const boxes = await labelBoxes(page);
+  const out: string[] = [];
+  for (let i = 0; i < boxes.length; i++)
+    for (let j = i + 1; j < boxes.length; j++) {
+      const a = boxes[i];
+      const b = boxes[j];
+      if (a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h) out.push(`${a.id} / ${b.id}`);
+    }
+  return out;
+}
+
+/** Labels whose box leaves the hotel stage. */
+export async function outsideStage(page: Page): Promise<string[]> {
+  const stage = await page.locator("[data-hotel]").boundingBox();
+  if (!stage) throw new Error("No hotel stage on the page");
+  return (await labelBoxes(page))
+    .filter(b => b.x < stage.x - 0.5 || b.y < stage.y - 0.5 || b.x + b.w > stage.x + stage.width + 0.5 || b.y + b.h > stage.y + stage.height + 0.5)
+    .map(b => b.id);
+}
+
+/** On step 4 with the demo answers: save the plan, then tick a tool on step 5. */
+export async function saveAndTick(page: Page, toolName: string) {
+  await page.getByRole("button", { name: "Save this plan" }).click();
+  await page.waitForURL(/\/projects\/[^/]+\/tools$/);
+  await page.getByRole("checkbox", { name: toolName }).check();
+}

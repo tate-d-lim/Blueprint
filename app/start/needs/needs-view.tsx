@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Hotel } from "@/app/hotel/hotel";
 import { HotelFrame } from "@/app/hotel/hotel-frame";
 import { PartsList } from "@/app/hotel/parts-list";
 import { Disclosure } from "@/app/ui/disclosure";
@@ -32,12 +33,6 @@ export function NeedsView({ profileTitle, line, coverageLine, parts, details, sk
   const [selected, setSelected] = useState<PartId | null>(null);
   useUnsavedGuard(edit?.dirty ?? false);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setSelected(null);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
   const part = PARTS.find(p => p.id === selected);
   const state = parts.find(p => p.id === selected);
 
@@ -45,12 +40,7 @@ export function NeedsView({ profileTitle, line, coverageLine, parts, details, sk
     <HotelFrame
       hotel={
         <>
-          <div className="flex flex-col gap-1">
-            <p className="max-w-measure text-body font-medium">{line}</p>
-            {coverageLine && <p className="text-small text-ink-soft">{coverageLine}</p>}
-          </div>
-          {/* The live hotel takes this place in Task 13; until then a plain box. */}
-          <div className="min-h-0 flex-1 rounded-sm border border-rule bg-hotel-fill" />
+          <Hotel parts={parts} selected={selected} onSelect={setSelected} interactive />
           <PartsList parts={parts} selected={selected} onSelect={setSelected} />
         </>
       }
@@ -68,6 +58,11 @@ export function NeedsView({ profileTitle, line, coverageLine, parts, details, sk
                 Change app details
               </Link>
             </p>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <p className="max-w-measure text-body font-medium">{line}</p>
+            {coverageLine && <p className="text-small text-ink-soft">{coverageLine}</p>}
           </div>
 
           {part && state ? (

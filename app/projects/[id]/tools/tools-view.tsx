@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { continueToPlanAction, setProjectToolsAction } from "@/app/projects/actions";
+import { Hotel } from "@/app/hotel/hotel";
 import { HotelFrame } from "@/app/hotel/hotel-frame";
 import { PartsList } from "@/app/hotel/parts-list";
 import { ToolHints } from "@/app/plan/tool-picker";
@@ -98,16 +99,24 @@ export function ToolsView({ data, project, profileId, profileTitle }: { data: Pl
     <HotelFrame
       hotel={
         <>
-          {!covered && <p className="max-w-measure text-body font-medium">No tool covers {profileTitle} yet, so every part is yours.</p>}
-          {/* The live hotel takes this place in Task 13; until then a plain box. */}
-          <div className="min-h-0 flex-1 rounded-sm border border-rule bg-hotel-fill" />
-          {part && state && (
-            <div aria-live="polite" className="rounded-sm border border-rule-strong bg-paper px-4 py-3">
-              <p className="narrow text-body font-semibold">{state.line1}</p>
-              <p className="narrow tnum text-small text-ink-soft">{state.line2}</p>
-              <p className="mt-1 text-small">{part.summary}</p>
-            </div>
-          )}
+          <Hotel
+            parts={parts}
+            selected={selected}
+            onSelect={setSelected}
+            interactive
+            card={
+              part && state ? (
+                <div className="flex flex-col gap-1">
+                  <p className="narrow text-body font-semibold">{state.line1}</p>
+                  <p className="narrow tnum text-small text-ink-soft">{state.line2}</p>
+                  <p className="text-small">{part.summary}</p>
+                  <p className="text-small text-ink-soft">
+                    Who does it: {state.toolNames.length ? state.toolNames.join(", ") : state.nothingForApp ? "nothing to do" : "you"}
+                  </p>
+                </div>
+              ) : null
+            }
+          />
           <PartsList parts={parts} selected={selected} onSelect={setSelected} />
         </>
       }
@@ -126,6 +135,7 @@ export function ToolsView({ data, project, profileId, profileTitle }: { data: Pl
             </p>
             <p className="text-small text-ink-soft">Each requirement counts as one, whatever its size.</p>
           </div>
+          {!covered && <p className="max-w-measure text-body font-medium">No tool covers {profileTitle} yet, so every part is yours.</p>}
           <ToolHints tools={data.tools} hints={plan.hints} onToggle={toggle} />
           {group("Could take more off you", order.more)}
           {group("Other tools", order.other)}
