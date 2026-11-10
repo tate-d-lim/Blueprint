@@ -8,6 +8,16 @@ export interface VersionPair {
   lastApproved?: ToolVersion;
 }
 
+/** The profile the verifier page opens on for a tool: the first it has a version for, else the Low-Risk cloud profile. */
+export function defaultVerifyProfile(
+  profiles: { _id: string; riskLevel?: string; hosting?: string }[],
+  versions: VersionPair[],
+  toolId: string,
+): string {
+  const covered = profiles.find(p => versions.some(v => v.current.toolId === toolId && v.current.profileId === p._id));
+  return (covered ?? profiles.find(p => p.hosting === 'cloud' && p.riskLevel === 'low') ?? profiles[0])._id;
+}
+
 const blank = (s: string | undefined) => s ?? '';
 
 const checksKey = (checks: CoverageCheck[] | undefined) =>

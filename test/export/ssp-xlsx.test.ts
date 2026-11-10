@@ -31,7 +31,7 @@ const rowOf = (sheet: ExcelJS.Worksheet, id: string) => {
 };
 
 test('fills Implemented (H) and Explanation (I) for the demo plan', async () => {
-  const sheet = await readBack(await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE }));
+  const sheet = await readBack(await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE, profileId: 'low-risk-cloud' }));
   const h = (id: string) => cellText(rowOf(sheet, id).getCell(8));
   const i = (id: string) => cellText(rowOf(sheet, id).getCell(9));
   expect(h('as-4')).toBe('Y');
@@ -49,7 +49,7 @@ test('columns A to G are exactly the template’s, for all 118 rows', async () =
   const template = new ExcelJS.Workbook();
   await template.xlsx.readFile(TEMPLATE);
   const before = template.getWorksheet('ssp')!;
-  const after = await readBack(await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE }));
+  const after = await readBack(await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE, profileId: 'low-risk-cloud' }));
   let checked = 0;
   before.eachRow((row, n) => {
     for (let c = 1; c <= 7; c++) expect(cellText(after.getRow(n).getCell(c)), `row ${n} col ${c}`).toBe(cellText(row.getCell(c)));
@@ -59,7 +59,7 @@ test('columns A to G are exactly the template’s, for all 118 rows', async () =
 });
 
 test('the two filled columns are wide enough to read, and no other column is resized', async () => {
-  const sheet = await readBack(await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE }));
+  const sheet = await readBack(await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE, profileId: 'low-risk-cloud' }));
   expect(sheet.getColumn(8).width).toBeGreaterThanOrEqual(12);
   expect(sheet.getColumn(9).width).toBeGreaterThanOrEqual(60);
   for (const c of [1, 2, 3, 4, 5, 6, 7]) expect(sheet.getColumn(c).width, `column ${c}`).toBeUndefined();
@@ -68,13 +68,13 @@ test('the two filled columns are wide enough to read, and no other column is res
 test('a plan item with no row in the template fails and names the ID', async () => {
   const plan = await demoPlan();
   const broken = { ...plan, items: [...plan.items, makeItem({ id: 'zz-9', key: 'im8-reform:zz-9', profileId: 'low-risk-cloud' })] };
-  const attempt = fillSspWorkbook(broken, { templatePath: TEMPLATE });
+  const attempt = fillSspWorkbook(broken, { templatePath: TEMPLATE, profileId: 'low-risk-cloud' });
   await expect(attempt).rejects.toBeInstanceOf(MissingTemplateRowError);
   await expect(attempt).rejects.toThrow(/zz-9/);
 });
 
 test('with nothing picked, builder defaults are N and only the questions are blank', async () => {
-  const sheet = await readBack(await fillSspWorkbook(await demoPlan([]), { templatePath: TEMPLATE }));
+  const sheet = await readBack(await fillSspWorkbook(await demoPlan([]), { templatePath: TEMPLATE, profileId: 'low-risk-cloud' }));
   expect(cellText(rowOf(sheet, 'as-1').getCell(8))).toBe('N');
   expect(cellText(rowOf(sheet, 'as-4').getCell(8))).toBe('N');
   expect(cellText(rowOf(sheet, 'is-11').getCell(8))).toBe('');
@@ -94,7 +94,7 @@ const ABOUT: AboutInfo = {
 
 test('an "About this file" sheet lists the date, profile, each tool version and the standing notes', async () => {
   const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load((await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE, about: ABOUT })) as unknown as ArrayBuffer);
+  await wb.xlsx.load((await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE, profileId: 'low-risk-cloud', about: ABOUT })) as unknown as ArrayBuffer);
   const sheet = wb.getWorksheet('About this file')!;
   const rows: string[][] = [];
   sheet.eachRow(row => rows.push((row.values as unknown[]).slice(1).map(v => String(v ?? ''))));
@@ -112,7 +112,7 @@ test('an "About this file" sheet lists the date, profile, each tool version and 
 
 test('without the option there is no "About this file" sheet', async () => {
   const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load((await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE })) as unknown as ArrayBuffer);
+  await wb.xlsx.load((await fillSspWorkbook(await demoPlan(), { templatePath: TEMPLATE, profileId: 'low-risk-cloud' })) as unknown as ArrayBuffer);
   expect(wb.getWorksheet('About this file')).toBeUndefined();
 });
 
@@ -127,7 +127,7 @@ test('buildAboutInfo copies the header facts', () => {
 
 test('file names: plain, and with a project slug', () => {
   expect(slugify("Member's app / v2")).toBe('member-s-app-v2');
-  expect(sspFileName()).toBe('low-risk-cloud-ssp.xlsx');
-  expect(sspFileName("Member's app")).toBe('low-risk-cloud-ssp-member-s-app.xlsx');
-  expect(sspFileName('!!!')).toBe('low-risk-cloud-ssp.xlsx');
+  expect(sspFileName('low-risk-cloud')).toBe('low-risk-cloud-ssp.xlsx');
+  expect(sspFileName('low-risk-cloud', "Member's app")).toBe('low-risk-cloud-ssp-member-s-app.xlsx');
+  expect(sspFileName('low-risk-cloud', '!!!')).toBe('low-risk-cloud-ssp.xlsx');
 });

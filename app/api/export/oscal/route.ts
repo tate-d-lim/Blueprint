@@ -1,8 +1,7 @@
 import { buildComponentDefinition, buildSsp } from "@/lib/export/oscal";
 import { errorResponse, resolvePlanRequest } from "@/lib/export/plan-request";
 
-const PROFILE_ID = "low-risk-cloud";
-const GENAI_PROFILE_ID = "generative-ai";
+import { GENAI_PROFILE_ID } from "@/lib/plan/select";
 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
@@ -11,9 +10,9 @@ export async function GET(request: Request) {
     return new Response("kind must be component-definition or ssp", { status: 400 });
   }
   try {
-    const { plan, data, toolIds, project, answers } = await resolvePlanRequest(params);
+    const { plan, data, toolIds, project, answers, profileId } = await resolvePlanRequest(params);
     // The same rule as the spreadsheet route: GenAI is in when the plan has GenAI items.
-    const profileIds = [PROFILE_ID, ...(plan.items.some(i => i.profileId === GENAI_PROFILE_ID) ? [GENAI_PROFILE_ID] : [])];
+    const profileIds = [profileId, ...(plan.items.some(i => i.profileId === GENAI_PROFILE_ID) ? [GENAI_PROFILE_ID] : [])];
     const profiles = profileIds.map(id => data.profiles.find(p => p._id === id)!);
     const tools = toolIds.flatMap(id => {
       const tool = data.tools.find(t => t._id === id);

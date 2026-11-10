@@ -15,6 +15,8 @@ export interface PlanRequest {
   data: PlanData;
   answers: RiskAnswers;
   toolIds: string[];
+  /** The base profile the plan is for (the one the answers lead to). */
+  profileId: string;
   project?: Project;
   meta: BuildPlanMeta;
 }
@@ -52,6 +54,7 @@ export async function resolvePlanRequest(sp: URLSearchParams): Promise<PlanReque
     data,
     answers,
     toolIds,
+    profileId,
     project,
     meta: {
       title: project?.name ?? 'Your app',

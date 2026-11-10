@@ -6,7 +6,6 @@ import { BADGE_TEXT, LOCALLY_DERIVED, SELF_DECLARED_NOTE } from '../plan/labels'
 import type { AboutInfo } from './about';
 import { sspValues } from './ssp-values';
 
-const PROFILE_ID = 'low-risk-cloud';
 const IMPLEMENTED_COL = 8; // H
 const EXPLANATION_COL = 9; // I
 
@@ -17,13 +16,16 @@ export class MissingTemplateRowError extends Error {
   }
 }
 
+/** What the About sheet says when a profile has no official spreadsheet to fill. */
+export const NO_TEMPLATE_NOTE = 'No official template for this profile; columns follow the Low-Risk Cloud template.';
+
 /**
- * Opens the real Low-Risk Cloud template and fills only Implemented (H) and Explanation (I),
+ * Opens the official template of a profile and fills only Implemented (H) and Explanation (I),
  * leaving every other cell, style and width as it was.
  */
 export async function fillSspWorkbook(
   plan: Plan,
-  opts: { templatePath: string; genai?: { profile: Profile }; about?: AboutInfo },
+  opts: { templatePath: string; profileId: string; genai?: { profile: Profile }; about?: AboutInfo },
 ): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(opts.templatePath);
@@ -40,7 +42,7 @@ export async function fillSspWorkbook(
   sheet.getColumn(EXPLANATION_COL).width = 80;
 
   for (const item of plan.items) {
-    if (item.profileId !== PROFILE_ID) continue;
+    if (item.profileId !== opts.profileId) continue;
     const row = rows.get(item.id);
     if (!row) throw new MissingTemplateRowError(item.id);
     const { implemented, explanation } = sspValues(item);
@@ -56,12 +58,32 @@ export async function fillSspWorkbook(
   return Buffer.from(await workbook.xlsx.writeBuffer());
 }
 
-const GENAI_HEADER = ['ID', 'Title', 'Statement', 'Recommendations', 'Risk/Rationale', 'Profile Level', 'References', 'Implemented', 'Explanation'];
+const SSP_HEADER = ['ID', 'Title', 'Statement', 'Recommendations', 'Risk/Rationale', 'Profile Level', 'References', 'Implemented', 'Explanation'];
+
+/**
+ * A spreadsheet for a profile that has no official template: one `ssp` sheet with the columns of the Low-Risk Cloud
+ * template, a row per requirement in profile order, and the same About sheet (with a line saying so).
+ */
+export async function buildSspWorkbook(
+  plan: Plan,
+  profile: Profile,
+  opts: { genai?: { profile: Profile }; about?: AboutInfo },
+): Promise<ExcelJS.Workbook> {
+  const workbook = new ExcelJS.Workbook();
+  addRequirementSheet(workbook, 'ssp', plan, profile);
+  if (opts.genai) addGenAiSheet(workbook, plan, opts.genai.profile);
+  if (opts.about) addAboutSheet(workbook, opts.about, NO_TEMPLATE_NOTE);
+  return workbook;
+}
 
 /** A second sheet with the same columns as the template, for the Generative AI requirements. */
 function addGenAiSheet(workbook: ExcelJS.Workbook, plan: Plan, profile: Profile): void {
-  const sheet = workbook.addWorksheet('genai');
-  sheet.addRow(GENAI_HEADER).font = { bold: true };
+  addRequirementSheet(workbook, 'genai', plan, profile);
+}
+
+function addRequirementSheet(workbook: ExcelJS.Workbook, name: string, plan: Plan, profile: Profile): void {
+  const sheet = workbook.addWorksheet(name);
+  sheet.addRow(SSP_HEADER).font = { bold: true };
   for (const entry of profile.entries) {
     const item = plan.items.find(i => i.profileId === profile._id && i.key === entry.key);
     const { implemented, explanation } = item ? sspValues(item) : { implemented: '', explanation: '' };
@@ -75,7 +97,7 @@ function addGenAiSheet(workbook: ExcelJS.Workbook, plan: Plan, profile: Profile)
 }
 
 /** What this export was built from, so a reviewer can tell which versions of what they are reading. */
-function addAboutSheet(workbook: ExcelJS.Workbook, about: AboutInfo): void {
+function addAboutSheet(workbook: ExcelJS.Workbook, about: AboutInfo, note?: string): void {
   const sheet = workbook.addWorksheet('About this file');
   const rows: string[][] = [['Generated', about.generatedAt.slice(0, 10)]];
   if (about.projectName) rows.push(['Project', about.projectName]);
@@ -89,6 +111,7 @@ function addAboutSheet(workbook: ExcelJS.Workbook, about: AboutInfo): void {
     rows.push([t.name, t.version === 0 ? 'No coverage recorded' : `v${t.version}`, BADGE_TEXT[t.verification]]);
   }
   rows.push([], [LOCALLY_DERIVED], [SELF_DECLARED_NOTE]);
+  if (note) rows.push([note]);
   for (const row of rows) sheet.addRow(row);
   sheet.getRow(rows.findIndex(r => r[0] === 'Tool') + 1).font = { bold: true };
   [28, 28, 22].forEach((width, i) => (sheet.getColumn(i + 1).width = width));

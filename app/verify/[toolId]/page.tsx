@@ -8,6 +8,7 @@ import { withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
 import type { CoverageEntry } from "@/lib/domain/types";
 import { VALUE_LABEL } from "@/lib/plan/labels";
+import { defaultVerifyProfile } from "@/lib/plan/verification";
 import { diffVersions } from "@/lib/verify/diff";
 import { ApproveButton } from "./approve-button";
 
@@ -23,8 +24,9 @@ export default function ReviewPage(props: Props) {
 
 async function Review({ params, searchParams }: Props) {
   const { toolId } = await params;
-  const { profile: profileId = "low-risk-cloud" } = await searchParams;
+  const { profile: chosen } = await searchParams;
   const data = await withDb(loadPlanData);
+  const profileId = chosen ?? defaultVerifyProfile(data.profiles, data.versions, toolId);
   const tool = data.tools.find(t => t._id === toolId);
   const profile = data.profiles.find(p => p._id === profileId);
   const pair = data.versions.find(v => v.current.toolId === toolId && v.current.profileId === profileId);

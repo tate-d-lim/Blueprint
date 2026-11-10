@@ -2,7 +2,6 @@ import { buildPlan, type PlanData, type ProjectOverlay } from '@/lib/plan/engine
 import { pairVersions, selectPlanInput } from '@/lib/plan/select';
 import { AGENT_SNIPPET, oneLine, renderBuildPlan, toolsForMeta, type BuildPlanMeta } from '@/lib/export/build-plan-md';
 import { key, makeEntry, makeProfile, makeTool, makeVersion } from '../helpers/factories';
-import { loadSeed } from '../helpers/seed';
 import type { FactAnswers } from '@/lib/domain/types';
 import { DEMO_FACTS, demoData } from '../helpers/demo';
 

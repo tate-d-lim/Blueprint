@@ -38,7 +38,7 @@ test('the GenAI requirements have plain-language questions', async () => {
 test('the spreadsheet gets a "genai" sheet with a header and 8 rows', async () => {
   const { plan, genai } = await setup(true);
   const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load((await fillSspWorkbook(plan, { templatePath: TEMPLATE, genai: { profile: genai } })) as unknown as ArrayBuffer);
+  await wb.xlsx.load((await fillSspWorkbook(plan, { templatePath: TEMPLATE, profileId: 'low-risk-cloud', genai: { profile: genai } })) as unknown as ArrayBuffer);
   const sheet = wb.getWorksheet('genai')!;
   expect(sheet.rowCount).toBe(9);
   expect([1, 2, 3, 4, 5, 6, 7, 8, 9].map(c => cellText(sheet.getRow(1).getCell(c)))).toEqual([
@@ -55,6 +55,6 @@ test('the spreadsheet gets a "genai" sheet with a header and 8 rows', async () =
 test('without the option there is no "genai" sheet', async () => {
   const { plan } = await setup(false);
   const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load((await fillSspWorkbook(plan, { templatePath: TEMPLATE })) as unknown as ArrayBuffer);
+  await wb.xlsx.load((await fillSspWorkbook(plan, { templatePath: TEMPLATE, profileId: 'low-risk-cloud' })) as unknown as ArrayBuffer);
   expect(wb.getWorksheet('genai')).toBeUndefined();
 });
