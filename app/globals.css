@@ -1,35 +1,33 @@
 @import "tailwindcss";
 
 /*
- * Blueprint drawing set. One token set for every screen:
- * paper and grid, ink for text and lines, blueprint blue for what is built, confirmed or the main action,
- * redline red for what needs attention. Corners are 2px; panels are ruled, not shadowed.
+ * Light Blueprint. One token set for every screen: drafting-white ground, navy ink, 1px rules, 3px corners, no shadows.
+ * The hotel is the only colour on the page: blue line on a pale fill for what no tool does, warm light for what is
+ * Verified, red for questions only. The hotel line colour is for drawing, never for text.
  */
 @theme {
-  --color-table: #e8eef5;
+  --color-ground: #f6f8fa;
   --color-paper: #ffffff;
-  --color-grid: #edf2f8;
-  --color-grid-major: #dce6f2;
-  --color-ink: #0f2a4a;
-  --color-ink-soft: #4a6280;
-  --color-rule: #c3d1e2;
-  --color-rule-strong: #6f89ad;
-  --color-blueprint: #1d4e89;
-  --color-blueprint-deep: #163c6b;
-  --color-blueprint-wash: #e7eef8;
+  --color-ink: #1c2b3a;
+  --color-ink-soft: #4b5c70;
+  --color-rule: #d5dce4;
+  --color-rule-strong: #9aa8b8;
   --color-redline: #b8322a;
-  --color-redline-wash: #fbedeb;
-  /* State colours: blue is what the platform built, green is what you finished, amber is work under way. */
+  --color-redline-wash: #fbeceb;
   --color-done: #2c7a56;
   --color-done-wash: #e4f2ea;
   --color-working: #d08f1d;
   --color-working-wash: #fdf3dd;
+  --color-hotel-line: #5f86b3;
+  --color-hotel-fill: #eef3f9;
+  --color-hotel-light: #ffc879;
 
-  --font-sans: "Barlow", system-ui, sans-serif;
-  --font-display: "Barlow Semi Condensed", "Barlow", system-ui, sans-serif;
+  --font-sans: "Archivo Variable", system-ui, sans-serif;
   --font-code: "Roboto Mono Variable", ui-monospace, monospace;
 
-  /* The only type sizes in the app. label is for title-block cell labels and nothing else. */
+  --radius-sm: 3px;
+
+  /* The only type sizes in the app. */
   --text-label: 11px;
   --text-label--line-height: 1.3;
   --text-small: 14px;
@@ -51,10 +49,10 @@
   --container-page: 1040px;
   /* The longest line of running text. */
   --container-measure: 72ch;
+}
 
-  /* Panels are ruled, not shadowed. Only layers that float above the sheet cast a shadow. */
-  --shadow-dialog: 0 12px 40px rgb(15 42 74 / 0.25);
-  --shadow-dock: 0 -6px 16px rgb(15 42 74 / 0.08);
+:root {
+  --header-h: 56px;
 }
 
 @layer base {
@@ -63,7 +61,7 @@
   }
 
   body {
-    background: var(--color-table);
+    background: var(--color-ground);
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: 16px;
@@ -74,17 +72,17 @@
   h1,
   h2,
   h3 {
-    font-family: var(--font-display);
+    font-stretch: 112%;
     text-wrap: balance;
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-blueprint);
+    outline: 2px solid var(--color-ink);
     outline-offset: 2px;
   }
 
   ::selection {
-    background: var(--color-blueprint-wash);
+    background: var(--color-hotel-fill);
     color: var(--color-ink);
   }
 
@@ -93,7 +91,7 @@
   }
 
   html {
-    scrollbar-color: var(--color-rule-strong) var(--color-table);
+    scrollbar-color: var(--color-rule-strong) var(--color-ground);
   }
 
   ::placeholder {
@@ -103,56 +101,19 @@
 
   input[type="checkbox"],
   input[type="radio"] {
-    accent-color: var(--color-blueprint);
+    accent-color: var(--color-ink);
   }
-}
-
-/* Drafting paper: a minor grid every 16px and a major line every 80px. Panels sit on it as clean white. */
-@utility drafting-grid {
-  background-color: var(--color-paper);
-  background-image:
-    linear-gradient(var(--color-grid-major) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-grid-major) 1px, transparent 1px),
-    linear-gradient(var(--color-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
-  background-size:
-    80px 80px,
-    80px 80px,
-    16px 16px,
-    16px 16px;
-}
-
-/* Drawing conventions for the floor plan: blue hatch = built by your tools, amber hatch = in progress. */
-@utility hatch-built {
-  background-color: var(--color-blueprint-wash);
-  background-image: repeating-linear-gradient(45deg, rgb(29 78 137 / 0.45) 0 1px, transparent 1px 7px);
-}
-
-@utility hatch-progress {
-  background-color: var(--color-working-wash);
-  background-image: repeating-linear-gradient(-45deg, var(--color-working) 0 2.5px, transparent 2.5px 6px);
-}
-
-/*
- * A revision cloud: the redline scalloped outline a checker draws around something still open. It is a
- * nine-slice border image, so the scallops repeat along any size of box.
- */
-@utility revision-cloud {
-  border-style: solid;
-  border-color: transparent;
-  border-width: var(--cloud-size, 12px);
-  background: var(--color-redline-wash) padding-box;
-  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M6 8A3 3 0 1 1 8 6A4 4 0 0 1 16 6A3 3 0 1 1 18 8A4 4 0 0 1 18 16A3 3 0 1 1 16 18A4 4 0 0 1 8 18A3 3 0 1 1 6 16A4 4 0 0 1 6 8Z' fill='%23fbedeb' stroke='%23b8322a' stroke-width='1'/%3E%3C/svg%3E");
-  border-image-slice: 8;
-  border-image-width: var(--cloud-size, 12px);
-  border-image-repeat: round;
-}
-
-/* The same cloud at half size, for the key. */
-@utility revision-cloud-sm {
-  --cloud-size: 5px;
 }
 
 @utility tnum {
   font-variant-numeric: tabular-nums;
+}
+
+/* Archivo's width axis: wide for page headings, narrow for hotel labels and counts. */
+@utility wide {
+  font-stretch: 112%;
+}
+
+@utility narrow {
+  font-stretch: 80%;
 }

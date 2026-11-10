@@ -47,7 +47,7 @@ export function AppForm({ risk, initial, profile }: { risk: RiskAnswers; initial
 
           {ticks.length > 0 && (
             <fieldset className={`flex flex-col gap-4 ${choices.length ? "border-t border-rule pt-6" : ""}`}>
-              <legend className="mb-1 font-display text-lead font-semibold text-ink">Tick everything that is true for your app</legend>
+              <legend className="mb-1 text-lead font-semibold text-ink">Tick everything that is true for your app</legend>
               {ticks.map(fact =>
                 fact.kind === "tick" ? (
                   <Checkbox

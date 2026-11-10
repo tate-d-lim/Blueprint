@@ -156,7 +156,7 @@ export function CoverageEditor({
         </Note>
       )}
 
-      <div className="rounded-xs border border-rule bg-paper px-4">
+      <div className="rounded-sm border border-rule bg-paper px-4">
         {visible.map(req => {
           const row = rows.get(req.key)!;
           const error = errorFor(req.key);
@@ -166,7 +166,7 @@ export function CoverageEditor({
               key={req.key}
               summary={
                 <span className="flex flex-col">
-                  <span className="font-display text-lead font-semibold">{req.title}</span>
+                  <span className=" text-lead font-semibold">{req.title}</span>
                   <span className="tnum text-small text-ink-soft">
                     {req.id}, level {req.level}
                   </span>
@@ -254,7 +254,7 @@ export function CoverageEditor({
         })}
       </div>
 
-      <div className="sticky bottom-0 z-10 -mx-10 border-t border-ink bg-paper px-10 py-4 shadow-dock">
+      <div className="sticky bottom-0 z-10 -mx-10 border-t border-ink bg-paper px-10 py-4">
         {!saving ? (
           <Button
             onClick={() => {

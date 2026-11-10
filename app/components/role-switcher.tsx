@@ -23,7 +23,7 @@ export function RoleSwitcher({ role }: { role: Role }) {
           router.refresh();
         });
       }}
-      className="h-9 rounded-xs border border-paper/60 bg-blueprint-deep pr-8 pl-3 font-display text-body font-semibold text-paper hover:border-paper"
+      className="h-9 rounded-sm border border-rule-strong bg-paper pr-8 pl-3 text-small font-semibold text-ink hover:border-ink"
     >
       {ROLES.map(r => (
         <option key={r} value={r}>

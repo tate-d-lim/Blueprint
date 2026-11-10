@@ -34,7 +34,7 @@ async function AdminTools() {
               <Cell>
                 <div className="flex flex-col gap-1">
                   <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-display text-lead font-semibold">{tool.name}</span>
+                    <span className=" text-lead font-semibold">{tool.name}</span>
                     {tool.isSample && <SampleTag />}
                   </span>
                   <span className="text-small text-ink-soft">{tool.description}</span>

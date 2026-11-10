@@ -3,12 +3,12 @@ import Link from "next/link";
 /** A drawing schedule: ruled rows, headings in the lettering face, numbers in tabular figures. */
 export function Table({ head, children }: { head: React.ReactNode[]; children: React.ReactNode }) {
   return (
-    <div className="overflow-x-auto rounded-xs border border-rule bg-paper">
+    <div className="overflow-x-auto rounded-sm border border-rule bg-paper">
       <table className="w-full border-collapse text-left text-body">
         <thead>
           <tr className="border-b border-ink">
             {head.map((h, i) => (
-              <th key={i} scope="col" className="px-4 py-2.5 align-bottom font-display text-small font-semibold text-ink">
+              <th key={i} scope="col" className="px-4 py-2.5 align-bottom text-small font-semibold text-ink">
                 {h}
               </th>
             ))}
@@ -33,7 +33,7 @@ export function Breadcrumb({ items }: { items: { label: string; href?: string }[
           <li key={item.label} className="flex items-center gap-2">
             {i > 0 && <span aria-hidden="true">/</span>}
             {item.href ? (
-              <Link href={item.href} className="font-medium text-blueprint underline decoration-1 hover:decoration-2">
+              <Link href={item.href} className="font-medium text-ink underline decoration-1 hover:decoration-2">
                 {item.label}
               </Link>
             ) : (

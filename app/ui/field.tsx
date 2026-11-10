@@ -1,7 +1,7 @@
 import { useId } from "react";
 
 const CONTROL =
-  "w-full rounded-xs border border-rule-strong bg-paper px-3 text-body text-ink placeholder:text-ink-soft/70 hover:border-blueprint focus-visible:border-blueprint aria-[invalid=true]:border-redline";
+  "w-full rounded-sm border border-rule-strong bg-paper px-3 text-body text-ink placeholder:text-ink-soft/70 hover:border-ink focus-visible:border-ink aria-[invalid=true]:border-redline";
 
 export const inputClass = `${CONTROL} h-10`;
 export const selectClass = `${CONTROL} h-10 pr-8`;
@@ -25,7 +25,7 @@ export function Field({
   const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="font-display text-body font-semibold text-ink">
+      <label htmlFor={id} className=" text-body font-semibold text-ink">
         {label}
       </label>
       {hint && (
@@ -79,7 +79,7 @@ export function RadioGroup({
 }) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className={`font-display text-lead font-semibold text-ink ${hint ? "" : "mb-2"}`}>{legend}</legend>
+      <legend className={` text-lead font-semibold text-ink ${hint ? "" : "mb-2"}`}>{legend}</legend>
       {hint && <p className="mb-1 text-small text-ink-soft">{hint}</p>}
       {Object.entries(options).map(([option, label]) => (
         <label key={option} className="flex cursor-pointer items-center gap-2.5 text-body text-ink">

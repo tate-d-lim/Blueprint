@@ -1,6 +1,6 @@
 /**
  * A ruled strip of choices, divided like the cells of a title block. The chosen one is washed and underlined in
- * blueprint. `value` may be null when nothing is chosen yet.
+ * ink. `value` may be null when nothing is chosen yet.
  */
 export function Segmented<T extends string>({
   label,
@@ -14,7 +14,7 @@ export function Segmented<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <div role="group" aria-label={label} className="inline-flex w-fit divide-x divide-rule-strong rounded-xs border border-rule-strong bg-paper">
+    <div role="group" aria-label={label} className="inline-flex w-fit divide-x divide-rule-strong rounded-sm border border-rule-strong bg-paper">
       {options.map(option => {
         const chosen = option.value === value;
         return (
@@ -23,8 +23,8 @@ export function Segmented<T extends string>({
             type="button"
             aria-pressed={chosen}
             onClick={() => onChange(option.value)}
-            className={`h-9 cursor-pointer border-b-2 px-4 font-display text-small font-semibold transition-colors ${
-              chosen ? "border-b-blueprint bg-blueprint-wash text-ink" : "border-b-transparent text-ink-soft hover:bg-blueprint-wash/50 hover:text-ink"
+            className={`h-9 cursor-pointer border-b-2 px-4 text-small font-semibold transition-colors ${
+              chosen ? "border-b-ink bg-ground text-ink" : "border-b-transparent text-ink-soft hover:bg-ground hover:text-ink"
             }`}
           >
             {option.label}

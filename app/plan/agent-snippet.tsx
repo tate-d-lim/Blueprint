@@ -18,7 +18,7 @@ export function AgentSnippet() {
   };
   return (
     <div className="flex flex-col gap-3">
-      <pre className="rounded-xs border border-rule bg-blueprint-wash/40 p-4 font-code text-small leading-relaxed whitespace-pre-wrap">
+      <pre className="rounded-sm border border-rule bg-ground p-4 font-code text-small leading-relaxed whitespace-pre-wrap">
         {AGENT_SNIPPET}
       </pre>
       <div>

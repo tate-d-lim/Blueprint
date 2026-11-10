@@ -4,11 +4,11 @@ type Variant = "primary" | "secondary" | "quiet";
 type Size = "md" | "sm";
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-xs font-display font-semibold tracking-[0.01em] whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-45";
+  "inline-flex items-center justify-center gap-2 rounded-sm font-semibold tracking-[0.01em] whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-45";
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-blueprint text-paper hover:bg-blueprint-deep",
-  secondary: "border border-rule-strong bg-paper text-ink hover:border-blueprint hover:bg-blueprint-wash",
-  quiet: "text-blueprint underline-offset-4 hover:underline",
+  primary: "bg-ink text-paper hover:bg-ink/90",
+  secondary: "border border-rule-strong bg-paper text-ink hover:border-ink hover:bg-ground",
+  quiet: "text-ink underline-offset-4 hover:underline",
 };
 const SIZES: Record<Size, string> = {
   md: "h-10 px-4 text-body",
@@ -18,7 +18,7 @@ const SIZES: Record<Size, string> = {
 /** One class list for every button-like control, so buttons and button-styled links always match. */
 export function buttonClass(variant: Variant = "primary", size: Size = "md", pressed = false) {
   const quietSize = variant === "quiet" ? (size === "sm" ? "h-8 text-small" : "h-10 text-body") : SIZES[size];
-  return `${BASE} ${VARIANTS[variant]} ${quietSize} ${pressed ? "bg-blueprint-wash! border-blueprint! text-blueprint!" : ""}`;
+  return `${BASE} ${VARIANTS[variant]} ${quietSize} ${pressed ? "bg-ground! border-ink! text-ink!" : ""}`;
 }
 
 export function Button({
@@ -69,7 +69,7 @@ export function DownloadButton({ href, variant = "primary", children }: { href: 
 
 /** An inline text link in the body copy. */
 export function TextLink({ href, children, external = false }: { href: string; children: React.ReactNode; external?: boolean }) {
-  const className = "font-medium text-blueprint underline decoration-1 hover:decoration-2";
+  const className = "font-medium text-ink underline decoration-1 hover:decoration-2";
   return external ? (
     <a href={href} target="_blank" rel="noreferrer" className={className}>
       {children}

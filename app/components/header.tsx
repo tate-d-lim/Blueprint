@@ -1,8 +1,7 @@
 import { getRole } from "@/lib/role";
-import { TitleBlock } from "./title-block";
+import { SiteHeader } from "./site-header";
 
-/** `cells` are the sheet's own title-block cells, such as a saved project's name and owner. */
-export async function Header({ cells }: { cells?: React.ReactNode }) {
+export async function Header() {
   const role = await getRole();
-  return <TitleBlock role={role} cells={cells} />;
+  return <SiteHeader role={role} />;
 }

@@ -21,7 +21,7 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <Tag className={`rounded-xs border border-rule bg-paper ${scroll ? "flex min-h-0 flex-col" : ""} ${className}`}>
+    <Tag className={`rounded-sm border border-rule bg-paper ${scroll ? "flex min-h-0 flex-col" : ""} ${className}`}>
       {title && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-3">
           <div className="flex min-w-0 flex-col gap-0.5">
@@ -55,7 +55,7 @@ export function SectionHeading({ title, count, children }: { title: string; coun
     <div className="flex flex-col gap-1">
       <div className="flex items-baseline gap-3">
         <h2 className="text-heading leading-tight font-semibold text-ink">{title}</h2>
-        {count !== undefined && <span className="tnum font-display text-title font-semibold text-blueprint">{count}</span>}
+        {count !== undefined && <span className="tnum text-title font-semibold text-ink">{count}</span>}
       </div>
       {children && <p className="max-w-measure text-body text-ink-soft">{children}</p>}
     </div>

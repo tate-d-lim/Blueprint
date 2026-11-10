@@ -5,7 +5,7 @@
 type Tone = "approved" | "pending" | "published" | "sample";
 
 const TONES: Record<Tone, string> = {
-  approved: "border-blueprint text-blueprint outline-blueprint",
+  approved: "border-ink text-ink outline-ink",
   pending: "border-redline text-redline outline-redline",
   published: "border-ink text-ink outline-ink",
   sample: "border-dotted border-ink-soft text-ink-soft outline-transparent",
@@ -14,7 +14,7 @@ const TONES: Record<Tone, string> = {
 export function Stamp({ tone, children }: { tone: Tone; children: React.ReactNode }) {
   return (
     <span
-      className={`inline-flex items-center rounded-xs border bg-paper px-1.5 py-px font-display text-small leading-5 font-semibold whitespace-nowrap outline outline-offset-1 ${TONES[tone]}`}
+      className={`inline-flex items-center rounded-sm border bg-paper px-1.5 py-px text-small leading-5 font-semibold whitespace-nowrap outline outline-offset-1 ${TONES[tone]}`}
     >
       {children}
     </span>
@@ -24,7 +24,7 @@ export function Stamp({ tone, children }: { tone: Tone; children: React.ReactNod
 /** A plain label for neutral facts, such as "Optional" or a count. */
 export function Tag({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-xs border border-rule px-1.5 py-px font-display text-small leading-5 font-semibold whitespace-nowrap text-ink-soft">
+    <span className="inline-flex items-center rounded-sm border border-rule px-1.5 py-px text-small leading-5 font-semibold whitespace-nowrap text-ink-soft">
       {children}
     </span>
   );

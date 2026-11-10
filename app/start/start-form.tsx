@@ -69,7 +69,7 @@ export function StartForm() {
           </div>
 
           <fieldset className="flex flex-col gap-3 border-t border-rule pt-6">
-            <legend className="mb-3 font-display text-lead font-semibold text-ink">Does either of these apply?</legend>
+            <legend className="mb-3 text-lead font-semibold text-ink">Does either of these apply?</legend>
             {SYSTEM_FLAGS.map(flag => (
               <Checkbox
                 key={flag.field}

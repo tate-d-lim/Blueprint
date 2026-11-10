@@ -40,15 +40,15 @@ test("your tool picks survive leaving the plan page and pressing Back", async ({
   await expect(page.getByRole("checkbox", { name: /DBaaS/ })).toBeChecked();
 });
 
-test("a saved project's name and owner sit in the title block, and leave it on other sheets", async ({ page }) => {
+test("a saved project's name and owner show on its own page, not in the header", async ({ page }) => {
   await page.goto("/projects/sample-two-weeks-in");
-  const titleBlock = page.getByRole("banner");
-  await expect(titleBlock.getByText("Sample project (two weeks in)")).toBeVisible();
-  await expect(titleBlock.getByText("Sample builder")).toBeVisible();
-  // A client-side move must clear them too, not only a full page load.
+  await expect(page.getByRole("main").getByText("Sample project (two weeks in)").first()).toBeVisible();
+  await expect(page.getByRole("main").getByText("Sample builder")).toBeVisible();
+  await expect(page.getByRole("banner").getByText("Sample builder")).toHaveCount(0);
+  // A client-side move leaves them behind.
   await sheets(page).getByRole("link", { name: "Saved projects" }).click();
   await expect(page).toHaveURL(/\/projects$/);
-  await expect(titleBlock.getByText("Sample builder")).toHaveCount(0);
+  await expect(page.getByRole("banner").getByText("Sample builder")).toHaveCount(0);
 });
 
 test("builder screens never show GovTech's wording about the agency, controls or an SSP", async ({ page }) => {

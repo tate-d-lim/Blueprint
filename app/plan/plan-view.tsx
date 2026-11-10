@@ -194,7 +194,7 @@ export function PlanView({
         {/* The inspector: the lists for the room chosen on the plan, or for every room. */}
         <aside
           aria-label="Requirements"
-          className="sticky top-6 flex max-h-[calc(100vh-48px)] min-h-0 min-w-0 flex-col rounded-xs border border-ink bg-paper"
+          className="sticky top-6 flex max-h-[calc(100vh-48px)] min-h-0 min-w-0 flex-col rounded-sm border border-ink bg-paper"
         >
           <div className="flex flex-col gap-1 border-b border-ink px-5 py-3">
             <h2 className="text-title font-semibold">{room ? roomName(room) : "All rooms"}</h2>
@@ -218,11 +218,11 @@ export function PlanView({
               {platformGroups.length === 0 ? (
                 <p className="text-ink-soft">{emptyInRoom}</p>
               ) : (
-                <div className="rounded-xs border border-rule bg-paper px-4">
+                <div className="rounded-sm border border-rule bg-paper px-4">
                   {platformGroups.map(g => (
                     <Disclosure
                       key={g.title}
-                      summary={<span className="font-display text-lead font-semibold">{g.title}</span>}
+                      summary={<span className=" text-lead font-semibold">{g.title}</span>}
                       aside={<Tag>{g.items.length}</Tag>}
                     >
                       <ul className="flex flex-col">{g.items.map(i => view(i, true))}</ul>
@@ -241,8 +241,8 @@ export function PlanView({
                 {skipped.length === 0 ? (
                   <p className="text-ink-soft">{emptyInRoom}</p>
                 ) : (
-                  <div className="rounded-xs border border-rule bg-paper px-4">
-                    <Disclosure summary={<span className="font-display text-lead font-semibold">Show all {skipped.length}</span>}>
+                  <div className="rounded-sm border border-rule bg-paper px-4">
+                    <Disclosure summary={<span className=" text-lead font-semibold">Show all {skipped.length}</span>}>
                       <ul className="flex flex-col">{skipped.map(i => view(i, true))}</ul>
                     </Disclosure>
                   </div>
@@ -254,8 +254,8 @@ export function PlanView({
               {extras.length === 0 ? (
                 <p className="text-ink-soft">{emptyInRoom}</p>
               ) : (
-                <div className="rounded-xs border border-rule bg-paper px-4">
-                  <Disclosure summary={<span className="font-display text-lead font-semibold">Show all {extras.length}</span>}>
+                <div className="rounded-sm border border-rule bg-paper px-4">
+                  <Disclosure summary={<span className=" text-lead font-semibold">Show all {extras.length}</span>}>
                     <ul className="flex flex-col">{extras.map(i => view(i, true))}</ul>
                   </Disclosure>
                 </div>
@@ -273,7 +273,7 @@ export function PlanView({
 }
 
 /** Every section is one ruled list, with a 1px rule between its items. */
-const SCHEDULE = "flex flex-col divide-y divide-rule rounded-xs border border-rule bg-paper";
+const SCHEDULE = "flex flex-col divide-y divide-rule rounded-sm border border-rule bg-paper";
 
 const FILTERS: (TaskStatus | "all")[] = ["all", "todo", "in-progress", "done"];
 

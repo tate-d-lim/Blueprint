@@ -11,7 +11,7 @@ export function ResetButton() {
     >
       <button
         type="submit"
-        className="h-9 rounded-xs border border-paper/60 px-3 font-display text-body font-semibold whitespace-nowrap text-paper hover:border-paper hover:bg-blueprint-deep"
+        className="h-9 rounded-sm border border-rule-strong bg-paper px-3 text-small font-semibold whitespace-nowrap text-ink hover:border-ink"
       >
         Reset demo data
       </button>

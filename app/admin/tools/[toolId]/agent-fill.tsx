@@ -50,7 +50,7 @@ export function AgentFill({ toolId, profileId, onFilled }: { toolId: string; pro
                   setFile(e.target.files?.[0] ?? null);
                   setError("");
                 }}
-                className="text-body file:mr-4 file:h-10 file:cursor-pointer file:rounded-xs file:border file:border-rule-strong file:bg-paper file:px-4 file:font-display file:font-semibold file:text-ink hover:file:bg-blueprint-wash"
+                className="text-body file:mr-4 file:h-10 file:cursor-pointer file:rounded-sm file:border file:border-rule-strong file:bg-paper file:px-4 file:font-semibold file:text-ink hover:file:bg-ground"
               />
             )}
           </Field>

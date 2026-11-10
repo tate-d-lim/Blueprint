@@ -75,7 +75,7 @@ export function ImportForm({ tools, profiles }: { tools: { id: string; name: str
                   setChecked(null);
                   setCreated(null);
                 }}
-                className="text-body file:mr-4 file:h-10 file:cursor-pointer file:rounded-xs file:border file:border-rule-strong file:bg-paper file:px-4 file:font-display file:font-semibold file:text-ink hover:file:bg-blueprint-wash"
+                className="text-body file:mr-4 file:h-10 file:cursor-pointer file:rounded-sm file:border file:border-rule-strong file:bg-paper file:px-4 file:font-semibold file:text-ink hover:file:bg-ground"
               />
             )}
           </Field>

@@ -44,7 +44,7 @@ export function Dialog({
       aria-labelledby={titleId}
       onClose={onClose}
       onClick={e => e.target === e.currentTarget && onClose()}
-      className={`${frame} border-ink bg-paper p-0 text-ink shadow-dialog backdrop:bg-ink/35`}
+      className={`${frame} border-ink bg-paper p-0 text-ink backdrop:bg-ink/35`}
     >
       <div className="flex h-full flex-col">
         <div className="flex items-start justify-between gap-4 border-b border-rule px-6 py-4">
@@ -58,7 +58,7 @@ export function Dialog({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex size-8 shrink-0 items-center justify-center rounded-xs border border-rule-strong text-ink hover:bg-blueprint-wash"
+            className="flex size-8 shrink-0 items-center justify-center rounded-sm border border-rule-strong text-ink hover:bg-ground"
           >
             <svg aria-hidden="true" viewBox="0 0 12 12" className="size-3">
               <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.5" />

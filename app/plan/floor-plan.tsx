@@ -40,7 +40,7 @@ export function FloorPlan({
     : `${yours} are yours to build${open ? `, and ${open} are questions to answer first` : ""}. Tick tools to build more rooms.`;
 
   return (
-    <section aria-labelledby="floor-plan-title" className="rounded-xs border border-ink bg-paper">
+    <section aria-labelledby="floor-plan-title" className="rounded-sm border border-ink bg-paper">
       <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b border-ink px-5 py-4">
         <div className="flex flex-col gap-1">
           <h2 id="floor-plan-title" className="tnum text-heading font-semibold">
@@ -92,12 +92,12 @@ export function FloorPlan({
 }
 
 const AREAS = {
-  built: "hatch-built",
+  built: "border border-hotel-line bg-hotel-fill",
   done: "bg-done",
-  inProgress: "hatch-progress",
-  todo: "border border-dashed border-blueprint",
+  inProgress: "bg-working-wash",
+  todo: "border border-dashed border-ink",
   settled: "border border-dotted border-ink-soft",
-  openQuestions: "revision-cloud",
+  openQuestions: "border border-redline bg-redline-wash",
 } as const;
 
 function RoomButton({ room, tracking, selected, onClick }: { room: Room; tracking: boolean; selected: boolean; onClick: () => void }) {
@@ -123,7 +123,7 @@ function RoomButton({ room, tracking, selected, onClick }: { room: Room; trackin
       onClick={onClick}
       style={{ flexGrow: room.total, flexBasis: 0 }}
       className={`group relative flex min-h-[132px] min-w-[112px] cursor-pointer items-start p-3 text-left focus-visible:-outline-offset-4 ${
-        selected ? "bg-blueprint-wash" : ""
+        selected ? "bg-ground" : ""
       }`}
     >
       {/* The floor. Every kind of area is always there, so a change of count grows or shrinks it in place. */}
@@ -142,10 +142,10 @@ function RoomButton({ room, tracking, selected, onClick }: { room: Room; trackin
       {/* The room's name plate, lettered over the floor. */}
       <span
         className={`relative flex flex-col border px-2.5 py-1.5 transition-colors ${
-          selected ? "border-blueprint bg-blueprint text-paper" : "border-ink bg-paper text-ink group-hover:border-blueprint group-hover:text-blueprint"
+          selected ? "border-ink bg-ink text-paper" : "border-ink bg-paper text-ink group-hover:border-ink group-hover:text-ink"
         }`}
       >
-        <span className="font-display text-lead leading-tight font-semibold">{name}</span>
+        <span className="text-lead leading-tight font-semibold">{name}</span>
         <span className={`tnum text-small ${selected ? "text-paper/85" : "text-ink-soft"}`}>{status.join(", ")}</span>
       </span>
     </button>
@@ -163,7 +163,7 @@ function Legend({ tracking }: { tracking: boolean }) {
       : []),
     { label: tracking ? "To do" : "Yours", swatch: AREAS.todo },
     { label: "Doesn't apply", swatch: AREAS.settled },
-    { label: "Question", swatch: `${AREAS.openQuestions} revision-cloud-sm` },
+    { label: "Question", swatch: AREAS.openQuestions },
   ];
   return (
     <ul aria-label="Key" className="flex flex-wrap gap-x-5 gap-y-1.5 text-small text-ink-soft">
