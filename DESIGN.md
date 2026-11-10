@@ -1,317 +1,280 @@
 ---
 name: Blueprint for CPFB app builders
-description: A blueprint drawing set. White grid paper, navy ink, blueprint blue for what is built, redline for what needs attention.
+description: A hotel that is first a drawing and then gets built. Drafting-white ground, navy ink, and the hotel as the only colour on the page.
 colors:
-  blueprint: "#1d4e89"
-  blueprint-deep: "#163c6b"
-  blueprint-wash: "#e7eef8"
+  ground: "#f6f8fa"
+  paper: "#ffffff"
+  ink: "#1c2b3a"
+  ink-soft: "#4b5c70"
+  rule: "#d5dce4"
+  rule-strong: "#9aa8b8"
+  hotel-line: "#5f86b3"
+  hotel-fill: "#eef3f9"
+  hotel-light: "#ffc879"
   redline: "#b8322a"
-  redline-wash: "#fbedeb"
+  redline-wash: "#fbeceb"
   done: "#2c7a56"
   done-wash: "#e4f2ea"
   working: "#d08f1d"
   working-wash: "#fdf3dd"
-  ink: "#0f2a4a"
-  ink-soft: "#4a6280"
-  rule: "#c3d1e2"
-  rule-strong: "#6f89ad"
-  paper: "#ffffff"
-  grid: "#edf2f8"
-  grid-major: "#dce6f2"
-  table: "#e8eef5"
 typography:
   display:
-    fontFamily: "Barlow Semi Condensed, Barlow, system-ui, sans-serif"
+    fontFamily: "Archivo Variable, system-ui, sans-serif"
     fontSize: "34px"
     fontWeight: 600
     lineHeight: 1.1
     letterSpacing: "-0.01em"
+    fontVariation: "wdth 112"
   heading:
-    fontFamily: "Barlow Semi Condensed, Barlow, system-ui, sans-serif"
+    fontFamily: "Archivo Variable, system-ui, sans-serif"
     fontSize: "26px"
     fontWeight: 600
     lineHeight: 1.15
+    fontVariation: "wdth 112"
   title:
-    fontFamily: "Barlow Semi Condensed, Barlow, system-ui, sans-serif"
+    fontFamily: "Archivo Variable, system-ui, sans-serif"
     fontSize: "22px"
     fontWeight: 600
     lineHeight: 1.25
   lead:
-    fontFamily: "Barlow Semi Condensed, Barlow, system-ui, sans-serif"
+    fontFamily: "Archivo Variable, system-ui, sans-serif"
     fontSize: "18px"
     fontWeight: 600
     lineHeight: 1.35
   body:
-    fontFamily: "Barlow, system-ui, sans-serif"
+    fontFamily: "Archivo Variable, system-ui, sans-serif"
     fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.5
   small:
-    fontFamily: "Barlow, system-ui, sans-serif"
+    fontFamily: "Archivo Variable, system-ui, sans-serif"
     fontSize: "14px"
     fontWeight: 400
     lineHeight: 1.45
   label:
-    fontFamily: "Barlow Semi Condensed, Barlow, system-ui, sans-serif"
+    fontFamily: "Archivo Variable, system-ui, sans-serif"
     fontSize: "11px"
     fontWeight: 600
     lineHeight: 1.3
-    letterSpacing: "0.12em"
   code:
     fontFamily: "Roboto Mono Variable, ui-monospace, monospace"
     fontSize: "14px"
     fontWeight: 400
 rounded:
-  xs: "2px"
+  sm: "3px"
 spacing:
-  grid-minor: "16px"
-  grid-major: "80px"
+  header: "56px"
+  page-x: "32px"
   panel-x: "20px"
   panel-y: "16px"
+  side-panel-x: "32px"
   dialog-x: "24px"
-  sheet: "40px"
 components:
   button-primary:
-    backgroundColor: "{colors.blueprint}"
+    backgroundColor: "{colors.ink}"
     textColor: "{colors.paper}"
     typography: "{typography.body}"
-    rounded: "{rounded.xs}"
+    rounded: "{rounded.sm}"
     padding: "0 16px"
     height: "40px"
-  button-primary-hover:
-    backgroundColor: "{colors.blueprint-deep}"
   button-secondary:
     backgroundColor: "{colors.paper}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.xs}"
+    typography: "{typography.body}"
+    rounded: "{rounded.sm}"
     padding: "0 16px"
     height: "40px"
   button-secondary-hover:
-    backgroundColor: "{colors.blueprint-wash}"
+    backgroundColor: "{colors.ground}"
   button-quiet:
-    textColor: "{colors.blueprint}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
     height: "40px"
   field:
     backgroundColor: "{colors.paper}"
     textColor: "{colors.ink}"
     typography: "{typography.body}"
-    rounded: "{rounded.xs}"
+    rounded: "{rounded.sm}"
     padding: "0 12px"
     height: "40px"
   panel:
     backgroundColor: "{colors.paper}"
-    rounded: "{rounded.xs}"
+    rounded: "{rounded.sm}"
     padding: "16px 20px"
-  title-block:
-    backgroundColor: "{colors.blueprint}"
-    textColor: "{colors.paper}"
-    padding: "12px 20px"
+  header:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.ink}"
+    height: "56px"
+    padding: "0 32px"
   segmented-chosen:
-    backgroundColor: "{colors.blueprint-wash}"
+    backgroundColor: "{colors.ground}"
     textColor: "{colors.ink}"
     typography: "{typography.small}"
     height: "36px"
-  stamp-approved:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.blueprint}"
-    typography: "{typography.small}"
-    rounded: "{rounded.xs}"
   stamp-pending:
     backgroundColor: "{colors.paper}"
     textColor: "{colors.redline}"
     typography: "{typography.small}"
-    rounded: "{rounded.xs}"
+    rounded: "{rounded.sm}"
   note-attention:
     backgroundColor: "{colors.redline-wash}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.xs}"
+    rounded: "{rounded.sm}"
     padding: "12px 16px"
+  hotel-label:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.ink}"
+    typography: "{typography.small}"
+    rounded: "{rounded.sm}"
+    width: "192px"
+    height: "46px"
 ---
 
 # Design System: Blueprint for CPFB app builders
 
 ## Overview
 
-**Creative North Star: "The Drawing Set"**
+**Creative North Star: "The Hotel Drawing"**
 
-Every page is one sheet of an architect's drawing set. The sheet has a double ruled frame. A blueprint blue title block runs across the top. Below it is white paper with a faint blue grid. The sheet sits on a pale blue-grey drafting table.
+The app is a hotel that is first a drawing and then gets built. The officer sees what the app needs as parts of a building, drawn as an isometric cutaway in thin blue line on a pale fill. Each tool they tick builds some of those parts in warm Kenney materials. The light comes on only when every claim is Verified.
 
-The plan is drawn as a building. Each requirement family is a room. Drawing conventions carry the meaning: blue hatch is built by your tools, solid green is done, amber hatch is in progress, a dashed outline is to do, a dotted outline does not apply, and a red revision cloud is an open question. Lines are thin and ruled. Corners are square. Nothing floats except dialogs and the editor's save dock.
+The page around the hotel is quiet on purpose: drafting-white ground, navy ink, 1px rules, 3px corners, no shadows. The hotel is the only colour on the page. There is no grid paper, no title block, no legend. State is never colour alone: each hotel label carries words and a count.
 
-The system is small on purpose. There is one token set, one kit of shared components in `app/ui/`, and seven type steps. A new screen uses these and nothing else. The app is for desktop only.
+One token set serves every screen, including the admin and verifier screens, which took the tokens but keep their older layout until their own redesign. The app is desktop only (1280 by 800 and up).
 
 **Key Characteristics:**
-- White grid paper, navy ink, 1px ruled lines, 2px corners.
-- Blueprint blue is rare: the title block, built and done areas, approval stamps, the one primary action.
-- Redline appears only where something needs attention.
-- Seven type steps. Uppercase lettering only in the title block.
+- Drafting-white ground, navy ink, 1px rules, 3px corners, no shadows.
+- One typeface, Archivo, in three widths: wide for page headings, normal for reading, narrow for hotel labels and counts.
+- The hotel carries all the colour. The page carries none.
+- One ink main action per step. Other actions are outline buttons or text links.
 - Lists are ruled schedules, not stacks of cards.
-- Panels are ruled, not shadowed.
 
 ## Colors
 
-Blue ink on white paper, with one red pen for corrections.
+Navy ink on drafting white. Colour belongs to the hotel and to the few states that need it.
 
 ### Primary
-- **Blueprint Blue** (blueprint): the title block, built rooms (as hatch), approval stamps, the one primary button, links, focus rings and checkbox accents.
-- **Deep Blueprint** (blueprint-deep): hover state of the primary button only.
-- **Blueprint Wash** (blueprint-wash): the hatch ground, a chosen segment, a chosen room, hover on secondary buttons and rows, text selection, info notes.
+- **Drafting Ink** (ink, #1c2b3a): all text, the main action button, focus rings, checkbox accents, dialog borders, hotel leader lines and the chosen label border.
 
 ### Secondary
-- **Done Green** (done): finished work only. Solid done areas on the floor plan and success notes. Its wash (done-wash) is the ground of success notes.
-- **Working Amber** (working): work under way only. The in-progress hatch on the floor plan. Its wash (working-wash) is the hatch ground.
-- **Redline** (redline): attention only. Revision clouds, the "Not yet verified" stamp, field errors, attention and error notes.
-- **Redline Wash** (redline-wash): the fill inside a revision cloud and the ground of attention and error notes.
+- **Hotel Line** (hotel-line, #5f86b3): the blue line of parts no tool does, drawn in the 3D scene. For drawing only, never for text.
+- **Hotel Fill** (hotel-fill, #eef3f9): the pale fill of those parts, the scene ground tint and text selection.
+- **Hotel Light** (hotel-light, #ffc879): the warm light that comes on only when every claim is Verified.
+- **Redline** (redline, #b8322a): questions and attention only. The question dot on a hotel label, the "Not yet verified" stamp, field errors, error notes.
+- **Redline Wash** (redline-wash, #fbeceb): ground of attention and error notes.
+- **Done Green** (done, #2c7a56) and its wash (done-wash, #e4f2ea): success notes only.
+- **Working Amber** (working, #d08f1d) and its wash (working-wash, #fdf3dd): declared tokens for work in progress; not yet drawn on the shipped step 4 to 6 screens.
 
 ### Neutral
-- **Drafting Ink** (ink): all text, the sheet frame, room walls, table header rules, dialog borders.
-- **Soft Ink** (ink-soft): descriptions, hints, counts, placeholders, the legend.
-- **Rule** (rule): 1px lines between rows, panel borders, divider strips.
-- **Strong Rule** (rule-strong): borders of controls (fields, secondary buttons, segmented strips).
-- **Paper** (paper): the sheet, panels, dialogs, fields.
-- **Grid** (grid) and **Major Grid** (grid-major): the drafting grid lines, every 16px and every 80px.
-- **Drafting Table** (table): the page ground around the sheet.
+- **Drafting Ground** (ground, #f6f8fa): the page, hover on secondary buttons and rows, the chosen segment, info notes.
+- **Paper** (paper, #ffffff): the header, panels, the side panel, dialogs, fields, hotel labels.
+- **Soft Ink** (ink-soft, #4b5c70): descriptions, hints, counts, placeholders, unchosen tabs.
+- **Rule** (rule, #d5dce4): 1px lines between rows, panel borders, divider strips, unchosen hotel label borders.
+- **Strong Rule** (rule-strong, #9aa8b8): borders of controls (fields, secondary buttons, segmented strips, the hotel card).
 
 ### Named Rules
-**The Blueprint Budget Rule.** Blueprint blue fills only the title block, built areas, approval stamps and the one primary action. Green and amber appear only to show a state (done, in progress) and never as decoration. Everything else is ink on paper.
+**The Hotel Is The Colour Rule.** Colour on the page comes from the hotel. Chrome stays ink, paper and ground.
 
-**The Redline Rule.** Redline means "needs attention". Never use it for decoration, emphasis or brand.
+**The Redline Rule.** Redline means a question or a need for attention. Never decoration, emphasis or brand.
+
+**The Line Is Not Text Rule.** Hotel Line fails as text on paper. It draws, it never writes.
 
 ## Typography
 
-**Body Font:** Barlow (with system-ui)
-**Display Font:** Barlow Semi Condensed (with Barlow, system-ui), for headings, labels on controls, room names and lettering.
-**Code Font:** Roboto Mono Variable (with ui-monospace), for commands and the agent snippet, at the small step.
+**Font:** Archivo Variable (with system-ui), loaded from the app with the width axis, so the demo works offline.
+**Code Font:** Roboto Mono Variable (with ui-monospace), only for official requirement codes and commands.
 
-**Character:** A plain engineering sans for reading, with its condensed sibling as drafting lettering.
+**Character:** One plain engineering sans. Width does the work of hierarchy: wide for headings, narrow for drafting labels.
 
 ### Hierarchy
-- **Display** (600, 34px, 1.1): the page title in PageHeader. One per page.
-- **Heading** (600, 26px, 1.15): page sections in SectionHeading, the floor plan heading, the "Blueprint" lettering in the title block.
-- **Title** (600, 22px, 1.25): Panel and Dialog titles, rendered by the component from a plain string. Also the count beside a SectionHeading.
-- **Lead** (18px, 1.35): sub-sections inside panels and dialogs, legends of radio groups, note titles, room names and sheet tabs (all in the display face, 600). Also the description under a page title (Barlow, ink-soft).
-- **Body** (400, 16px, 1.5): running text, rows, fields, field labels (display face, 600), md buttons.
-- **Small** (400, 14px, 1.45): hints, descriptions, stamps, tags, table headers, segmented choices, sm buttons, code.
-- **Label** (600, 11px, 0.12em, uppercase): title-block cell labels only.
+- **Display** (600, 34px, 1.1, wide): the step heading. One per page.
+- **Heading** (600, 26px, 1.15, wide): page sections. All h1 to h3 are set wide by the base layer.
+- **Title** (600, 22px, 1.25): Panel and Dialog titles, drawn by the component from a plain string. Also the count beside a section heading.
+- **Lead** (600, 18px, 1.35): the product name in the header (wide), sub-sections, legends of radio groups, note titles. The line under a page heading is lead in soft ink at normal weight.
+- **Body** (400, 16px, 1.5): running text, fields, field labels (600), md buttons, nav links.
+- **Small** (400, 14px, 1.45): hints, descriptions, stamps, tags, segmented choices, sm buttons, "Step n of 5".
+- **Hotel label** (600, narrow 80%, small step, two lines): the hotel label ("CCTV · Logging" over "18 requirements") and the parts list rows. Counts use tabular figures.
 
 ### Named Rules
-**The Seven Steps Rule.** Use only text-label, text-small, text-body, text-lead, text-title, text-heading and text-display. Never write a pixel font size.
+**The Ladder Rule.** Use only the `text-*` steps declared in globals.css. Do not write pixel font sizes.
 
-**The Title Block Lettering Rule.** Uppercase lettering and the label step appear only in title-block cells. No uppercase labels, small caps or kickers anywhere else.
-
-**The Heading Ladder Rule.** Page title is PageHeader (display). Page sections are SectionHeading (heading). Panel and Dialog titles are plain strings that the component draws at the title step. Sub-sections inside panels and dialogs use lead.
+**The Width Axis Rule.** Wide (112%) is for headings, narrow (80%) is for hotel labels and counts, normal is for everything read.
 
 ## Layout
 
-The sheet is centred on the drafting table, up to 1400px wide with a 32px margin. It has a 1px ink border and a second, lighter outline 4px outside it. The title block runs the full width. The sheet body has 40px padding on the drafting grid.
+Desktop only. The page is a column up to 1440px wide with 32px side padding, under a 56px header.
 
-Content widths are fixed by role:
-- Tables, the floor plan and other work surfaces use the full sheet.
-- A page that is one form uses max-w-page (1040px), for example the start page and the import page.
-- A form inside an editor uses max-w-form (880px).
-- A short message (an error, a role gate, a missing database) uses max-w-message (640px).
-- Running text stops at max-w-measure (72ch).
+Steps 4 and 5 use the hotel frame: the window height under the header, split 3fr to 2fr. Left (about 60%): the hotel and the parts list, which do not scroll. Right (about 40%): a paper side panel with a 1px left rule, the only column that scrolls, with the one main action in a ruled foot that is always in view. Both panel body and foot use 32px side padding.
 
-Lists of items are one ruled box with 1px rule lines between rows. The plan's four sections and the editor's rows follow this. Panels pad 20px by 16px. Dialogs pad 24px.
-
-The app is desktop only. There are no mobile layouts.
-
-### Named Rules
-**The One Schedule Rule.** A list of items is one ruled box with 1px rules between rows. Never a stack of separate cards.
-
-**The Width By Role Rule.** Choose the width by what the content is (work surface, single-form page, editor form, message, running text), never by eye.
+Other pages use widths by role: full column, max-w-page (1040px), max-w-form (880px), max-w-message (640px), max-w-measure (72ch). The panel unit is 20px by 16px, the dialog 24px by 16px to 20px. Gaps follow Tailwind steps of 4px.
 
 ## Elevation & Depth
 
-The sheet is flat. Depth comes from ruled lines, the double frame and the grid, not from shadows. Panels, tables and the floor plan have a border and no shadow. Only layers that float above the sheet cast a shadow.
+Flat. No shadows on panels, tables, notes, labels or the side panel. Depth is a 1px rule or a paper surface on the ground. The only lift is the native dialog, which has an ink border and an ink backdrop at 35% opacity. Depth in the hotel comes from the 3D scene itself (orthographic camera, sun light) and not from CSS.
 
-### Shadow Vocabulary
-- **Dialog** (`box-shadow: 0 12px 40px rgb(15 42 74 / 0.25)`): modal and side dialogs, over a 35% ink backdrop.
-- **Dock** (`box-shadow: 0 -6px 16px rgb(15 42 74 / 0.08)`): the editor's sticky save dock over scrolling rows.
-
-### Named Rules
-**The Ruled Not Shadowed Rule.** A panel gets a 1px rule. A shadow means the layer floats: a dialog or the save dock, and nothing else.
+**The Ruled Not Shadowed Rule.** A layer is separated by a 1px rule or a border colour change, never by a shadow.
 
 ## Shapes
 
-Corners are square, at 2px. Lines are 1px. The floor plan draws its outer walls at 2px ink and inner walls at 1px ink, as on a real plan. Stamps are double ruled: a 1px border with a 1px outline 1px outside it. The revision cloud is a scalloped redline border that repeats along any box size.
+3px corners (rounded-sm) on every control, panel, label, stamp and note. 1px borders. A stamp adds a second rule using a 1px outline offset by 1px. Dotted border marks an unconfirmed sample. The only fully round shape is the 8px redline question dot on a label, which always sits beside words.
 
 ## Components
 
 ### Buttons
-Lettered, square and plain.
-- **Shape:** 2px corners. md is 40px high with 16px side padding at body; sm is 32px high with 12px side padding at small. Display face, 600.
-- **Primary:** solid blueprint with paper text. Hover goes to deep blueprint.
-- **Secondary:** paper with a strong-rule border and ink text. Hover gives a blueprint border and wash.
-- **Quiet:** blueprint text with no box. Hover underlines.
-- **Focus:** 2px blueprint outline, 2px offset, everywhere.
-- **Disabled:** 45% opacity.
-- Links that move between pages and file downloads use the same classes, so they match buttons exactly.
-
-### Segmented control
-A ruled strip of choices, divided like title-block cells. 36px high, small step, display face. The chosen cell gets the blueprint wash and a 2px blueprint underline. Use it for every choice strip (status filters, yes or no answers).
-
-### Stamps and tags
-- **Stamp:** a small double-ruled box at the small step. Approved is blueprint. Pending ("Not yet verified") is redline. Published (by GovTech) is ink. Sample is dotted soft ink.
-- **Tag:** a single 1px rule box in soft ink, for neutral facts such as "Optional" or "App Builder".
+- **Shape:** 3px corners, 40px high (md) or 32px (sm), 16px or 12px side padding, 600 weight.
+- **Primary:** ink ground, paper text, hover at 90% ink. One per view, at the foot of the side panel on steps 4 and 5.
+- **Secondary:** paper ground, 1px strong rule, hover turns the border to ink and the ground to drafting ground.
+- **Quiet:** ink text, underline on hover.
+- **Pressed:** drafting ground with ink border. Disabled is 45% opacity.
+- **Focus:** the global 2px ink outline with 2px offset.
 
 ### Panels
-- **Corner Style:** 2px.
-- **Background:** paper.
-- **Shadow Strategy:** none. See Elevation & Depth.
-- **Border:** 1px rule. An optional title strip is ruled off below the title.
-- **Internal Padding:** 20px by 16px. A scrolling panel keeps the title strip fixed and scrolls only the body.
+- **Corner Style:** 3px. **Background:** paper. **Border:** 1px rule. **Shadow:** none.
+- An optional title strip is ruled off below with the title at the title step. Padding is 20px by 16px. A scrolling panel keeps the title strip fixed.
 
 ### Inputs / Fields
-- **Style:** paper, 1px strong-rule border, 2px corners, 40px high, body step.
-- **Label:** above the control, display face, body step, 600. Hint below the label at small in soft ink.
-- **Focus / Hover:** border goes to blueprint, plus the global focus ring.
-- **Error:** redline border and a redline message at small.
-- Checkboxes and radios are native, 18px, with a blueprint accent.
+- Paper, 1px strong-rule border, 3px corners, 40px high, body step.
+- Label above in 600 body, hint below it in small soft ink. Hover and focus turn the border to ink. Error turns the border redline and adds a redline message at small.
+- Checkboxes and radios are native, 18px, ink accent.
 
 ### Notes
-A note on the drawing. One 1px border on every side, 2px corners, 12px by 16px padding. Info uses blueprint wash. Success uses done-green wash. Attention and error use redline wash. Never a thick side stripe.
+One 1px border on every side, 3px corners, 12px by 16px padding. Info is ground with a strong rule. Success is done wash with a done border. Attention and error are redline wash. Never a thick side stripe.
 
-### Tables and disclosures
-- **Table:** a drawing schedule. A 1px ink rule under the header row, 1px rules between rows, headers at small in the display face, numbers in tabular figures.
-- **Disclosure:** a row that opens, with a blueprint chevron that turns 90 degrees. Used for every collapsible list.
-- **Breadcrumb:** small, soft ink, blueprint links, slash separators.
+### Stamps and tags
+A small box with a second outline rule at the small step. Pending ("Not yet verified") is redline. Approved and published are ink. Sample is a dotted soft-ink border. A tag is a single 1px rule box in soft ink for neutral facts. Stamps mark exceptions only.
 
-### Dialog
-Native dialog. A centred dialog is up to 560px wide. A side dialog is a full-height panel from the right, up to 720px wide, for detail views. Ink border, paper ground, the dialog shadow. The title strip and footer are ruled off. The close button is a 32px square ruled button.
+### Segmented, tables, disclosures, dialog
+- **Segmented:** a ruled strip divided by strong rules, 36px high. The chosen option has a ground fill and a 2px ink underline.
+- **Table:** a ruled schedule inside a 1px rule box.
+- **Dialog:** native dialog, ink border, paper ground. Centred up to 560px, or a full-height side panel from the right up to 720px. Title strip and footer are ruled off. The close button is a 32px ruled square with a drawn cross.
 
-### Navigation: the title block
-The page header is the drawing's title block. It is a full-width blueprint band of ruled cells with paper lettering. Each cell has a label at the label step over its value. The cells are Drawing ("Blueprint" lettering), Sheets (the page tabs), the sheet's own cells, Viewing as, and Demo data. The current sheet tab is underlined 2px; the others are 80% paper. A saved project adds its Project, Owner and Revised cells through the @titlecells parallel route. Other sheets render no cells.
+### Header
+A simple 56px paper band with a 1px bottom rule. The product name "Blueprint" in wide lead, the sheet links (current one is 600 and underlined 2px, the rest soft ink), "Step n of 5" centred in small soft ink on step pages, then the role switcher and the demo reset on the right.
 
-### Floor plan (signature component)
-The plan drawn as a building, full width on /plan and on a saved project.
-- One room per requirement family, named with roomName from lib/plan/floor-plan.ts. Rooms are sized by requirement count and arranged in three rows.
-- Each room's floor is split into areas sized by count: hatch for built, solid green for done, amber hatch for in progress, dashed blueprint for to do, dotted soft ink for does not apply, a revision cloud for questions. Areas grow and shrink in place over 700ms; reduced motion turns this off.
-- A name plate sits on the floor: a ruled paper box with the room name at lead and its status at small. A chosen room turns its plate solid blueprint and its floor to wash.
-- Choosing a room filters the lists below (?room=). A status line under the plan says what is shown, with a quiet "Show all rooms" button.
-- A legend in the header shows each convention at a small size.
+### The hotel (signature component)
+An isometric cutaway drawn with Three.js on an orthographic camera, using Kenney kits, filling the left 60%. Twelve parts, each with a fixed label place on the left or right edge so no two labels overlap at 1280 by 800 or 1440 by 900.
+- A part no tool does is drawn as blue line (hotel-line) on a pale fill. A part a tool does is built in warm materials, dropping in when its tool is ticked. Reduced motion skips the drop and opens the roof from the start. Without WebGL a still image replaces the scene.
+- Labels are paper boxes, 192 by 46px, 3px corners, narrow two-line text on a 1px ink leader line. A chosen label has an ink border. Others fade to 40% while one is chosen.
+- A part with an open question shows a redline dot before its name.
+- A 256px card with a strong rule opens beside a chosen part for its summary.
+- The parts list under the hotel is the keyboard path. Its rows repeat the two label lines. The chosen row turns ink.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** build every screen from the kit in app/ui/ and the tokens in app/globals.css.
-- **Do** use only the seven type steps.
-- **Do** use PageHeader for the page title, SectionHeading for page sections, and plain-string titles for Panel and Dialog. Use lead for sub-sections inside them.
-- **Do** keep one primary action visible at a time. Use secondary (ruled paper) and quiet (text) for the rest.
-- **Do** use the Segmented control for every choice strip.
-- **Do** put lists in one ruled box with 1px rules between rows.
-- **Do** pick widths by role: full sheet, max-w-page, max-w-form, max-w-message, max-w-measure.
-- **Do** use stamps for exceptions only: not yet verified, published by GovTech, sample. Show "Verified" in the tool picker and the detail dialog.
-- **Do** use one name per requirement family, from roomName, on every screen.
-- **Do** use tabular figures (tnum) for counts and dates.
+- **Do** build screens from the kit in app/ui and the tokens in app/globals.css.
+- **Do** keep one ink main action visible per step. Use secondary and quiet for the rest.
+- **Do** show state in words and counts as well as colour.
+- **Do** use wide for headings and narrow for hotel labels. Use tabular figures (tnum) for counts and dates.
+- **Do** use 1px rules between list rows in one ruled box.
+- **Do** pick widths by role: max-w-page, max-w-form, max-w-message, max-w-measure.
+- **Do** keep stamps for exceptions: not yet verified, published, sample.
 
 ### Don't:
-- **Don't** write pixel font sizes, or use text-label or uppercase outside title-block cells.
-- **Don't** use blueprint blue for decoration, or redline for anything that does not need attention.
-- **Don't** add shadows to panels, tables or the floor plan.
-- **Don't** stack separate cards for a list.
-- **Don't** repeat a "Verified" stamp on every list item.
-- **Don't** show two solid primary buttons at the same time.
-- **Don't** write IM8, SSP, OSCAL, control(s) or agency in our own copy on builder screens. Quoted official wording in the detail dialog is allowed.
-- **Don't** round corners past 2px or use pill shapes.
+- **Don't** use hotel-line for text.
+- **Don't** use redline for anything that is not a question or a need for attention.
+- **Don't** add shadows, grid paper, title-block cells or a legend.
+- **Don't** round corners past 3px or make pills.
+- **Don't** stack separate cards for a list, or show two solid main actions at once.
+- **Don't** use uppercase labels, kickers or eyebrows.
 - **Don't** build mobile layouts.

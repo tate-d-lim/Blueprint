@@ -1,50 +1,43 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-28T00:00:00Z",
+  "generatedAt": "2026-11-10T00:00:00Z",
   "title": "Design System: Blueprint for CPFB app builders",
   "extensions": {
     "colorMeta": {
-      "blueprint": { "role": "primary", "displayName": "Blueprint Blue", "canonical": "#1d4e89", "tonalRamp": ["#0b1f38", "#123158", "#163c6b", "#1d4e89", "#4a74a8", "#8eaacb", "#c7d6e8", "#e7eef8"] },
-      "blueprint-deep": { "role": "primary", "displayName": "Deep Blueprint", "canonical": "#163c6b" },
-      "blueprint-wash": { "role": "primary", "displayName": "Blueprint Wash", "canonical": "#e7eef8" },
-      "redline": { "role": "secondary", "displayName": "Redline", "canonical": "#b8322a", "tonalRamp": ["#4a1411", "#74201b", "#962922", "#b8322a", "#cf6a63", "#e3a39e", "#f2d0cd", "#fbedeb"] },
-      "redline-wash": { "role": "secondary", "displayName": "Redline Wash", "canonical": "#fbedeb" },
+      "ground": { "role": "neutral", "displayName": "Drafting Ground", "canonical": "#f6f8fa", "tonalRamp": ["#1c2b3a", "#4b5c70", "#9aa8b8", "#d5dce4", "#e6ebf0", "#eef1f5", "#f6f8fa", "#fbfcfd"] },
+      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "#ffffff" },
+      "ink": { "role": "primary", "displayName": "Drafting Ink", "canonical": "#1c2b3a", "tonalRamp": ["#0e1620", "#1c2b3a", "#33465a", "#4b5c70", "#76869a", "#9aa8b8", "#d5dce4", "#eef1f5"] },
+      "ink-soft": { "role": "neutral", "displayName": "Soft Ink", "canonical": "#4b5c70" },
+      "rule": { "role": "neutral", "displayName": "Rule", "canonical": "#d5dce4" },
+      "rule-strong": { "role": "neutral", "displayName": "Strong Rule", "canonical": "#9aa8b8" },
+      "hotel-line": { "role": "secondary", "displayName": "Hotel Line", "canonical": "#5f86b3", "tonalRamp": ["#1f3149", "#2f4a6b", "#44668f", "#5f86b3", "#86a3c6", "#aec2da", "#d3deea", "#eef3f9"] },
+      "hotel-fill": { "role": "secondary", "displayName": "Hotel Fill", "canonical": "#eef3f9" },
+      "hotel-light": { "role": "secondary", "displayName": "Hotel Light", "canonical": "#ffc879", "tonalRamp": ["#5c3a00", "#8a5a0a", "#b5791a", "#e09a38", "#ffc879", "#ffd9a0", "#ffe9c8", "#fff6e8"] },
+      "redline": { "role": "secondary", "displayName": "Redline", "canonical": "#b8322a", "tonalRamp": ["#4a1411", "#74201b", "#962922", "#b8322a", "#cf6a63", "#e3a39e", "#f2d0cd", "#fbeceb"] },
+      "redline-wash": { "role": "secondary", "displayName": "Redline Wash", "canonical": "#fbeceb" },
       "done": { "role": "secondary", "displayName": "Done Green", "canonical": "#2c7a56" },
       "done-wash": { "role": "secondary", "displayName": "Done Wash", "canonical": "#e4f2ea" },
       "working": { "role": "secondary", "displayName": "Working Amber", "canonical": "#d08f1d" },
-      "working-wash": { "role": "secondary", "displayName": "Working Wash", "canonical": "#fdf3dd" },
-      "ink": { "role": "neutral", "displayName": "Drafting Ink", "canonical": "#0f2a4a", "tonalRamp": ["#0f2a4a", "#2c4566", "#4a6280", "#6f89ad", "#9fb3cc", "#c3d1e2", "#dce6f2", "#edf2f8"] },
-      "ink-soft": { "role": "neutral", "displayName": "Soft Ink", "canonical": "#4a6280" },
-      "rule": { "role": "neutral", "displayName": "Rule", "canonical": "#c3d1e2" },
-      "rule-strong": { "role": "neutral", "displayName": "Strong Rule", "canonical": "#6f89ad" },
-      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "#ffffff" },
-      "grid": { "role": "neutral", "displayName": "Grid", "canonical": "#edf2f8" },
-      "grid-major": { "role": "neutral", "displayName": "Major Grid", "canonical": "#dce6f2" },
-      "table": { "role": "neutral", "displayName": "Drafting Table", "canonical": "#e8eef5" }
+      "working-wash": { "role": "secondary", "displayName": "Working Wash", "canonical": "#fdf3dd" }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Page title in PageHeader. One per page." },
-      "heading": { "displayName": "Heading", "purpose": "Page sections in SectionHeading, the floor plan heading, the title-block lettering." },
-      "title": { "displayName": "Title", "purpose": "Panel and Dialog titles, drawn by the component from a plain string." },
-      "lead": { "displayName": "Lead", "purpose": "Sub-sections inside panels and dialogs, note titles, room names, sheet tabs, page description." },
-      "body": { "displayName": "Body", "purpose": "Running text, rows, fields, md buttons. Stops at 72ch." },
-      "small": { "displayName": "Small", "purpose": "Hints, stamps, tags, table headers, segmented choices, sm buttons, code." },
-      "label": { "displayName": "Label", "purpose": "Title-block cell labels only. Uppercase, 0.12em tracking." },
-      "code": { "displayName": "Code", "purpose": "Commands and the agent snippet, at the small step." }
+      "display": { "displayName": "Display", "purpose": "The step heading, wide (112%). One per page." },
+      "heading": { "displayName": "Heading", "purpose": "Page sections, wide (112%)." },
+      "title": { "displayName": "Title", "purpose": "Panel and Dialog titles, drawn from a plain string." },
+      "lead": { "displayName": "Lead", "purpose": "Product name, sub-sections, legends, note titles, the line under a heading." },
+      "body": { "displayName": "Body", "purpose": "Running text, fields, nav links, md buttons." },
+      "small": { "displayName": "Small", "purpose": "Hints, stamps, tags, segmented choices, step counter. Narrow (80%) for hotel labels." },
+      "label": { "displayName": "Label", "purpose": "Declared step; no shipped use on the builder screens. Not for kickers." },
+      "code": { "displayName": "Code", "purpose": "Official requirement codes and commands." }
     },
-    "shadows": [
-      { "name": "dialog", "value": "0 12px 40px rgb(15 42 74 / 0.25)", "purpose": "Modal and side dialogs only." },
-      { "name": "dock", "value": "0 -6px 16px rgb(15 42 74 / 0.08)", "purpose": "The editor's sticky save dock over scrolling rows only." }
-    ],
+    "shadows": [],
     "motion": [
-      { "name": "room-area", "value": "flex-grow 700ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Floor plan areas grow and shrink in place when counts change. Off under reduced motion." }
+      { "name": "hotel-drop", "value": "built pieces drop in when a tool is ticked; off under prefers-reduced-motion", "purpose": "The memorable moment: ticking a tool builds part of the hotel." },
+      { "name": "colour-transition", "value": "transition-colors (150ms default)", "purpose": "Button and segmented hover states." }
     ],
-    "breakpoints": [],
-    "widths": [
-      { "name": "message", "value": "640px", "purpose": "Short messages." },
-      { "name": "form", "value": "880px", "purpose": "A form inside an editor." },
-      { "name": "page", "value": "1040px", "purpose": "A page that is one form." },
-      { "name": "measure", "value": "72ch", "purpose": "The longest line of running text." }
+    "breakpoints": [
+      { "name": "desktop-min", "value": "1280px" },
+      { "name": "page-max", "value": "1440px" }
     ]
   },
   "components": [
@@ -52,117 +45,101 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Solid blueprint. The one main action on a screen.",
-      "html": "<button class=\"ds-btn ds-btn-primary\">Build plan for your agent</button>",
-      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 2px; font: 600 16px/1.5 'Barlow Semi Condensed', Barlow, system-ui, sans-serif; letter-spacing: 0.01em; white-space: nowrap; cursor: pointer; transition: background-color 0.15s, border-color 0.15s; } .ds-btn-primary { background: var(--color-blueprint, #1d4e89); color: var(--color-paper, #fff); border: 0; } .ds-btn-primary:hover { background: var(--color-blueprint-deep, #163c6b); } .ds-btn:focus-visible { outline: 2px solid var(--color-blueprint, #1d4e89); outline-offset: 2px; }"
+      "description": "The one ink main action, at the foot of the side panel.",
+      "html": "<button class=\"ds-btn-primary\">Save this plan</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 16px; background: var(--color-ink, #1c2b3a); color: #fff; border: 0; border-radius: 3px; font-weight: 600; font-size: 16px; letter-spacing: 0.01em; cursor: pointer; transition: background-color .15s; } .ds-btn-primary:hover { background: rgba(28,43,58,.9); } .ds-btn-primary:focus-visible { outline: 2px solid #1c2b3a; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: .45; cursor: not-allowed; }"
     },
     {
       "name": "Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Ruled paper button for every other action.",
-      "html": "<button class=\"ds-btn ds-btn-secondary\">Save this plan</button>",
-      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 16px; border-radius: 2px; font: 600 16px/1.5 'Barlow Semi Condensed', Barlow, system-ui, sans-serif; letter-spacing: 0.01em; white-space: nowrap; cursor: pointer; transition: background-color 0.15s, border-color 0.15s; } .ds-btn-secondary { background: var(--color-paper, #fff); color: var(--color-ink, #0f2a4a); border: 1px solid var(--color-rule-strong, #6f89ad); } .ds-btn-secondary:hover { border-color: var(--color-blueprint, #1d4e89); background: var(--color-blueprint-wash, #e7eef8); } .ds-btn:focus-visible { outline: 2px solid var(--color-blueprint, #1d4e89); outline-offset: 2px; }"
+      "description": "Outline button for other actions.",
+      "html": "<button class=\"ds-btn-secondary\">Download plan</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 16px; background: #fff; color: #1c2b3a; border: 1px solid #9aa8b8; border-radius: 3px; font-weight: 600; font-size: 16px; cursor: pointer; transition: background-color .15s, border-color .15s; } .ds-btn-secondary:hover { border-color: #1c2b3a; background: #f6f8fa; } .ds-btn-secondary:focus-visible { outline: 2px solid #1c2b3a; outline-offset: 2px; }"
     },
     {
-      "name": "Quiet Button",
-      "kind": "button",
-      "refersTo": "button-quiet",
-      "description": "Text button in blueprint for minor actions.",
-      "html": "<button class=\"ds-btn-quiet\">Show all rooms</button>",
-      "css": ".ds-btn-quiet { height: 32px; background: none; border: 0; padding: 0; color: var(--color-blueprint, #1d4e89); font: 600 14px/1.45 'Barlow Semi Condensed', Barlow, system-ui, sans-serif; text-underline-offset: 4px; cursor: pointer; } .ds-btn-quiet:hover { text-decoration: underline; } .ds-btn-quiet:focus-visible { outline: 2px solid var(--color-blueprint, #1d4e89); outline-offset: 2px; }"
-    },
-    {
-      "name": "Field",
+      "name": "Text Field",
       "kind": "input",
       "refersTo": "field",
-      "description": "Labelled control with hint; every form field goes through it.",
-      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-f\">Project name</label><p class=\"ds-field-hint\">Shown in the title block.</p><input id=\"ds-f\" class=\"ds-input\" placeholder=\"Claims portal\"></div>",
-      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; } .ds-field-label { font: 600 16px/1.5 'Barlow Semi Condensed', Barlow, system-ui, sans-serif; color: var(--color-ink, #0f2a4a); } .ds-field-hint { margin: 0; font: 400 14px/1.45 Barlow, system-ui, sans-serif; color: var(--color-ink-soft, #4a6280); } .ds-input { height: 40px; padding: 0 12px; border: 1px solid var(--color-rule-strong, #6f89ad); border-radius: 2px; background: var(--color-paper, #fff); color: var(--color-ink, #0f2a4a); font: 400 16px Barlow, system-ui, sans-serif; } .ds-input:hover, .ds-input:focus-visible { border-color: var(--color-blueprint, #1d4e89); } .ds-input:focus-visible { outline: 2px solid var(--color-blueprint, #1d4e89); outline-offset: 2px; }"
+      "description": "Paper field with a strong rule, label above, hint below the label.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"n\">App name</label><p class=\"ds-field-hint\">A short name.</p><input id=\"n\" class=\"ds-input\" placeholder=\"Visitor booking\"></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; } .ds-field-label { font-weight: 600; font-size: 16px; color: #1c2b3a; } .ds-field-hint { margin: 0; font-size: 14px; color: #4b5c70; } .ds-input { height: 40px; padding: 0 12px; background: #fff; color: #1c2b3a; border: 1px solid #9aa8b8; border-radius: 3px; font-size: 16px; } .ds-input:hover, .ds-input:focus-visible { border-color: #1c2b3a; } .ds-input:focus-visible { outline: 2px solid #1c2b3a; outline-offset: 2px; } .ds-input::placeholder { color: #4b5c70; opacity: .8; }"
     },
     {
-      "name": "Title Block",
+      "name": "Header",
       "kind": "nav",
-      "refersTo": "title-block",
-      "description": "The page header: blueprint band of ruled cells with lettered labels and the sheet tabs.",
-      "html": "<header class=\"ds-tb\"><div class=\"ds-tb-cell\"><span class=\"ds-tb-label\">Drawing</span><span class=\"ds-tb-name\">Build plan</span></div><div class=\"ds-tb-cell ds-tb-grow\"><span class=\"ds-tb-label\">Sheets</span><nav class=\"ds-tb-tabs\"><a href=\"#\" aria-current=\"page\">New plan</a><a href=\"#\">Saved projects</a></nav></div><div class=\"ds-tb-cell\"><span class=\"ds-tb-label\">Viewing as</span><span>Builder</span></div></header>",
-      "css": ".ds-tb { display: flex; background: var(--color-blueprint, #1d4e89); color: var(--color-paper, #fff); border-bottom: 1px solid var(--color-ink, #0f2a4a); font-family: Barlow, system-ui, sans-serif; } .ds-tb-cell { display: flex; flex-direction: column; justify-content: space-between; gap: 6px; padding: 12px 20px; } .ds-tb-cell + .ds-tb-cell { border-left: 1px solid rgb(255 255 255 / 0.25); } .ds-tb-grow { flex: 1; } .ds-tb-label { font: 600 11px/1.3 'Barlow Semi Condensed', Barlow, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(255 255 255 / 0.7); } .ds-tb-name { font: 700 26px/1 'Barlow Semi Condensed', Barlow, sans-serif; letter-spacing: 0.04em; text-transform: uppercase; } .ds-tb-tabs { display: flex; gap: 24px; } .ds-tb-tabs a { font: 600 18px/1.35 'Barlow Semi Condensed', Barlow, sans-serif; color: rgb(255 255 255 / 0.8); text-decoration: none; text-underline-offset: 6px; } .ds-tb-tabs a:hover { color: #fff; text-decoration: underline; } .ds-tb-tabs a[aria-current=page] { color: #fff; text-decoration: underline 2px; } .ds-tb-tabs a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }"
+      "refersTo": "header",
+      "description": "The simple 56px header: product name, sheets, step counter, role.",
+      "html": "<header class=\"ds-header\"><span class=\"ds-brand\">Blueprint</span><nav><a class=\"ds-nav ds-nav-current\" href=\"#\">New plan</a><a class=\"ds-nav\" href=\"#\">Saved projects</a></nav><span class=\"ds-step\">Step 4 of 5</span></header>",
+      "css": ".ds-header { display: flex; align-items: center; gap: 32px; height: 56px; padding: 0 32px; background: #fff; border-bottom: 1px solid #d5dce4; color: #1c2b3a; } .ds-brand { font-size: 18px; font-weight: 600; font-stretch: 112%; } .ds-header nav { display: flex; gap: 24px; } .ds-nav { font-size: 16px; color: #4b5c70; text-underline-offset: 6px; text-decoration: none; } .ds-nav:hover { color: #1c2b3a; text-decoration: underline; } .ds-nav-current { color: #1c2b3a; font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; } .ds-step { flex: 1; text-align: center; font-size: 14px; color: #4b5c70; font-variant-numeric: tabular-nums; }"
     },
     {
-      "name": "Ruled Panel",
+      "name": "Note",
       "kind": "card",
-      "refersTo": "panel",
-      "description": "White paper, one 1px rule, 2px corners, ruled title strip. No shadow.",
-      "html": "<section class=\"ds-panel\"><div class=\"ds-panel-head\"><h2>Pick your tools</h2><p>Tick what your app will use.</p></div><div class=\"ds-panel-body\">Panel body.</div></section>",
-      "css": ".ds-panel { background: var(--color-paper, #fff); border: 1px solid var(--color-rule, #c3d1e2); border-radius: 2px; color: var(--color-ink, #0f2a4a); font: 400 16px/1.5 Barlow, system-ui, sans-serif; } .ds-panel-head { padding: 12px 20px; border-bottom: 1px solid var(--color-rule, #c3d1e2); } .ds-panel-head h2 { margin: 0; font: 600 22px/1.25 'Barlow Semi Condensed', Barlow, sans-serif; } .ds-panel-head p { margin: 2px 0 0; font-size: 14px; color: var(--color-ink-soft, #4a6280); } .ds-panel-body { padding: 16px 20px; }"
+      "refersTo": "note-attention",
+      "description": "A one-rule box. Attention and error use redline wash.",
+      "html": "<div class=\"ds-note\"><p class=\"ds-note-title\">One question is open</p><div>Ask your reviewer before you save.</div></div>",
+      "css": ".ds-note { display: flex; flex-direction: column; gap: 8px; padding: 12px 16px; background: #fbeceb; border: 1px solid rgba(184,50,42,.5); border-radius: 3px; color: #1c2b3a; font-size: 16px; } .ds-note-title { margin: 0; font-size: 18px; font-weight: 600; }"
+    },
+    {
+      "name": "Stamp",
+      "kind": "chip",
+      "refersTo": "stamp-pending",
+      "description": "Marks an exception: not yet verified. A second rule sits outside the first.",
+      "html": "<span class=\"ds-stamp\">Not yet verified</span>",
+      "css": ".ds-stamp { display: inline-flex; align-items: center; padding: 1px 6px; background: #fff; color: #b8322a; border: 1px solid #b8322a; outline: 1px solid #b8322a; outline-offset: 1px; border-radius: 3px; font-size: 14px; line-height: 20px; font-weight: 600; white-space: nowrap; }"
     },
     {
       "name": "Segmented Control",
-      "kind": "chip",
-      "refersTo": "segmented-chosen",
-      "description": "Ruled strip of choices; the chosen cell is washed and underlined in blueprint.",
-      "html": "<div class=\"ds-seg\" role=\"group\" aria-label=\"Show\"><button aria-pressed=\"true\">All (5)</button><button aria-pressed=\"false\">To do (0)</button><button aria-pressed=\"false\">Done (4)</button></div>",
-      "css": ".ds-seg { display: inline-flex; border: 1px solid var(--color-rule-strong, #6f89ad); border-radius: 2px; background: var(--color-paper, #fff); } .ds-seg button { height: 36px; padding: 0 16px; border: 0; border-bottom: 2px solid transparent; background: none; font: 600 14px 'Barlow Semi Condensed', Barlow, sans-serif; color: var(--color-ink-soft, #4a6280); cursor: pointer; transition: background-color 0.15s; } .ds-seg button + button { border-left: 1px solid var(--color-rule-strong, #6f89ad); } .ds-seg button:hover { background: rgb(231 238 248 / 0.5); color: var(--color-ink, #0f2a4a); } .ds-seg button[aria-pressed=true] { background: var(--color-blueprint-wash, #e7eef8); color: var(--color-ink, #0f2a4a); border-bottom-color: var(--color-blueprint, #1d4e89); } .ds-seg button:focus-visible { outline: 2px solid var(--color-blueprint, #1d4e89); outline-offset: 2px; }"
-    },
-    {
-      "name": "Stamps",
-      "kind": "chip",
-      "refersTo": "stamp-pending",
-      "description": "Double-ruled drawing stamps for exceptions: pending (redline), published (ink), sample (dotted).",
-      "html": "<span class=\"ds-stamp ds-stamp-pending\">Not yet verified</span> <span class=\"ds-stamp ds-stamp-published\">Published by GovTech</span> <span class=\"ds-stamp ds-stamp-sample\">Sample</span>",
-      "css": ".ds-stamp { display: inline-flex; align-items: center; padding: 1px 6px; border: 1px solid; border-radius: 2px; outline: 1px solid; outline-offset: 1px; background: var(--color-paper, #fff); font: 600 14px/20px 'Barlow Semi Condensed', Barlow, sans-serif; white-space: nowrap; margin-right: 8px; } .ds-stamp-pending { color: var(--color-redline, #b8322a); border-color: var(--color-redline, #b8322a); outline-color: var(--color-redline, #b8322a); } .ds-stamp-published { color: var(--color-ink, #0f2a4a); border-color: var(--color-ink, #0f2a4a); outline-color: var(--color-ink, #0f2a4a); } .ds-stamp-sample { color: var(--color-ink-soft, #4a6280); border-color: var(--color-ink-soft, #4a6280); border-style: dotted; outline-color: transparent; }"
-    },
-    {
-      "name": "Floor Plan Room",
       "kind": "custom",
-      "refersTo": "panel",
-      "description": "One requirement family as a room: floor areas by count (hatch built, dashed yours, cloud question) with a ruled name plate.",
-      "html": "<div class=\"ds-plan\"><button class=\"ds-room\" style=\"flex-grow:3\"><span class=\"ds-floor\"><span class=\"ds-built\" style=\"flex-grow:2\"></span><span class=\"ds-todo\" style=\"flex-grow:1\"></span></span><span class=\"ds-plate\"><b>App security</b><small>5 yours</small></span></button><button class=\"ds-room\" style=\"flex-grow:2\" aria-pressed=\"true\"><span class=\"ds-floor\"><span class=\"ds-built\" style=\"flex-grow:1\"></span></span><span class=\"ds-plate\"><b>Logging</b><small>Built</small></span></button></div>",
-      "css": ".ds-plan { display: flex; border: 2px solid var(--color-ink, #0f2a4a); background: var(--color-paper, #fff); } .ds-room { position: relative; flex-basis: 0; min-height: 132px; min-width: 112px; padding: 12px; border: 0; background: none; text-align: left; display: flex; align-items: flex-start; cursor: pointer; } .ds-room + .ds-room { border-left: 1px solid var(--color-ink, #0f2a4a); } .ds-room[aria-pressed=true] { background: var(--color-blueprint-wash, #e7eef8); } .ds-room:focus-visible { outline: 2px solid var(--color-blueprint, #1d4e89); outline-offset: -4px; } .ds-floor { position: absolute; inset: 8px 5px 8px 8px; display: flex; gap: 3px; } .ds-floor > span { flex-basis: 0; } .ds-built { background: var(--color-blueprint-wash, #e7eef8) repeating-linear-gradient(45deg, rgb(29 78 137 / 0.45) 0 1px, transparent 1px 7px); } .ds-todo { border: 1px dashed var(--color-blueprint, #1d4e89); } .ds-plate { position: relative; display: flex; flex-direction: column; padding: 6px 10px; border: 1px solid var(--color-ink, #0f2a4a); background: var(--color-paper, #fff); color: var(--color-ink, #0f2a4a); transition: color 0.15s, border-color 0.15s; } .ds-plate b { font: 600 18px/1.25 'Barlow Semi Condensed', Barlow, sans-serif; } .ds-plate small { font: 400 14px Barlow, sans-serif; color: var(--color-ink-soft, #4a6280); } .ds-room:hover .ds-plate { border-color: var(--color-blueprint, #1d4e89); color: var(--color-blueprint, #1d4e89); } .ds-room[aria-pressed=true] .ds-plate { background: var(--color-blueprint, #1d4e89); border-color: var(--color-blueprint, #1d4e89); color: #fff; } .ds-room[aria-pressed=true] .ds-plate small { color: rgb(255 255 255 / 0.85); }"
+      "refersTo": "segmented-chosen",
+      "description": "A ruled strip of choices. The chosen one is washed and underlined in ink.",
+      "html": "<div class=\"ds-seg\"><button class=\"ds-seg-b ds-seg-on\">Yes</button><button class=\"ds-seg-b\">No</button></div>",
+      "css": ".ds-seg { display: inline-flex; background: #fff; border: 1px solid #9aa8b8; border-radius: 3px; } .ds-seg-b { height: 36px; padding: 0 16px; border: 0; border-bottom: 2px solid transparent; border-right: 1px solid #9aa8b8; background: transparent; color: #4b5c70; font-size: 14px; font-weight: 600; cursor: pointer; } .ds-seg-b:last-child { border-right: 0; } .ds-seg-b:hover { background: #f6f8fa; color: #1c2b3a; } .ds-seg-on { background: #f6f8fa; color: #1c2b3a; border-bottom-color: #1c2b3a; }"
+    },
+    {
+      "name": "Hotel Label",
+      "kind": "custom",
+      "refersTo": "hotel-label",
+      "description": "Two-line paper label on a leader line: part name and requirement count. A redline dot marks an open question.",
+      "html": "<div class=\"ds-hlabel\"><span class=\"ds-hl1\">CCTV · Logging</span><span class=\"ds-hl2\">18 requirements</span></div>",
+      "css": ".ds-hlabel { display: flex; flex-direction: column; justify-content: center; width: 192px; height: 46px; padding: 0 8px; background: #fff; border: 1px solid #d5dce4; border-radius: 3px; font-stretch: 80%; font-size: 14px; line-height: 1.2; color: #1c2b3a; } .ds-hl1 { font-weight: 600; } .ds-hl2 { color: #4b5c70; font-variant-numeric: tabular-nums; }"
     }
   ],
   "narrative": {
-    "northStar": "The Drawing Set",
-    "overview": "Every page is one sheet of an architect's drawing set. The sheet has a double ruled frame. A blueprint blue title block runs across the top. Below it is white paper with a faint blue grid. The sheet sits on a pale blue-grey drafting table.\n\nThe plan is drawn as a building. Each requirement family is a room. Drawing conventions carry the meaning: hatch is built by your tools, solid blue is done, cross-hatch is in progress, a dashed outline is to do, a dotted outline does not apply, and a red revision cloud is an open question. Lines are thin and ruled. Corners are square. Nothing floats except dialogs and the editor's save dock.\n\nThe system is small on purpose. There is one token set, one kit of shared components in `app/ui/`, and seven type steps. A new screen uses these and nothing else. The app is for desktop only.",
+    "northStar": "The Hotel Drawing",
+    "overview": "The app is a hotel that is first a drawing and then gets built. The officer sees what the app needs as parts of a building, drawn as an isometric cutaway in thin blue line on a pale fill. Each tool they tick builds some of those parts in warm Kenney materials. The light comes on only when every claim is Verified.\n\nThe page around the hotel is quiet on purpose: drafting-white ground, navy ink, 1px rules, 3px corners, no shadows. The hotel is the only colour on the page. There is no grid paper, no title block, no legend. State is never colour alone: each hotel label carries words and a count.\n\nOne token set serves every screen, including the admin and verifier screens, which took the tokens but keep their older layout until their own redesign. The app is desktop only (1280 by 800 and up).",
     "keyCharacteristics": [
-      "White grid paper, navy ink, 1px ruled lines, 2px corners.",
-      "Blueprint blue is rare: the title block, built and done areas, approval stamps, the one primary action.",
-      "Redline appears only where something needs attention.",
-      "Seven type steps. Uppercase lettering only in the title block.",
-      "Lists are ruled schedules, not stacks of cards.",
-      "Panels are ruled, not shadowed."
+      "Drafting-white ground, navy ink, 1px rules, 3px corners, no shadows.",
+      "One typeface, Archivo, in three widths: wide for page headings, normal for reading, narrow for hotel labels and counts.",
+      "The hotel carries all the colour. The page carries none.",
+      "One ink main action per step. Other actions are outline buttons or text links.",
+      "Lists are ruled schedules, not stacks of cards."
     ],
     "rules": [
-      { "name": "The Blueprint Budget Rule", "body": "Blueprint blue fills only the title block, built and done areas, approval stamps and the one primary action. Everything else is ink on paper.", "section": "colors" },
-      { "name": "The Redline Rule", "body": "Redline means \"needs attention\". Never use it for decoration, emphasis or brand.", "section": "colors" },
-      { "name": "The Seven Steps Rule", "body": "Use only text-label, text-small, text-body, text-lead, text-title, text-heading and text-display. Never write a pixel font size.", "section": "typography" },
-      { "name": "The Title Block Lettering Rule", "body": "Uppercase lettering and the label step appear only in title-block cells. No uppercase labels, small caps or kickers anywhere else.", "section": "typography" },
-      { "name": "The Heading Ladder Rule", "body": "Page title is PageHeader (display). Page sections are SectionHeading (heading). Panel and Dialog titles are plain strings that the component draws at the title step. Sub-sections inside panels and dialogs use lead.", "section": "typography" },
-      { "name": "The One Schedule Rule", "body": "A list of items is one ruled box with 1px rules between rows. Never a stack of separate cards.", "section": "layout" },
-      { "name": "The Width By Role Rule", "body": "Choose the width by what the content is (work surface, single-form page, editor form, message, running text), never by eye.", "section": "layout" },
-      { "name": "The Ruled Not Shadowed Rule", "body": "A panel gets a 1px rule. A shadow means the layer floats: a dialog or the save dock, and nothing else.", "section": "elevation" }
+      { "name": "The Hotel Is The Colour Rule", "body": "Colour on the page comes from the hotel. Chrome stays ink, paper and ground.", "section": "colors" },
+      { "name": "The Redline Rule", "body": "Redline means a question or a need for attention. Never decoration, emphasis or brand.", "section": "colors" },
+      { "name": "The Line Is Not Text Rule", "body": "Hotel Line fails as text on paper. It draws, it never writes.", "section": "colors" },
+      { "name": "The Ladder Rule", "body": "Use only the text-* steps declared in globals.css. Do not write pixel font sizes.", "section": "typography" },
+      { "name": "The Width Axis Rule", "body": "Wide (112%) is for headings, narrow (80%) is for hotel labels and counts, normal is for everything read.", "section": "typography" },
+      { "name": "The Ruled Not Shadowed Rule", "body": "A layer is separated by a 1px rule or a border colour change, never by a shadow.", "section": "elevation" }
     ],
     "dos": [
-      "Do build every screen from the kit in app/ui/ and the tokens in app/globals.css.",
-      "Do use only the seven type steps.",
-      "Do use PageHeader for the page title, SectionHeading for page sections, and plain-string titles for Panel and Dialog. Use lead for sub-sections inside them.",
-      "Do keep one primary action visible at a time. Use secondary (ruled paper) and quiet (text) for the rest.",
-      "Do use the Segmented control for every choice strip.",
-      "Do put lists in one ruled box with 1px rules between rows.",
-      "Do pick widths by role: full sheet, max-w-page, max-w-form, max-w-message, max-w-measure.",
-      "Do use stamps for exceptions only: not yet verified, published by GovTech, sample. Show \"Verified\" in the tool picker and the detail dialog.",
-      "Do use one name per requirement family, from roomName, on every screen.",
-      "Do use tabular figures (tnum) for counts and dates."
+      "Do build screens from the kit in app/ui and the tokens in app/globals.css.",
+      "Do keep one ink main action visible per step. Use secondary and quiet for the rest.",
+      "Do show state in words and counts as well as colour.",
+      "Do use wide for headings and narrow for hotel labels. Use tabular figures (tnum) for counts and dates.",
+      "Do use 1px rules between list rows in one ruled box.",
+      "Do pick widths by role: max-w-page, max-w-form, max-w-message, max-w-measure.",
+      "Do keep stamps for exceptions: not yet verified, published, sample."
     ],
     "donts": [
-      "Don't write pixel font sizes, or use text-label or uppercase outside title-block cells.",
-      "Don't use blueprint blue for decoration, or redline for anything that does not need attention.",
-      "Don't add shadows to panels, tables or the floor plan.",
-      "Don't stack separate cards for a list.",
-      "Don't repeat a \"Verified\" stamp on every list item.",
-      "Don't show two solid primary buttons at the same time.",
-      "Don't write IM8, SSP, OSCAL, control(s) or agency in our own copy on builder screens. Quoted official wording in the detail dialog is allowed.",
-      "Don't round corners past 2px or use pill shapes.",
+      "Don't use hotel-line for text.",
+      "Don't use redline for anything that is not a question or a need for attention.",
+      "Don't add shadows, grid paper, title-block cells or a legend.",
+      "Don't round corners past 3px or make pills.",
+      "Don't stack separate cards for a list, or show two solid main actions at once.",
+      "Don't use uppercase labels, kickers or eyebrows.",
       "Don't build mobile layouts."
     ]
   }
