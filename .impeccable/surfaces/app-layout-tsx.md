@@ -2,40 +2,50 @@
 version: 1
 slug: "app-layout-tsx"
 primary_target: "app/layout.tsx"
-related_targets: ["app/start/page.tsx","app/plan/page.tsx","app/projects/page.tsx","app/admin/page.tsx","app/verify/page.tsx"]
+related_targets: ["app/start/page.tsx","app/start/verdict/page.tsx","app/start/app/page.tsx","app/start/needs/page.tsx","app/projects/[id]/tools/page.tsx","app/projects/[id]/page.tsx","app/projects/page.tsx","app/admin/page.tsx","app/verify/page.tsx"]
 ---
 
-# Surface brief: whole app as a blueprint drawing set
+# Surface brief: builder journey with the hotel (light Blueprint)
+
+Replaces the 2026-10-28 drawing-sheet brief (approved by the user, 2026-11-10). Spec: `docs/superpowers/specs/2026-11-06-builder-journey-design.md`.
 
 ## Scope and visitor mode
 
-Every route: /start, /plan, /projects, /projects/[id], /admin (editor, import), /verify. Mode: Operate. Desktop only. Builders get the most traffic; admins and verifiers get equal design care.
+- Mode: Operate. Desktop only, 1280×800 and 1440×900.
+- Builder journey: steps 1 to 3 (`/start`, `/start/verdict`, `/start/app`), step 4 (`/start/needs`), step 5 (`/projects/[id]/tools`), and the go at the top of step 6 (`/projects/[id]`).
+- The tokens (ground, ink, type, corners) change for the whole app, so the admin and verifier screens get them now and keep their layout until sub-project 2 (user, 2026-11-10).
+- Not here: the full step 6 redesign, the admin and verifier layouts.
 
 ## Audience, task, constraints
 
-- Builders answer four risk questions, pick tools, read a plan sorted into four headings, tick off tasks, and download two files.
-- Admins edit which requirements a tool covers; verifiers approve the newest version.
-- Pinned by the user (2026-10-28): blueprint world; white paper, blue ink; every page a drawing sheet with a title block; own controls instead of SGDS; one consistent token set; floor plan of families as overview and filter on /plan and saved projects.
-- Presentation and the floor plan only: routes, data, exports and the builder-language rule stay.
+- A CPFB officer who builds a small app with a coding agent, not a security specialist. They arrive after the risk questions and ask: what does my app need, and how much of it do the tools do?
+- Step 4: see everything the app needs as one hotel, then save. Step 5: each tick builds part of the hotel. Step 6: the go, and the one build plan download.
+- Proof is the real seed counts and the Verified or Not yet verified state of each claim.
+- Anti-goals: a compliance form, a dashboard, a legend, state shown by colour alone.
+- Ranges: 12 parts with 2 to 18 requirements each; a part can have 0 ("Nothing for your app"); 0 tools is a valid answer; a tool name up to about 20 characters in a label; a reason up to 280 characters.
+- Hotel states: loading and WebGL off (still image), reduced motion (no drop, roof open from the start).
+- `three` and `@fontsource-variable/archivo` are served from the app, so the demo works without Wi-Fi.
 
 ## Chosen direction and memorable moment
 
-The floor plan. Tick appCentral on a new plan and its rooms turn from dashed outlines into built rooms; on a saved project, the builder's rooms fill as tasks are done; click a room and the plan below narrows to it.
+A tick on a tool makes drawn parts of the hotel drop in as built pieces, and the light comes on only when every claim is Verified.
+
+Layout: a simple header (product name, "Step n of 5", role switcher). Two columns. Left, about 60%: the hotel, which stays in place. Right, about 40%: the side panel, the only column that scrolls. The one main action stays at the foot of the side panel, always in view. The "Parts of your app" list is the keyboard path.
 
 ## Unresolved
 
-- Full name of SII on /start (user has not confirmed).
+- Full name of SII; the contact text for the "can't plan yet" verdict; the final stage-neutral words.
 
 ## Direction contract
 
-THESIS: An architect's drawing set for a security plan: before you build, see which rooms your platform has already built and which are yours. It refuses the generic dashboard of cards, chips and progress bars.
+THESIS: The app is a hotel that is first a drawing and then gets built. The officer sees what the app needs as parts of a building, and each tool they tick builds some of it. It refuses the compliance checklist and the dashboard of cards, chips and progress bars.
 
-OWN-WORLD: White drafting paper with a faint blue grid on a pale blue-grey drafting table; dark navy ink for text and lines; deep blueprint blue (#1D4E89) only for the title block, built rooms, done work, approval stamps and the one primary action; redline red (#B8322A) only for what needs attention. Barlow for reading, Barlow Semi Condensed for headings and lettering. Drawing conventions carry meaning: hatch = built by your tools, solid = done, diagonal hatch = in progress, dashed = to do, red cloud = open question. Square 2px corners, ruled 1px lines, no shadows except dialogs. Uppercase lettering only inside the title block.
+OWN-WORLD: Drafting-white ground (#f6f8fa), navy ink (#1c2b3a), soft ink (#4b5c70). The hotel is the only colour on the page: blue line (#5f86b3) on a pale fill (#eef3f9) for parts no tool does; warm Kenney materials for parts a tool does; warm light (#ffc879) only when every claim is Verified; red (#b8322a) only for questions. Archivo in three widths: wide (about 112%) for page headings, normal for reading, narrow (about 80%) for hotel labels and counts; Roboto Mono only for official requirement codes. One ink-colour main action per step; other actions are links or outline buttons. 3px corners, 1px rules, no shadows, no grid paper, no title-block cells, no legend. The blue line is for drawing only, never for text.
 
-STORY: A builder sees on day 0 that half the building already stands, finds their rooms, and two weeks later watches them fill in.
+STORY: The officer sees the whole hotel as a drawing and understands what each part protects. After the save, they tick their tools and watch most of the hotel get built. They leave knowing the few parts that are theirs, with the build plan for their agent.
 
-FIRST VIEWPORT: The title block across the top of the sheet: Build plan lettering, the sheet tabs (New plan, Saved projects, and Admin or Verify), the project and owner cells on a saved project, and "Viewing as" with Reset demo data. Below it on /plan: the heading and the two downloads, then the floor plan full width with its legend and the room filter line, then the tool picker at left and the four sections at right.
+FIRST VIEWPORT: Step 4 at 1280×800. Header across the top. Left 60%: the isometric hotel cutaway, all blue line, with two-line labels on leader lines ("CCTV · Logging" / "18 requirements") and the parts list under it. Right 40%: the heading "What your app needs", the line with the totals, then the part details (summary sentence first, then "Show all {n} requirements"). "Save this plan" in ink at the foot of the right column.
 
-FORM: Drawing sheet with title block, floor plan as the signature; position 1 of 1, pinned by the user. seed: none (direction pinned by user).
+FORM: Isometric hotel cutaway (Three.js, orthographic, Kenney kits) with a scrolling side panel; chosen with the user after the surface round and the template research. seed:36f5bde92930a801
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

@@ -1,6 +1,6 @@
 # Builder journey — design
 
-Date: 2026-11-06. Status: sections 1–6 approved in chat. The hotel direction was added and revised after an Impeccable critique (2026-11-09, 24/40). The journey was then changed to plan first, tools after the save (user, 2026-11-09). The revised spec is waiting for review.
+Date: 2026-11-06. Status: approved. The hotel direction was added and revised after an Impeccable critique (2026-11-09, 24/40). The journey was then changed to plan first, tools after the save (user, 2026-11-09). The look was decided in the shape brief (user, 2026-11-10).
 Sub-project 1 of 3 in the frontend redesign (2: platform workspace, 3: visual system, which is decided inside this sub-project's visual round).
 
 ## Why
@@ -27,7 +27,25 @@ Blueprint must give an app builder confidence to build with CPF tools: what the 
 | Change notice on saved projects | | Yes |
 | Medium-Risk and High-Risk profiles | Yes | |
 
-The Blueprint world stays, in a **light** execution (user, 2026-11-09). A direction round to replace the world ran (Impeccable seed reference `seed:2721ecae0fe04aab`), and the user declined all its directions. The surface round (seed reference `seed:36f5bde92930a801`) and the research with the user then chose a **hotel cutaway** for steps 4 to 6 (see "The hotel" below). This spec fixes structure, content and behaviour. The look of each step comes from the shape brief. The colours, type and timings in "The hotel" are starting values that the shape brief can change. The cream paper and Inter from the reference test are not decided yet (the detector flags both as overused).
+The Blueprint world stays, in a **light** execution (user, 2026-11-09). A direction round to replace the world ran (Impeccable seed reference `seed:2721ecae0fe04aab`), and the user declined all its directions. The surface round (seed reference `seed:36f5bde92930a801`) and the research with the user then chose a **hotel cutaway** for steps 4 to 6 (see "The hotel" below). This spec fixes structure, content and behaviour. The look comes from the shape brief (approved by the user, 2026-11-10), which is recorded in `.impeccable/surfaces/app-layout-tsx.md` and summarised in "The look" below. The cream paper and Inter from the reference test are not used.
+
+### The look (shape brief, 2026-11-10)
+
+- **Ground and ink:** drafting white `#f6f8fa`, navy ink `#1c2b3a`, soft ink `#4b5c70`.
+- **The hotel is the only colour on the page.**
+  - Blue line `#5f86b3` on a pale fill `#eef3f9`: no tool does this yet. The blue line has a contrast of about 3.6 to 1, so it is for drawing only, never for text.
+  - Warm Kenney materials: a tool does this.
+  - Warm light `#ffc879`: every claim is Verified.
+  - Red `#b8322a`: questions only.
+- **Type:** Archivo (variable, with the width axis), one family in three widths. Wide (about 112%) for page headings, normal for reading text, narrow (about 80%) for hotel labels and counts. Roboto Mono only for official requirement codes. Barlow and Barlow Semi Condensed are removed.
+- **Main action:** one ink-colour button on each step. All other actions are plain links or outline buttons.
+- **Shape:** 3px corners, 1px rules, no shadows, no grid paper, no title block cells.
+- **Layout of steps 4 and 5** at 1280×800 and 1440×900: a simple header (product name, "Step n of 5", role switcher), then two columns. The left column, about 60%, is the hotel and stays in place. The right column, about 40%, is the side panel and is the only column that scrolls. The main action stays at the foot of the side panel, always in view.
+- **Step 6 for the demo:** the hotel as a still, with the go sentence and the three counts next to it.
+- **The focus ring** uses the ink colour.
+- **The tokens change for the whole app** (user, 2026-11-10). The admin and verifier screens get drafting white and Archivo now and keep their layout until sub-project 2.
+- **New packages:** `three` and `@fontsource-variable/archivo`, both served from the app, so the demo works without Wi-Fi.
+- `DESIGN.md` describes the old drawing-sheet world. It is written again from the built screens when this build is finished.
 
 Light Blueprint means:
 - The palette is free: blueprint blue is no longer required (user, 2026-11-09). Red stays only for what needs attention.
@@ -165,7 +183,7 @@ Every part shows, except the Smart assistant, which shows only when `uses-genai`
 **Pieces.** Each part's model is a fixed, ordered list of pieces (for example, each hotel room has a bed, a table, a lamp and a TV). The share of a part that the tools do is `platform / (you + questions + platform)` for its families. That share of the pieces, rounded, is solid; the rest are drawn. A share above 0 shows at least one solid piece, and a share below 1 leaves at least one piece drawn. So "partly done" is visible in the model, not only in the words. The walls and the frame follow the same rule.
 
 **Looks, said in words on each label:**
-- **Drawing** (pale blue lines): no tool meets any of this part.
+- **Drawing** (blue lines on a pale fill): no tool meets any of this part.
 - **Partly solid**: the ticked tools do some of this part.
 - **Solid**: the tools do all of this part, but at least one claim is not yet verified.
 - **Solid and lit** (warm light): the tools do all of this part, and every claim that covers it is Verified. Only this look has the light.
@@ -323,5 +341,6 @@ The saved project. The go is at the top, so the first visit after step 5 ends wi
 
 - The full name of SII.
 - The contact text for the "can't plan yet" verdict.
-- The final stage-neutral words (visual round).
-- The palette and type of the hotel and the steps (shape brief). The cream paper and Inter are not decided.
+- The final stage-neutral words (set during the build, with the user).
+
+Decided on 2026-11-10 (shape brief): the palette, the type, the main action and the app-wide tokens. See "The look".
