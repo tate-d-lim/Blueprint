@@ -3,13 +3,14 @@ import { pairVersions, selectPlanInput } from '@/lib/plan/select';
 import { AGENT_SNIPPET, oneLine, renderBuildPlan, toolsForMeta, type BuildPlanMeta } from '@/lib/export/build-plan-md';
 import { key, makeEntry, makeProfile, makeTool, makeVersion } from '../helpers/factories';
 import { loadSeed } from '../helpers/seed';
+import type { FactAnswers } from '@/lib/domain/types';
+import { DEMO_FACTS, demoData } from '../helpers/demo';
 
 const GENERATED = '2026-10-27T09:00:00.000Z';
 
-async function demo(toolIds = ['appcentral', 'dbaas', 'iga'], project?: ProjectOverlay): Promise<string> {
-  const seed = await loadSeed();
-  const data: PlanData = { profiles: seed.profiles, tools: seed.tools, versions: pairVersions(seed.toolVersions) };
-  const input = selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds }, project);
+async function demo(toolIds = ['appcentral', 'dbaas', 'iga'], project?: ProjectOverlay, facts?: FactAnswers): Promise<string> {
+  const data = await demoData();
+  const input = selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds, facts }, project);
   const meta: BuildPlanMeta = {
     title: 'Your app',
     appType: 'Low-risk app on the cloud',
@@ -105,4 +106,34 @@ test('the AGENTS.md snippet matches the design', () => {
       'anything in section 2, and never build what section 3 lists; use the named platform instead.',
     ].join('\n'),
   );
+});
+
+test('tasks are grouped by hotel part in hotel order', async () => {
+  const md = await demo(undefined, undefined, DEMO_FACTS);
+  const section1 = md.split('## 1. ')[1].split('## 2. ')[0];
+  const heads = [...section1.matchAll(/^### (.+)$/gm)].map(m => m[1]);
+  expect(heads).toEqual([
+    'Hotel rules (Security programme)',
+    'Hotel rooms (Containers)',
+    'Walls, windows and doors (App security)',
+    'Safety inspection (Testing)',
+    'Building materials and deliveries (Secure development, Supply chain)',
+    'Foundation and frame (Infrastructure)',
+  ]);
+  expect(section1).toContain('#### ');
+});
+
+test('questions and platform items are grouped by part too, and the four numbered sections stay', async () => {
+  const md = await demo(['appcentral'], undefined, DEMO_FACTS);
+  const section2 = md.split('## 2. ')[1].split('## 3. ')[0];
+  expect([...section2.matchAll(/^### (.+)$/gm)].map(m => m[1])).toEqual(['Room keycards (Access)', 'Hotel safe (Data)']);
+  const section3 = md.split('## 3. ')[1].split('## 4. ')[0];
+  expect(section3.match(/^### /gm)?.length).toBeGreaterThan(5);
+  expect(section3).toContain('#### appCentral\n');
+  expect(md.match(/^## \d\. /gm)).toEqual(['## 1. ', '## 2. ', '## 3. ', '## 4. ']);
+});
+
+test('the area is the same word on every line: the whole plan names a part\'s families', async () => {
+  const md = await demo(['appcentral', 'dbaas', 'iga'], undefined, DEMO_FACTS);
+  expect(md).not.toMatch(/^### Building materials and deliveries \(Supply chain\)$/m);
 });

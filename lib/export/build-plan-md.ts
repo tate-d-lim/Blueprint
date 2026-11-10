@@ -1,4 +1,5 @@
 import type { Plan, PlanInput, PlanItem } from '../plan/engine';
+import { PARTS, partOf, partState } from '../plan/hotel';
 import { STATUS_LABEL } from '../plan/labels';
 import { itemVerification, versionVerification, type Verification } from '../plan/verification';
 
@@ -51,7 +52,7 @@ function toolsLine(tools: BuildPlanMeta['tools']): string {
 function taskBlock(item: PlanItem): string[] {
   const shared = item.decisive.filter(c => c.value === 'shared');
   const yourPart = item.decisive.map(c => c.builderPart).find(Boolean) ?? item.plain?.task ?? item.recommendations;
-  const lines = [`### ${titleOf(item)} (${item.id})${flag(item)}`];
+  const lines = [`#### ${titleOf(item)} (${item.id})${flag(item)}`];
   lines.push(`Why it matters: ${oneLine(item.plain?.why ?? item.rationale)}`);
   if (yourPart) lines.push(`What to do: ${oneLine(yourPart)}`);
   for (const claim of shared) {
@@ -78,9 +79,20 @@ function platformSection(items: PlanItem[]): string[] {
   const line = (item: PlanItem) =>
     `- ${titleOf(item)} (${item.id}): ${oneLine(item.decisive.find(c => c.explanation)?.explanation ?? item.reason)}${flag(item)}`;
   const out: string[] = [];
-  for (const [tool, list] of groups) out.push(`### ${oneLine(tool)}`, ...list.map(line), '');
-  if (notApplicable.length) out.push("### Doesn't apply on your platform", ...notApplicable.map(line), '');
+  for (const [tool, list] of groups) out.push(`#### ${oneLine(tool)}`, ...list.map(line), '');
+  if (notApplicable.length) out.push("#### Doesn't apply on your platform", ...notApplicable.map(line), '');
   return out;
+}
+
+/**
+ * Items grouped by hotel part, in hotel order, parts with no items left out. The area name is the same one the plan
+ * page uses: the part and the families the plan has in it, for example "CCTV (Logging)".
+ */
+function byArea(items: PlanItem[], plan: Plan): { area: string; items: PlanItem[] }[] {
+  return PARTS.flatMap(part => {
+    const list = items.filter(i => partOf(i.family) === part.id);
+    return list.length ? [{ area: partState(part, plan, 'tools').areaName, items: list }] : [];
+  });
 }
 
 export function renderBuildPlan(plan: Plan, meta: BuildPlanMeta): string {
@@ -104,17 +116,21 @@ export function renderBuildPlan(plan: Plan, meta: BuildPlanMeta): string {
     '',
     `## 1. What you need to do (${you.length})`,
     '',
-    ...you.flatMap(item => [...taskBlock(item), '']),
+    ...byArea(you, plan).flatMap(g => [`### ${g.area}`, '', ...g.items.flatMap(item => [...taskBlock(item), ''])]),
     `## 2. Ask a person first (${asks.length})`,
     '',
-    ...asks.map(item => {
-      const question = item.plain?.question ?? `Does "${titleOf(item)}" apply to your app, and who handles it?`;
-      return `- **${oneLine(question)}** (${item.id}). Why we ask: ${oneLine(item.reason)}`;
-    }),
-    '',
+    ...byArea(asks, plan).flatMap(g => [
+      `### ${g.area}`,
+      '',
+      ...g.items.map(item => {
+        const question = item.plain?.question ?? `Does "${titleOf(item)}" apply to your app, and who handles it?`;
+        return `- **${oneLine(question)}** (${item.id}). Why we ask: ${oneLine(item.reason)}`;
+      }),
+      '',
+    ]),
     `## 3. Don't build this: your platform already does it (${platform.length})`,
     '',
-    ...platformSection(platform),
+    ...byArea(platform, plan).flatMap(g => [`### ${g.area}`, '', ...platformSection(g.items)]),
     ...(skipped.length
       ? [
           `## 4. Doesn't apply to this app (${skipped.length})`,
