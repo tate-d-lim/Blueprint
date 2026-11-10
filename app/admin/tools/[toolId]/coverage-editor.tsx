@@ -9,7 +9,7 @@ import { Note } from "@/app/ui/note";
 import { Stamp, Tag } from "@/app/ui/stamp";
 import type { DraftRow } from "@/lib/admin/new-version";
 import type { CoverageValue, Level, RequirementKey } from "@/lib/domain/types";
-import { roomName } from "@/lib/plan/floor-plan";
+import { familyName } from "@/lib/plan/hotel";
 import { VALUE_LABEL } from "@/lib/plan/labels";
 import { saveVersionAction } from "../../actions";
 import { AgentFill, type AgentFilled } from "./agent-fill";
@@ -125,7 +125,7 @@ export function CoverageEditor({
               <option value="">All rooms</option>
               {families.map(f => (
                 <option key={f} value={f}>
-                  {roomName(f)}
+                  {familyName(f)}
                 </option>
               ))}
             </select>

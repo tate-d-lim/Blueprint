@@ -25,27 +25,18 @@ test("a saved project shows how far it has got, and the count moves when a task 
   await expect(page.getByRole("button", { name: /^To do \(5\)/ })).toBeVisible();
 });
 
-test("a plan that isn't saved yet has no progress to show", async ({ page }) => {
-  await page.goto("/plan?c=restricted&s=sn&i=slight&d=min&k=&t=appcentral");
-  await page.getByRole("heading", { name: "Your build plan" }).waitFor();
-  await expect(page.getByRole("heading", { name: /tasks done/ })).toHaveCount(0);
-  await expect(page.getByRole("group", { name: "Show tasks" })).toHaveCount(0);
+test("the plan page opens with the go", async ({ page }) => {
+  await page.goto("/projects/sample-two-weeks-in");
+  await expect(page.getByRole("heading", { name: /^Your plan is ready\. \d+ are yours, and your tools do \d+\.$/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Change tools" })).toHaveAttribute("href", "/projects/sample-two-weeks-in/tools");
+  await expect(page.getByRole("link", { name: "Change answers" })).toHaveAttribute("href", /\/start\/needs\?.*project=sample-two-weeks-in/);
+  await expect(page.getByRole("link", { name: "Give your agent the build plan" })).toBeVisible();
+  await expect(page.getByText("9 of 17 tasks done")).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: "appCentral" })).toHaveCount(0);
+  await expect(page.locator('[data-hotel="ready"]')).toBeVisible({ timeout: 20_000 });
 });
 
-test("choosing a room on the floor plan shows only that room, and Back shows every room again", async ({ page }) => {
+test("tasks name their area the way the build plan does", async ({ page }) => {
   await page.goto("/projects/sample-two-weeks-in");
-  await expect(tasksOf(page)).toHaveCount(17);
-
-  const appSecurity = page.getByRole("button", { name: /^App security\./ });
-  await appSecurity.click();
-  await expect(page).toHaveURL(/[?&]room=as\b/);
-  await expect(appSecurity).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("status").filter({ hasText: "Showing App security only." })).toBeVisible();
-  await expect(tasksOf(page)).toHaveCount(5);
-  for (const task of await tasksOf(page).all()) await expect(task).toContainText("in App security");
-
-  await page.goBack();
-  await expect(page).not.toHaveURL(/room=/);
-  await expect(appSecurity).toHaveAttribute("aria-pressed", "false");
-  await expect(tasksOf(page)).toHaveCount(17);
+  await expect(tasksOf(page).first()).toContainText(/ in [A-Z][^()]+ \([A-Za-z ]+\)/);
 });

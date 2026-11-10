@@ -1,87 +1,49 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { setProjectToolsAction, setQuestionAnswerAction, setTaskStatusAction } from "@/app/projects/actions";
-import { Button, TextLink } from "@/app/ui/button";
+import { setQuestionAnswerAction, setTaskStatusAction } from "@/app/projects/actions";
+import { Button } from "@/app/ui/button";
 import { Disclosure } from "@/app/ui/disclosure";
 import { Note } from "@/app/ui/note";
-import { PageHeader, SectionHeading } from "@/app/ui/panel";
+import { SectionHeading } from "@/app/ui/panel";
 import { Segmented } from "@/app/ui/segmented";
 import { Tag } from "@/app/ui/stamp";
-import type { FactAnswers, Project, TaskStatus } from "@/lib/domain/types";
+import type { Project, TaskStatus } from "@/lib/domain/types";
 import { buildPlan, type Heading, type PlanData, type PlanItem, type ProjectOverlay } from "@/lib/plan/engine";
-import { floorPlanRooms } from "@/lib/plan/floor-plan";
-import { familyName } from "@/lib/plan/hotel";
+import { partState, visibleParts } from "@/lib/plan/hotel";
 import { HEADING_TITLES, STATUS_LABEL } from "@/lib/plan/labels";
 import { planProgress, taskStatusOf } from "@/lib/plan/progress";
 import { runSave, type SaveOutcome } from "@/lib/plan/save";
 import { selectPlanInput } from "@/lib/plan/select";
-import { parsePlanQuery, planQuery, startQuery } from "@/lib/plan/url-state";
-import { versionVerification, type Verification } from "@/lib/plan/verification";
-import { assessRisk, type RiskAnswers } from "@/lib/risk/assess";
-import { ExportDialog } from "./export-dialog";
-import { FloorPlan } from "./floor-plan";
+import { Go } from "./go";
 import type { ItemControls } from "./item-controls";
 import { ItemDetail } from "./item-detail";
 import { PlanItemView } from "./plan-item";
-import { ToolHints, ToolPicker } from "./tool-picker";
-
-const PROFILE_ID = "low-risk-cloud";
 
 const BLURB: Record<Heading, string> = {
-  you: "These are yours to build or arrange. Each one says why it matters.",
-  platform: "Your tools already handle these. Don't build them again.",
-  questions: "We can't tell from your tools. Check these with the right person before you build.",
+  you: "These are yours. Each one says why it matters.",
+  platform: "Your tools do these. You don't need to do them again.",
+  questions: "We can't tell from your tools. Check these with the right person.",
   skipped: "Your answers about the app rule these out. If an answer is wrong, change it and they come back.",
   "good-to-have": "Optional extras, worth doing once the basics are done.",
 };
 
-export function PlanView({
-  data,
-  answers,
-  initialToolIds,
-  facts,
-  project,
-}: {
-  data: PlanData;
-  answers: RiskAnswers;
-  initialToolIds: string[];
-  facts: FactAnswers;
-  project?: Project;
-}) {
-  // The page's own props can be a stale copy when the browser restores it with Back, so an unsaved plan
-  // takes its picks from the live address bar, which the toggles below keep up to date.
-  const params = useSearchParams();
-  const [toolIds, setToolIds] = useState(() =>
-    project ? initialToolIds : (parsePlanQuery(Object.fromEntries(params), data.tools.map(t => t._id))?.toolIds ?? initialToolIds),
-  );
-  // The chosen room lives in the address bar, so Back returns to the previous room and the view can be shared.
-  const room = params.get("room");
+export function PlanView({ data, project, profileId }: { data: PlanData; project: Project; profileId: string }) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [detailKey, setDetailKey] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [taskFilter, setTaskFilter] = useState<TaskStatus | "all">("all");
-  const [overlay, setOverlay] = useState<ProjectOverlay | undefined>(
-    project && { taskStatus: project.taskStatus, questionAnswers: project.questionAnswers },
-  );
+  const [overlay, setOverlay] = useState<ProjectOverlay>({ taskStatus: project.taskStatus, questionAnswers: project.questionAnswers });
+  const facts = useMemo(() => project.facts ?? {}, [project]);
 
   const plan = useMemo(
-    () => buildPlan(selectPlanInput(data, { profileId: PROFILE_ID, toolIds, facts }, overlay)),
-    [data, toolIds, facts, overlay],
+    () => buildPlan(selectPlanInput(data, { profileId, toolIds: project.toolIds, facts }, overlay)),
+    [data, profileId, project.toolIds, facts, overlay],
   );
-  const entries = useMemo(
-    () => new Map(data.profiles.flatMap(p => p.entries.map(e => [e.key, e] as const))),
-    [data],
-  );
-  const verification = useMemo(() => {
-    const out: Record<string, Verification | null> = {};
-    for (const tool of data.tools) {
-      const pair = data.versions.find(v => v.current.toolId === tool._id && v.current.profileId === PROFILE_ID);
-      out[tool._id] = pair ? versionVerification(pair) : null;
-    }
-    return out;
-  }, [data]);
+  const entries = useMemo(() => new Map(data.profiles.flatMap(p => p.entries.map(e => [e.key, e] as const))), [data]);
+  const parts = useMemo(() => visibleParts(plan).map(p => partState(p, plan, "tools")), [plan]);
+  const profileTitle = data.profiles.find(p => p._id === profileId)?.title ?? "";
+  const toolNames = data.tools.filter(t => project.toolIds.includes(t._id)).map(t => t.name);
 
   /** Saves in the background; if it fails, undoes the change on screen and says so. */
   const save = async (action: () => Promise<SaveOutcome>, rollback: () => void) => {
@@ -94,32 +56,15 @@ export function PlanView({
     }
   };
 
-  const withRoom = (path: string, family: string | null) => {
-    const url = new URL(path, window.location.origin);
-    if (family) url.searchParams.set("room", family);
-    else url.searchParams.delete("room");
-    return `${url.pathname}${url.search}`;
-  };
-  const selectRoom = (family: string | null) => window.history.pushState(null, "", withRoom(window.location.href, family));
-
-  const toggle = (id: string) => {
-    const previous = toolIds;
-    const next = toolIds.includes(id) ? toolIds.filter(t => t !== id) : [...toolIds, id];
-    setToolIds(next);
-    if (project) void save(() => setProjectToolsAction(project._id, next), () => setToolIds(previous));
-    else window.history.replaceState(null, "", withRoom(`/plan?${planQuery(answers, next, facts)}`, room));
-  };
-
-  const controls: ItemControls | undefined = project && {
+  const controls: ItemControls = {
     onStatus: (key, value) => {
       const previous = overlay;
-      setOverlay(o => o && { ...o, taskStatus: { ...o.taskStatus, [key]: value } });
+      setOverlay(o => ({ ...o, taskStatus: { ...o.taskStatus, [key]: value } }));
       void save(() => setTaskStatusAction(project._id, key, value), () => setOverlay(previous));
     },
     onAnswer: (key, answer) => {
       const previous = overlay;
       setOverlay(o => {
-        if (!o) return o;
         const questionAnswers = { ...o.questionAnswers };
         if (answer) questionAnswers[key] = answer;
         else delete questionAnswers[key];
@@ -130,11 +75,8 @@ export function PlanView({
   };
 
   const detailItem = detailKey ? plan.items.find(i => i.key === detailKey) : undefined;
-  const query = project ? `project=${encodeURIComponent(project._id)}` : planQuery(answers, toolIds, facts);
-  const inRoom = (i: PlanItem) => !room || i.family === room;
-  const byHeading = (h: Heading) => plan.items.filter(i => i.heading === h && inRoom(i));
+  const byHeading = (h: Heading) => plan.items.filter(i => i.heading === h);
   const progress = planProgress(plan.items);
-  const rooms = floorPlanRooms(plan.items);
   const tasks = byHeading("you");
   const shownTasks = tasks.filter(i => taskFilter === "all" || taskStatusOf(i) === taskFilter);
   const platformGroups = groupPlatform(byHeading("platform"));
@@ -142,7 +84,6 @@ export function PlanView({
   const questions = byHeading("questions");
   const skipped = byHeading("skipped");
   const extras = byHeading("good-to-have");
-  const emptyInRoom = room ? `Nothing here for ${familyName(room)}.` : "Nothing here.";
   const view = (item: PlanItem, compact = false) => (
     <PlanItemView
       key={`${item.profileId}:${item.key}`}
@@ -172,101 +113,74 @@ export function PlanView({
         </Note>
       )}
 
-      <PageHeader
-        title="Your build plan"
-        actions={
-          <>
-            <ExportDialog query={query} />
-          </>
-        }
-      >
-        {assessRisk(answers).appType}. <TextLink href={project ? `/start/needs?${startQuery(project.riskAnswers, project.facts ?? {}, project._id)}` : "/start"}>Change answers</TextLink>
-      </PageHeader>
+      <Go plan={plan} parts={parts} project={project} profileTitle={profileTitle} toolNames={toolNames} />
 
-      <div className="grid grid-cols-[minmax(0,5fr)_minmax(0,4fr)] items-start gap-8">
-        <div className="flex min-w-0 flex-col gap-6">
-          <ToolHints tools={data.tools} hints={plan.hints} onToggle={toggle} />
-          <FloorPlan rooms={rooms} selected={room} onSelect={selectRoom} progress={project ? progress : undefined} />
-          <ToolPicker tools={data.tools} picked={toolIds} verification={verification} onToggle={toggle} />
+      <div className="flex max-w-page flex-col gap-10">
+        <div className="flex flex-col gap-1">
+          <h2 className="tnum text-heading font-semibold">
+            {progress.tasks.done} of {progress.tasks.total} tasks done
+          </h2>
+          <p className="text-body text-ink-soft">
+            {progress.tasks.inProgress} in progress, {progress.tasks.todo} to do.{" "}
+            {progress.questions.answered === progress.questions.total
+              ? `All ${progress.questions.total} questions answered.`
+              : `${progress.questions.answered} of ${progress.questions.total} questions answered.`}
+          </p>
         </div>
 
-        {/* The inspector: the lists for the room chosen on the plan, or for every room. */}
-        <aside
-          aria-label="Requirements"
-          className="sticky top-6 flex max-h-[calc(100vh-48px)] min-h-0 min-w-0 flex-col rounded-sm border border-ink bg-paper"
-        >
-          <div className="flex flex-col gap-1 border-b border-ink px-5 py-3">
-            <h2 className="text-title font-semibold">{room ? familyName(room) : "All rooms"}</h2>
-            <p className="tnum text-small text-ink-soft">
-              {tasks.length} to build, {platformCount} built by your tools, {questions.length} to answer
-            </p>
-          </div>
-          <div className="flex min-h-0 flex-col gap-10 overflow-y-auto px-5 py-5">
-            <Section heading="you" count={tasks.length}>
-              {project && <TaskFilter tasks={tasks} value={taskFilter} onChange={setTaskFilter} />}
-              {shownTasks.length === 0 ? (
-                <p className="text-ink-soft">
-                  {taskFilter === "all" ? emptyInRoom : `No tasks are ${STATUS_LABEL[taskFilter].toLowerCase()} here right now.`}
-                </p>
-              ) : (
-                <ul className={SCHEDULE}>{shownTasks.map(i => view(i))}</ul>
-              )}
-            </Section>
+        <Section heading="you" count={tasks.length}>
+          <TaskFilter tasks={tasks} value={taskFilter} onChange={setTaskFilter} />
+          {shownTasks.length === 0 ? (
+            <p className="text-ink-soft">{taskFilter === "all" ? "Nothing here." : `No tasks are ${STATUS_LABEL[taskFilter].toLowerCase()} right now.`}</p>
+          ) : (
+            <ul className={SCHEDULE}>{shownTasks.map(i => view(i))}</ul>
+          )}
+        </Section>
 
-            <Section heading="platform" count={platformCount}>
-              {platformGroups.length === 0 ? (
-                <p className="text-ink-soft">{emptyInRoom}</p>
-              ) : (
-                <div className="rounded-sm border border-rule bg-paper px-4">
-                  {platformGroups.map(g => (
-                    <Disclosure
-                      key={g.title}
-                      summary={<span className="text-lead font-semibold">{g.title}</span>}
-                      aside={<Tag>{g.items.length}</Tag>}
-                    >
-                      <ul className="flex flex-col">{g.items.map(i => view(i, true))}</ul>
-                    </Disclosure>
-                  ))}
-                </div>
-              )}
-            </Section>
+        <Section heading="platform" count={platformCount}>
+          {platformGroups.length === 0 ? (
+            <p className="text-ink-soft">Nothing here.</p>
+          ) : (
+            <div className="rounded-sm border border-rule bg-paper px-4">
+              {platformGroups.map(g => (
+                <Disclosure key={g.title} summary={<span className="text-lead font-semibold">{g.title}</span>} aside={<Tag>{g.items.length}</Tag>}>
+                  <ul className="flex flex-col">{g.items.map(i => view(i, true))}</ul>
+                </Disclosure>
+              ))}
+            </div>
+          )}
+        </Section>
 
-            <Section heading="questions" count={questions.length}>
-              {questions.length === 0 ? <p className="text-ink-soft">{emptyInRoom}</p> : <ul className={SCHEDULE}>{questions.map(i => view(i))}</ul>}
-            </Section>
+        <Section heading="questions" count={questions.length}>
+          {questions.length === 0 ? <p className="text-ink-soft">Nothing here.</p> : <ul className={SCHEDULE}>{questions.map(i => view(i))}</ul>}
+        </Section>
 
-            {(skipped.length > 0 || !room) && (
-              <Section heading="skipped" count={skipped.length}>
-                {skipped.length === 0 ? (
-                  <p className="text-ink-soft">{emptyInRoom}</p>
-                ) : (
-                  <div className="rounded-sm border border-rule bg-paper px-4">
-                    <Disclosure summary={<span className="text-lead font-semibold">Show all {skipped.length}</span>}>
-                      <ul className="flex flex-col">{skipped.map(i => view(i, true))}</ul>
-                    </Disclosure>
-                  </div>
-                )}
-              </Section>
-            )}
+        <Section heading="skipped" count={skipped.length}>
+          {skipped.length === 0 ? (
+            <p className="text-ink-soft">Nothing here.</p>
+          ) : (
+            <div className="rounded-sm border border-rule bg-paper px-4">
+              <Disclosure summary={<span className="text-lead font-semibold">Show all {skipped.length}</span>}>
+                <ul className="flex flex-col">{skipped.map(i => view(i, true))}</ul>
+              </Disclosure>
+            </div>
+          )}
+        </Section>
 
-            <Section heading="good-to-have" count={extras.length}>
-              {extras.length === 0 ? (
-                <p className="text-ink-soft">{emptyInRoom}</p>
-              ) : (
-                <div className="rounded-sm border border-rule bg-paper px-4">
-                  <Disclosure summary={<span className="text-lead font-semibold">Show all {extras.length}</span>}>
-                    <ul className="flex flex-col">{extras.map(i => view(i, true))}</ul>
-                  </Disclosure>
-                </div>
-              )}
-            </Section>
-          </div>
-        </aside>
+        <Section heading="good-to-have" count={extras.length}>
+          {extras.length === 0 ? (
+            <p className="text-ink-soft">Nothing here.</p>
+          ) : (
+            <div className="rounded-sm border border-rule bg-paper px-4">
+              <Disclosure summary={<span className="text-lead font-semibold">Show all {extras.length}</span>}>
+                <ul className="flex flex-col">{extras.map(i => view(i, true))}</ul>
+              </Disclosure>
+            </div>
+          )}
+        </Section>
       </div>
 
-      {detailItem && (
-        <ItemDetail item={detailItem} entry={entries.get(detailItem.key)} open={detailOpen} onClose={() => setDetailOpen(false)} />
-      )}
+      {detailItem && <ItemDetail item={detailItem} entry={entries.get(detailItem.key)} open={detailOpen} onClose={() => setDetailOpen(false)} />}
     </div>
   );
 }

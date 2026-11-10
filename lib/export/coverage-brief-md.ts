@@ -1,5 +1,5 @@
 import type { CoverageValue, Profile, Tool } from '../domain/types';
-import { roomName } from '../plan/floor-plan';
+import { familyName } from '../plan/hotel';
 import { metadata, profileResource, prop, uuid } from './oscal';
 
 /** The five answers a tool can give for a requirement, in the order the brief explains them. */
@@ -86,7 +86,7 @@ export function renderCoverageBrief(input: { tool: Tool; profile: Profile; other
     '| ID | Room | Requirement | What to do | Why it matters |',
     '|---|---|---|---|---|',
     ...profile.entries.map(
-      e => `| ${e.id} | ${cell(roomName(e.family))} | ${cell(e.title)} | ${cell(e.plain?.task || e.statement)} | ${cell(e.plain?.why || e.rationale)} |`,
+      e => `| ${e.id} | ${cell(familyName(e.family))} | ${cell(e.title)} | ${cell(e.plain?.task || e.statement)} | ${cell(e.plain?.why || e.rationale)} |`,
     ),
     '',
     '## Template',

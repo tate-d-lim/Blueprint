@@ -6,7 +6,6 @@ import { continueToPlanAction, setProjectToolsAction } from "@/app/projects/acti
 import { Hotel } from "@/app/hotel/hotel";
 import { HotelFrame } from "@/app/hotel/hotel-frame";
 import { PartsList } from "@/app/hotel/parts-list";
-import { ToolHints } from "@/app/plan/tool-picker";
 import { Button } from "@/app/ui/button";
 import type { Project, Section, Tool } from "@/lib/domain/types";
 import { effectText, orderTools, toolEffects } from "@/lib/plan/effect";
@@ -15,7 +14,7 @@ import { PARTS, partState, planTotals, runningLine, visibleParts, type PartId } 
 import { runSave } from "@/lib/plan/save";
 import { selectPlanInput } from "@/lib/plan/select";
 import { versionVerification, type Verification } from "@/lib/plan/verification";
-import { ToolRow } from "./tool-row";
+import { ToolHints, ToolRow } from "./tool-row";
 
 const SECTIONS: { id: Section; title: string }[] = [
   { id: "cpf", title: "CPF tools" },

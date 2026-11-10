@@ -100,7 +100,8 @@ test("editing a saved project writes to the same project and keeps statuses", as
   await page.getByRole("button", { name: "Next: what your app needs" }).click();
   await page.getByRole("button", { name: "Save changes to Sample project (two weeks in)" }).click();
   await expect(page).toHaveURL(/\/projects\/sample-two-weeks-in$/);
-  await expect(page.getByRole("heading", { name: "Your build plan" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^Your plan is ready\./ })).toBeVisible();
+  await expect(page.getByText(/\d+ of \d+ tasks done/)).toBeVisible(); // statuses are kept; the new facts may leave some tasks out
   await page.goto("/projects");
   await expect(page.getByRole("link", { name: /Sample project/ })).toHaveCount(1);
 });

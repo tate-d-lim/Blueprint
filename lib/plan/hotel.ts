@@ -123,6 +123,12 @@ export const PARTS = [
   },
 ] as const satisfies readonly HotelPart[];
 
+/** The area a requirement belongs to, as the task list and the build plan name it: "CCTV (Logging)". */
+export function areaOf(family: string): string {
+  const part = PARTS.find(p => p.id === partOf(family))!;
+  return `${part.name} (${familyName(family)})`;
+}
+
 /** One name for each family of requirements on every screen. Builder screens never say "control". */
 export const FAMILY_NAMES: Record<string, string> = {
   as: 'App security',

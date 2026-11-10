@@ -3,7 +3,7 @@
 import { Dialog } from "@/app/ui/dialog";
 import type { ProfileEntry } from "@/lib/domain/types";
 import type { PlanItem } from "@/lib/plan/engine";
-import { roomName } from "@/lib/plan/floor-plan";
+import { areaOf } from "@/lib/plan/hotel";
 import { resolveParameters } from "@/lib/plan/format";
 import { VALUE_LABEL } from "@/lib/plan/labels";
 import { Badge } from "./badge";
@@ -27,7 +27,7 @@ export function ItemDetail({
       open={open}
       onClose={onClose}
       title={title}
-      description={`${item.id} in ${roomName(item.family)}`}
+      description={`${item.id} in ${areaOf(item.family)}`}
     >
       <div className="flex flex-col gap-8">
         <p className="max-w-measure text-ink-soft">{item.reason}</p>
