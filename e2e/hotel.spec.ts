@@ -56,6 +56,23 @@ test("pointing at a label shows its part, and leaving it shows the whole hotel",
   await expect(page.locator('[data-part="cctv"]')).toHaveAttribute("aria-pressed", "false");
 });
 
+test("on a saved project, the hotel has the page width and pointing at a label shows its card", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/projects/sample-two-weeks-in");
+  const hotel = page.locator('[data-hotel="ready"]');
+  await expect(hotel).toBeVisible({ timeout: 20_000 });
+  const box = await hotel.boundingBox();
+  expect(box!.width).toBeGreaterThan(1000);
+  expect(await overlaps(page)).toEqual([]);
+  expect(await outsideStage(page)).toEqual([]);
+  const summary = page.getByText("A record of who did what, and when, so problems can be found and traced.");
+  await expect(summary).toHaveCount(0);
+  await page.locator('[data-label="cctv"]').hover();
+  await expect(summary).toBeVisible();
+  await page.mouse.move(5, 5);
+  await expect(summary).toHaveCount(0);
+});
+
 test("with WebGL off, steps 4 and 5 show the still image and the list", async ({ page }) => {
   await page.addInitScript(() => {
     HTMLCanvasElement.prototype.getContext = () => null;

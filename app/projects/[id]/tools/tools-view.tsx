@@ -5,12 +5,13 @@ import { useMemo, useState } from "react";
 import { continueToPlanAction, setProjectToolsAction } from "@/app/projects/actions";
 import { Hotel } from "@/app/hotel/hotel";
 import { HotelFrame } from "@/app/hotel/hotel-frame";
+import { PartCard } from "@/app/hotel/part-card";
 import { PartsList } from "@/app/hotel/parts-list";
 import { Button } from "@/app/ui/button";
 import type { Project, Section, Tool } from "@/lib/domain/types";
 import { effectText, orderTools, toolEffects } from "@/lib/plan/effect";
 import { buildPlan, type PlanData } from "@/lib/plan/engine";
-import { PARTS, partState, planTotals, runningLine, visibleParts, type PartId } from "@/lib/plan/hotel";
+import { partState, planTotals, runningLine, visibleParts, type PartId } from "@/lib/plan/hotel";
 import { runSave } from "@/lib/plan/save";
 import { selectPlanInput } from "@/lib/plan/select";
 import { versionVerification, type Verification } from "@/lib/plan/verification";
@@ -91,9 +92,6 @@ export function ToolsView({ data, project, profileId, profileTitle }: { data: Pl
       </section>
     );
 
-  const part = PARTS.find(p => p.id === selected);
-  const state = parts.find(p => p.id === selected);
-
   return (
     <HotelFrame
       hotel={
@@ -103,18 +101,7 @@ export function ToolsView({ data, project, profileId, profileTitle }: { data: Pl
             selected={selected}
             onSelect={setSelected}
             interactive
-            card={
-              part && state ? (
-                <div className="flex flex-col gap-1">
-                  <p className="narrow text-body font-semibold">{state.line1}</p>
-                  <p className="narrow tnum text-small text-ink-soft">{state.line2}</p>
-                  <p className="text-small">{part.summary}</p>
-                  <p className="text-small text-ink-soft">
-                    Who does it: {state.toolNames.length ? state.toolNames.join(", ") : state.nothingForApp ? "nothing to do" : "you"}
-                  </p>
-                </div>
-              ) : null
-            }
+            card={<PartCard id={selected} parts={parts} />}
           />
         </>
       }
