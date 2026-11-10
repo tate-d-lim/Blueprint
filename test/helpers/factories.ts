@@ -17,6 +17,7 @@ export function makeProfile(
     title: id,
     plainTitle: id,
     version: 'test',
+    release: 'test',
     sourceFile: 'test',
     entries: entries.map(e => ({
       key: key(e.id, catalog),

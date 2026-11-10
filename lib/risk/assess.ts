@@ -22,7 +22,6 @@ export interface RiskResult {
   level: 'low' | 'medium' | 'high';
   appType: string;
   reasons: string[];
-  profileId: 'low-risk-cloud' | null;
 }
 
 export const RISK_SOURCE_URL = 'https://docs.standards.tech.gov.sg/risk-materiality-level/';
@@ -69,7 +68,7 @@ export function assessRisk(a: RiskAnswers): RiskResult {
   if (a.cii) high.push('The system is Critical Information Infrastructure (CII).');
   if (a.classification === 's-class') high.push('The data is S-class.');
   if (high.length) {
-    return { level: 'high', appType: 'High-risk app on the cloud', reasons: high, profileId: null };
+    return { level: 'high', appType: 'High-risk app on the cloud', reasons: high };
   }
 
   const medium: string[] = [];
@@ -83,8 +82,33 @@ export function assessRisk(a: RiskAnswers): RiskResult {
   if (a.sensitivity === 'sensitive-high') medium.push('The data is Sensitive High.');
   if (a.downstream === 'significant') medium.push('Systems that depend on it would be significantly affected.');
   if (medium.length) {
-    return { level: 'medium', appType: 'Medium-risk app on the cloud', reasons: medium, profileId: null };
+    return { level: 'medium', appType: 'Medium-risk app on the cloud', reasons: medium };
   }
 
-  return { level: 'low', appType: 'Low-risk app on the cloud', reasons: [LOW_REASON], profileId: 'low-risk-cloud' };
+  return { level: 'low', appType: 'Low-risk app on the cloud', reasons: [LOW_REASON] };
+}
+
+/** Confidential (not cloud-eligible) and S-class data cannot be hosted on the cloud, whatever the risk level. */
+export function cloudEligible(a: RiskAnswers): boolean {
+  return a.classification !== 'confidential' && a.classification !== 's-class';
+}
+
+interface ProfileRule {
+  _id: string;
+  riskLevel?: 'low' | 'medium' | 'high';
+  requiresCii?: boolean;
+  hosting?: 'cloud';
+}
+
+/**
+ * The cloud profile that fits the answers, or null. It takes the answers, not the result, because CII and cloud
+ * eligibility come from the answers: at High risk only the CII profile exists.
+ */
+export function profileFor(a: RiskAnswers, profiles: ProfileRule[]): string | null {
+  if (!cloudEligible(a)) return null;
+  const level = assessRisk(a).level;
+  const found = profiles.find(
+    p => p.hosting === 'cloud' && p.riskLevel === level && (level !== 'high' || !!p.requiresCii === a.cii),
+  );
+  return found?._id ?? null;
 }

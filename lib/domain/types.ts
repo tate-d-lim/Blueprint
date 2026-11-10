@@ -88,6 +88,13 @@ export interface Profile {
   title: string;
   plainTitle: string;
   version: string;
+  /** The release the profile was taken from (today the file version). */
+  release: string;
+  /** Which risk level the profile is for. Profiles with no level (such as Generative AI) are added by a fact, not by the answers. */
+  riskLevel?: 'low' | 'medium' | 'high';
+  /** High-risk profile for Critical Information Infrastructure only. */
+  requiresCii?: boolean;
+  hosting?: 'cloud';
   sourceFile: string;
   entries: ProfileEntry[];
   /** What a person can tell us about the app; the entries' rules are written over these. */

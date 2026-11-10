@@ -1,4 +1,4 @@
-import { OPTION_LABELS, RISK_SOURCE_URL, assessRisk, type RiskAnswers } from '@/lib/risk/assess';
+import { OPTION_LABELS, RISK_SOURCE_URL, assessRisk, cloudEligible, type RiskAnswers } from '@/lib/risk/assess';
 
 const lowAnswers: RiskAnswers = {
   classification: 'restricted',
@@ -10,12 +10,11 @@ const lowAnswers: RiskAnswers = {
 };
 const assess = (over: Partial<RiskAnswers>) => assessRisk({ ...lowAnswers, ...over });
 
-test('a restricted, sensitive-normal, slight-impact app is low risk on the Low-Risk Cloud profile', () => {
+test('a restricted, sensitive-normal, slight-impact app is low risk', () => {
   expect(assess({})).toEqual({
     level: 'low',
     appType: 'Low-risk app on the cloud',
     reasons: ['Data up to Restricted and Sensitive Normal, at most Slight impact, and minimal impact on other systems.'],
-    profileId: 'low-risk-cloud',
   });
 });
 
@@ -25,7 +24,7 @@ test.each([
   [{ classification: 's-class' }, 'The data is S-class.'],
 ] as const)('high-risk trigger %j', (over, reason) => {
   const r = assess(over as Partial<RiskAnswers>);
-  expect(r).toMatchObject({ level: 'high', appType: 'High-risk app on the cloud', profileId: null });
+  expect(r).toMatchObject({ level: 'high', appType: 'High-risk app on the cloud' });
   expect(r.reasons).toEqual([reason]);
 });
 
@@ -39,7 +38,7 @@ test.each([
   [{ downstream: 'significant' }, 'Systems that depend on it would be significantly affected.'],
 ] as const)('medium-risk trigger %j', (over, reason) => {
   const r = assess(over as Partial<RiskAnswers>);
-  expect(r).toMatchObject({ level: 'medium', appType: 'Medium-risk app on the cloud', profileId: null });
+  expect(r).toMatchObject({ level: 'medium', appType: 'Medium-risk app on the cloud' });
   expect(r.reasons).toEqual([reason]);
 });
 
@@ -73,4 +72,10 @@ test('the source page and option labels are exposed for the screen', () => {
   expect(OPTION_LABELS.classification['confidential-cloud-eligible']).toBe('Confidential (Cloud Eligible)');
   expect(OPTION_LABELS.impact.none).toBe('No impact');
   expect(OPTION_LABELS.downstream.minimal).toBe('None or minimal');
+});
+
+test('Confidential (not cloud-eligible) and S-class are not cloud-eligible', () => {
+  expect(cloudEligible({ ...lowAnswers, classification: 'confidential' })).toBe(false);
+  expect(cloudEligible({ ...lowAnswers, classification: 's-class' })).toBe(false);
+  expect(cloudEligible({ ...lowAnswers, classification: 'confidential-cloud-eligible' })).toBe(true);
 });

@@ -113,6 +113,9 @@ export async function loadLowRiskCloudProfile(
     title: 'Low-Risk Cloud',
     plainTitle: 'Low-risk app on the cloud',
     version: '2026-10-22 (local copy)',
+    release: '2026-10-22 (local copy)',
+    riskLevel: 'low',
+    hosting: 'cloud',
     sourceFile: SSP_FILE,
     entries,
   };
@@ -151,6 +154,7 @@ export async function loadGenAi(
       title: 'Generative AI',
       plainTitle: 'Apps that use generative AI',
       version,
+      release: version,
       sourceFile: GENAI_FILE,
       entries,
     },

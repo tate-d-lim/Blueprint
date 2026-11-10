@@ -3,14 +3,14 @@ import { withPlanData } from "@/app/plan/plan-data";
 import { PageHeader } from "@/app/ui/panel";
 import { factsToAsk } from "@/lib/plan/facts";
 import { parsePlanQuery, planQuery } from "@/lib/plan/url-state";
-import { assessRisk } from "@/lib/risk/assess";
+import { profileFor } from "@/lib/risk/assess";
 import { AppForm } from "./app-form";
 
 export default async function AppFactsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
   return withPlanData(data => {
     const parsed = parsePlanQuery(sp, []);
-    const profileId = parsed && assessRisk(parsed.answers).profileId;
+    const profileId = parsed && profileFor(parsed.answers, data.profiles);
     const profile = data.profiles.find(p => p._id === profileId);
     if (!parsed || !profile) redirect("/start");
     // A profile with nothing to ask goes straight on.

@@ -119,7 +119,7 @@ test('without the option there is no "About this file" sheet', async () => {
 test('buildAboutInfo copies the header facts', () => {
   const about = buildAboutInfo(
     { title: 'Member portal', appType: 'Low-risk app on the cloud', profileTitle: 'Low-Risk Cloud', tools: ABOUT.tools, generatedAt: ABOUT.generatedAt },
-    { _id: 'low-risk-cloud', title: 'Low-Risk Cloud', plainTitle: 'x', version: '2026-10-22 (local copy)', sourceFile: 'f', entries: [] },
+    { _id: 'low-risk-cloud', title: 'Low-Risk Cloud', plainTitle: 'x', version: '2026-10-22 (local copy)', release: '2026-10-22 (local copy)', sourceFile: 'f', entries: [] },
     'Member portal',
   );
   expect(about).toEqual(ABOUT);

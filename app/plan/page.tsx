@@ -4,7 +4,7 @@ import { DatabaseUnavailableError, withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
 import type { PlanData } from "@/lib/plan/engine";
 import { parsePlanQuery } from "@/lib/plan/url-state";
-import { assessRisk } from "@/lib/risk/assess";
+import { profileFor } from "@/lib/risk/assess";
 import { PlanView } from "./plan-view";
 
 export default async function PlanPage({
@@ -31,7 +31,7 @@ export default async function PlanPage({
   }
 
   const parsed = parsePlanQuery(sp, data.tools.map(t => t._id));
-  if (!parsed || !assessRisk(parsed.answers).profileId) redirect("/start");
+  if (!parsed || !profileFor(parsed.answers, data.profiles)) redirect("/start");
 
   return <PlanView data={data} answers={parsed.answers} initialToolIds={parsed.toolIds} facts={parsed.facts} />;
 }

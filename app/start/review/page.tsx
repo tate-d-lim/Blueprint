@@ -9,15 +9,14 @@ import { factsToAsk } from "@/lib/plan/facts";
 import { roomName } from "@/lib/plan/floor-plan";
 import { selectPlanInput } from "@/lib/plan/select";
 import { parsePlanQuery, planQuery } from "@/lib/plan/url-state";
-import { assessRisk } from "@/lib/risk/assess";
+import { assessRisk, profileFor } from "@/lib/risk/assess";
 
 export default async function ReviewPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
   return withPlanData(data => {
     const parsed = parsePlanQuery(sp, []);
-    const risk = parsed && assessRisk(parsed.answers);
-    const profile = data.profiles.find(p => p._id === risk?.profileId);
-    if (!parsed || !risk || !profile) redirect("/start");
+    const profile = data.profiles.find(p => p._id === (parsed && profileFor(parsed.answers, data.profiles)));
+    if (!parsed || !profile) redirect("/start");
 
     const plan = buildPlan(selectPlanInput(data, { profileId: profile._id, toolIds: [], facts: parsed.facts }));
     const inPlan = plan.items.filter(i => i.level < 2);
@@ -42,7 +41,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
     return (
       <div className="flex max-w-page flex-col gap-8">
         <PageHeader title="How we read your app">
-          {risk.appType}. {inPlan.length - skipped.length} of {inPlan.length} requirements apply to it.
+          {assessRisk(parsed.answers).appType}. {inPlan.length - skipped.length} of {inPlan.length} requirements apply to it.
         </PageHeader>
 
         <Panel title="What you told us">

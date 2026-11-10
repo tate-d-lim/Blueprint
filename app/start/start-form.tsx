@@ -6,7 +6,7 @@ import { Checkbox, RadioGroup } from "@/app/ui/field";
 import { Note } from "@/app/ui/note";
 import { Panel } from "@/app/ui/panel";
 import { planQuery } from "@/lib/plan/url-state";
-import { OPTION_LABELS, RISK_SOURCE_URL, assessRisk, type RiskAnswers, type RiskResult } from "@/lib/risk/assess";
+import { OPTION_LABELS, RISK_SOURCE_URL, assessRisk, cloudEligible, type RiskAnswers, type RiskResult } from "@/lib/risk/assess";
 
 type Draft = Partial<Pick<RiskAnswers, "classification" | "sensitivity" | "impact" | "downstream">> &
   Pick<RiskAnswers, "cii" | "sii">;
@@ -98,7 +98,8 @@ export function StartForm() {
 }
 
 function Outcome({ answers, result }: { answers: RiskAnswers; result: RiskResult }) {
-  const supported = result.profileId !== null;
+  // Low only until the verdict page (step 2) takes over.
+  const supported = cloudEligible(answers) && result.level === "low";
   return (
     <div aria-live="polite">
       <Panel title={result.appType}>

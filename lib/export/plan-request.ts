@@ -5,7 +5,7 @@ import type { FactAnswers, Project } from '../domain/types';
 import { buildPlan, type Plan, type PlanData } from '../plan/engine';
 import { selectPlanInput } from '../plan/select';
 import { parsePlanQuery } from '../plan/url-state';
-import { assessRisk, type RiskAnswers } from '../risk/assess';
+import { assessRisk, profileFor, type RiskAnswers } from '../risk/assess';
 import { toolsForMeta, type BuildPlanMeta } from './build-plan-md';
 
 export class BadPlanRequestError extends Error {}
@@ -42,10 +42,11 @@ export async function resolvePlanRequest(sp: URLSearchParams): Promise<PlanReque
     ({ answers, toolIds, facts } = parsed);
   }
   const risk = assessRisk(answers);
-  if (!risk.profileId) throw new BadPlanRequestError('This type of app is not supported yet.');
+  const profileId = profileFor(answers, data.profiles);
+  if (!profileId) throw new BadPlanRequestError('This type of app is not supported yet.');
 
-  const input = selectPlanInput(data, { profileId: risk.profileId, toolIds, facts }, project);
-  const profile = data.profiles.find(p => p._id === risk.profileId)!;
+  const input = selectPlanInput(data, { profileId, toolIds, facts }, project);
+  const profile = data.profiles.find(p => p._id === profileId)!;
   return {
     plan: buildPlan(input),
     data,
@@ -56,7 +57,7 @@ export async function resolvePlanRequest(sp: URLSearchParams): Promise<PlanReque
       title: project?.name ?? 'Your app',
       appType: risk.appType,
       profileTitle: profile.title,
-      tools: toolsForMeta(input, risk.profileId),
+      tools: toolsForMeta(input, profileId),
       generatedAt: new Date().toISOString(),
     },
   };
