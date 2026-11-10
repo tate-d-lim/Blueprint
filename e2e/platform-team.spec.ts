@@ -8,7 +8,7 @@ const asRole = async (page: Page, role: "Admin" | "Verifier") => {
 
 test("the platform cut-away: an admin edits one row, a verifier approves it, builders see it verified again", async ({ page, request }) => {
   await request.post("/api/reset");
-  const PLAN = "/plan?c=restricted&s=sn&i=slight&d=min&k=&t=appcentral";
+  const PLAN = "/projects/sample-two-weeks-in/tools";
 
   // An admin changes one row of appCentral's coverage and saves it as a new version.
   await page.goto("/start");

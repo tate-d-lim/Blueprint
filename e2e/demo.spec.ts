@@ -1,56 +1,55 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
+import { answerDemoFacts, answerLowRisk } from "./helpers";
 
-test("the demo path: answer, pick tools, watch the counts move, download both files", async ({ page, request }) => {
+test.beforeEach(async ({ request }) => {
   await request.post("/api/reset");
+});
 
-  // 1. Tell us about your app
+test("demo: start → verdict → app → needs → save → tools → plan → build plan", async ({ page }) => {
   await page.goto("/start");
-  await page.getByText("Restricted", { exact: true }).click();
-  await page.getByText("Sensitive Normal", { exact: true }).click();
-  await page.getByText("Slight", { exact: true }).click();
-  await page.getByText("None or minimal", { exact: true }).click();
+  await answerLowRisk(page);
   await page.getByRole("button", { name: "Work out my app type" }).click();
-  await expect(page.getByRole("heading", { name: "Low-risk app on the cloud" })).toBeVisible();
-
-  // 2. About your app: the answers leave out what cannot apply
   await page.getByRole("link", { name: "Next: about your app" }).click();
-  await page.getByText("Members of the public", { exact: true }).click();
-  await page.getByRole("checkbox", { name: /People use it in a web browser/ }).check();
-  await page.getByRole("checkbox", { name: /People sign in to it/ }).check();
-  await page.getByRole("checkbox", { name: /It sends SMS text messages/ }).check();
-  await page.getByRole("button", { name: "Next: how we read your app" }).click();
-  await expect(page.getByRole("heading", { name: "How we read your app" })).toBeVisible();
-  await expect(page.getByText("Left out because of your answers (2)")).toBeVisible();
+  await answerDemoFacts(page);
+  await page.getByRole("button", { name: "Next: what your app needs" }).click();
 
-  // 3. Pick your tools
-  await page.getByRole("link", { name: "See your build plan" }).click();
-  const countOf = (heading: string) =>
-    page.locator("section", { has: page.getByRole("heading", { name: heading, exact: true }) }).locator("span").first();
-  await page.getByRole("checkbox", { name: /appCentral/ }).check();
-  await page.getByRole("checkbox", { name: /DBaaS/ }).check();
-  await page.getByRole("checkbox", { name: /IGA/ }).check();
-  await expect(countOf("What you need to do")).toHaveText("18");
-  await expect(countOf("Questions to answer")).toHaveText("0");
+  // Step 4: everything the app needs, one part at a time.
+  await page.getByRole("button", { name: /CCTV · Logging/ }).click();
+  await page.getByText("Show all 10 requirements").click();
+  await page.getByRole("button", { name: "Save this plan" }).click();
 
-  // The counts move when a tool is taken away, and say why.
-  await page.getByRole("checkbox", { name: /DBaaS/ }).uncheck();
-  await expect(page.getByText("appCentral expects DBaaS for 4 requirements")).toBeVisible();
-  await expect(countOf("Questions to answer")).toHaveText("4");
-  await page.getByRole("checkbox", { name: /DBaaS/ }).check();
-  await expect(countOf("Questions to answer")).toHaveText("0");
+  // Step 5: ticking a tool builds part of the hotel and moves the numbers.
+  await page.getByRole("checkbox", { name: "appCentral" }).check();
+  await expect(page.getByText("18 are yours · 51 your tools do · 15 questions")).toBeVisible();
+  await page.getByRole("button", { name: "Continue to your plan" }).click();
 
-  // 4. Hand it to your agent
+  // Step 6: the go, and the one build plan.
+  await expect(page.getByRole("heading", { name: "Your plan is ready. 18 are yours, and your tools do 51." })).toBeVisible();
+  await expect(page.locator("[data-hotel]")).toBeVisible();
+  const download = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Give your agent the build plan" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("BUILD-PLAN.md");
+  const text = readFileSync((await file.path())!, "utf8");
+  expect(text).toContain("## 1. What you need to do (18)");
+  expect(text).toContain("## 4. Doesn't apply to this app (2)");
+  expect(text).toContain("### Hotel rules (Security programme)");
+});
+
+test("the security review spreadsheet is in the Export dialog, named for the profile and the project", async ({ page }) => {
+  await page.goto("/projects/sample-two-weeks-in");
   await page.getByRole("button", { name: "Export" }).click();
-  const plan = page.waitForEvent("download");
-  await page.getByRole("link", { name: "Build plan for your agent" }).click();
-  const planDownload = await plan;
-  expect(planDownload.suggestedFilename()).toBe("BUILD-PLAN.md");
-  expect(readFileSync((await planDownload.path())!, "utf8")).toContain("## 1. What you need to do (18)");
-  expect(readFileSync((await planDownload.path())!, "utf8")).toContain("## 4. Doesn't apply to this app (2)");
-
-  // 5. The security review spreadsheet
   const sheet = page.waitForEvent("download");
   await page.getByRole("link", { name: "Security review spreadsheet" }).click();
-  expect((await sheet).suggestedFilename()).toBe("low-risk-cloud-ssp.xlsx");
+  expect((await sheet).suggestedFilename()).toBe("low-risk-cloud-ssp-sample-project-two-weeks-in.xlsx");
+});
+
+test("steps 1 to 5 never offer the build plan; the plan page does", async ({ page }) => {
+  await page.goto("/start");
+  await expect(page.getByRole("link", { name: /build plan/i })).toHaveCount(0);
+  await page.goto("/projects/sample-two-weeks-in/tools");
+  await expect(page.getByRole("link", { name: /build plan/i })).toHaveCount(0);
+  await page.goto("/projects/sample-two-weeks-in");
+  await expect(page.getByRole("link", { name: "Give your agent the build plan" })).toBeVisible();
 });

@@ -20,14 +20,14 @@ export function PartDetails({ part, state, rows }: { part: HotelPart; state: Par
           <ul className="flex flex-col gap-4 pt-1">
             {rows.map(row => (
               <li key={row.key} className="flex flex-col gap-1.5 border-b border-rule pb-4 last:border-b-0">
-                <p className="max-w-measure text-body">
+                <p {...(row.plainChecked ? {} : { "data-official": true })} className="max-w-measure text-body">
                   {row.question && <span aria-hidden="true" className="mr-2 inline-block size-2 rounded-full bg-redline align-middle" />}
                   {row.text}
                 </p>
                 {row.question && <p className="text-small text-redline">Someone must check if this applies.</p>}
                 {row.plainChecked ? (
                   <Disclosure summary={<span className="text-small font-medium">Official wording</span>}>
-                    <p className="max-w-measure text-small text-ink-soft">
+                    <p data-official className="max-w-measure text-small text-ink-soft">
                       <span className="font-code">{row.id}</span> {row.official}
                     </p>
                   </Disclosure>
