@@ -25,7 +25,7 @@ export function Field({
   const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className=" text-body font-semibold text-ink">
+      <label htmlFor={id} className="text-body font-semibold text-ink">
         {label}
       </label>
       {hint && (
@@ -68,6 +68,7 @@ export function RadioGroup({
   name,
   value,
   options,
+  optionHints,
   onChange,
 }: {
   legend: string;
@@ -75,6 +76,8 @@ export function RadioGroup({
   name: string;
   value: string | undefined;
   options: Readonly<Record<string, string>>;
+  /** One short line under an option's label, by option value. */
+  optionHints?: Readonly<Record<string, string>>;
   onChange: (value: string) => void;
 }) {
   return (
@@ -82,16 +85,19 @@ export function RadioGroup({
       <legend className={` text-lead font-semibold text-ink ${hint ? "" : "mb-2"}`}>{legend}</legend>
       {hint && <p className="mb-1 text-small text-ink-soft">{hint}</p>}
       {Object.entries(options).map(([option, label]) => (
-        <label key={option} className="flex cursor-pointer items-center gap-2.5 text-body text-ink">
+        <label key={option} className="flex cursor-pointer items-start gap-2.5 text-body text-ink">
           <input
             type="radio"
             name={name}
             value={option}
             checked={value === option}
             onChange={() => onChange(option)}
-            className="size-[18px] shrink-0 cursor-pointer"
+            className="mt-[3px] size-[18px] shrink-0 cursor-pointer"
           />
-          {label}
+          <span className="flex flex-col">
+            {label}
+            {optionHints?.[option] && <span className="text-small text-ink-soft">{optionHints[option]}</span>}
+          </span>
         </label>
       ))}
     </fieldset>
