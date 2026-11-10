@@ -14,7 +14,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     const profile = data.profiles.find(p => p._id === profileFor(project.riskAnswers, data.profiles));
     return (
       <div className="flex flex-col gap-6">
-        <Breadcrumb items={[{ label: "Saved projects", href: "/projects" }, { label: project.name }]} />
+        <Breadcrumb items={[{ label: "Projects", href: "/projects" }, { label: project.name }]} />
         <p className="text-small text-ink-soft">
           Owner {project.ownerName} · Revised <span className="tnum">{project.updatedAt.slice(0, 10)}</span>
         </p>

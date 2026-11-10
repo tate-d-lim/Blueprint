@@ -9,6 +9,16 @@ test.beforeEach(async ({ request }) => {
 
 const sheets = (page: Page) => page.getByRole("navigation", { name: "Sheets" });
 
+test("the main page is Projects, and a new plan starts from there", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/projects$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Projects" })).toBeVisible();
+  await expect(sheets(page).getByRole("link")).toHaveText(["Projects"]);
+  await expect(page.getByRole("link", { name: "Blueprint" })).toHaveAttribute("href", "/projects");
+  await page.getByRole("link", { name: "Start a new plan" }).click();
+  await expect(page).toHaveURL(/\/start$/);
+});
+
 test("opening a saved project does not save anything", async ({ page }) => {
   const writes: string[] = [];
   page.on("request", r => r.method() === "POST" && writes.push(r.url()));
@@ -26,7 +36,7 @@ test("a saved project keeps its changes after you leave the page and press Back"
   const saved = page.waitForResponse(r => r.request().method() === "POST");
   await status.selectOption({ label: "Done" });
   await saved;
-  await sheets(page).getByRole("link", { name: "Saved projects" }).click();
+  await sheets(page).getByRole("link", { name: "Projects" }).click();
   await expect(page).toHaveURL(/\/projects$/);
   await page.goBack();
   await expect(page.locator('select[name="status-cs-3"]')).toHaveValue("done");
@@ -36,7 +46,7 @@ test("your tool picks survive leaving the tools step and pressing Back", async (
   await saveDemoPlan(page);
   await page.getByRole("checkbox", { name: "DBaaS" }).check();
   await expect(page.getByText("Saved", { exact: true })).toBeVisible();
-  await sheets(page).getByRole("link", { name: "Saved projects" }).click();
+  await sheets(page).getByRole("link", { name: "Projects" }).click();
   await expect(page).toHaveURL(/\/projects$/);
   await page.goBack();
   await expect(page.getByRole("checkbox", { name: "DBaaS" })).toBeChecked();
@@ -48,7 +58,7 @@ test("a saved project's name and owner show on its own page, not in the header",
   await expect(page.getByRole("main").getByText("Sample builder")).toBeVisible();
   await expect(page.getByRole("banner").getByText("Sample builder")).toHaveCount(0);
   // A client-side move leaves them behind.
-  await sheets(page).getByRole("link", { name: "Saved projects" }).click();
+  await sheets(page).getByRole("link", { name: "Projects" }).click();
   await expect(page).toHaveURL(/\/projects$/);
   await expect(page.getByRole("banner").getByText("Sample builder")).toHaveCount(0);
 });

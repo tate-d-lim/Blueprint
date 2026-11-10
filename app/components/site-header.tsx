@@ -7,10 +7,8 @@ import type { Role } from "@/lib/role";
 import { ResetButton } from "./reset-button";
 import { RoleSwitcher } from "./role-switcher";
 
-const SHEETS = [
-  { href: "/start", label: "New plan", paths: ["/start", "/plan"] },
-  { href: "/projects", label: "Saved projects", paths: ["/projects"] },
-];
+// Projects is the main page; a new plan starts from there.
+const SHEETS = [{ href: "/projects", label: "Projects", paths: ["/projects"] }];
 
 const ROLE_SHEETS: Partial<Record<Role, { href: string; label: string; paths: string[] }>> = {
   admin: { href: "/admin", label: "Admin", paths: ["/admin"] },
@@ -27,7 +25,7 @@ export function SiteHeader({ role }: { role: Role }) {
 
   return (
     <header style={{ height: "var(--header-h)" }} className="flex items-center gap-8 border-b border-rule bg-paper px-8">
-      <Link href="/start" className="wide text-lead font-semibold">
+      <Link href="/projects" className="wide text-lead font-semibold">
         Blueprint
       </Link>
 

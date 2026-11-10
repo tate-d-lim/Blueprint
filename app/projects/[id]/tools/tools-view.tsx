@@ -116,7 +116,6 @@ export function ToolsView({ data, project, profileId, profileTitle }: { data: Pl
               ) : null
             }
           />
-          <PartsList parts={parts} selected={selected} onSelect={setSelected} />
         </>
       }
       panel={
@@ -138,6 +137,7 @@ export function ToolsView({ data, project, profileId, profileTitle }: { data: Pl
           <ToolHints tools={data.tools} hints={plan.hints} onToggle={toggle} />
           {group("Could take more off you", order.more)}
           {group("Other tools", order.other)}
+          <PartsList parts={parts} selected={selected} onSelect={setSelected} />
         </div>
       }
       foot={

@@ -45,6 +45,17 @@ test("each parts-list row is a button with aria-pressed and the same words as it
   await expect(rows.first()).toHaveAttribute("aria-pressed", "false");
 });
 
+test("pointing at a label shows its part, and leaving it shows the whole hotel", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(`/start/needs?${DEMO_QUERY}`);
+  await expect(page.locator('[data-hotel="ready"]')).toBeVisible({ timeout: 20_000 });
+  await page.locator('[data-label="cctv"]').hover();
+  await expect(page.locator('[data-part="cctv"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText("A record of who did what, and when, so problems can be found and traced.")).toBeVisible();
+  await page.mouse.move(5, 5); // into the header, off the stage
+  await expect(page.locator('[data-part="cctv"]')).toHaveAttribute("aria-pressed", "false");
+});
+
 test("with WebGL off, steps 4 and 5 show the still image and the list", async ({ page }) => {
   await page.addInitScript(() => {
     HTMLCanvasElement.prototype.getContext = () => null;

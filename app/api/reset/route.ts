@@ -10,5 +10,5 @@ export async function POST(request: Request) {
     if (err instanceof DatabaseUnavailableError) return new Response(err.message, { status: 503 });
     throw err;
   }
-  return Response.redirect(new URL('/start', request.url), 303);
+  return Response.redirect(new URL('/projects', request.url), 303);
 }

@@ -19,6 +19,6 @@ npm run build && npm start    # steadier than the dev server
 3. **What your app needs (step 4).** "84 requirements in 11 parts". Open CCTV, **Show all 10 requirements**. Left out: 2. **Save this plan.**
 4. **Your tools (step 5).** Tick appCentral: "18 are yours · 51 your tools do · 15 questions". DBaaS and IGA: "18 are yours · 66 your tools do (15 not yet verified) · 0 questions". Parts light only when every claim is Verified. **Continue to your plan.**
 5. **The go (step 6).** "Your plan is ready. 18 are yours, and your tools do 51." (appCentral only). **Give your agent the build plan** downloads `BUILD-PLAN.md`, grouped by hotel part.
-6. **Saved projects → Sample project (two weeks in):** "9 of 17 tasks done". Export → security review spreadsheet.
+6. **Projects → Sample project (two weeks in):** "9 of 17 tasks done". Export → security review spreadsheet.
 
 Steps 1–5 never offer the build plan. After a rehearsal, **Reset demo data**.

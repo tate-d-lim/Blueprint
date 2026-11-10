@@ -24,6 +24,7 @@ import {
   Vector3,
   WebGLRenderer,
 } from "three";
+import { LABEL_EDGE, LABEL_WIDTH } from "./labels";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { PARTS, type Look, type PartId } from "@/lib/plan/hotel";
 import { ANCHORS, BUILDERS, FLOOR_MODEL, HOTEL_COLOURS, ROOF_MODEL, type Builder, type Kit } from "./models";
@@ -109,7 +110,13 @@ export function createHotelScene(
   const camera = new OrthographicCamera(-1, 1, 1, -1, -200, 200);
   camera.position.set(20, 15.5, 20);
   camera.lookAt(1.2, 3.9, 0);
+  // Half the visible height in world units: the whole hotel, roof open, fits the stage height.
   const ZOOM = 9.8;
+  // The building's width in world units, and how far its centre sits from the view centre. The camera keeps the
+  // building clear of the two label columns; the ground block and the dock may run under them.
+  const BUILDING_WIDTH = 11.5;
+  const BUILDING_SHIFT = -1.2;
+  const LABEL_RESERVE = LABEL_EDGE + LABEL_WIDTH + 8;
 
   let disposed = false;
   let dirty = true;
@@ -118,8 +125,9 @@ export function createHotelScene(
     const H = stage.clientHeight || 1;
     renderer.setSize(W, H);
     const a = W / H;
-    const z = a < 1.2 ? (ZOOM * 1.2) / a : ZOOM;
-    Object.assign(camera, { left: -z * a, right: z * a, top: z, bottom: -z });
+    const free = Math.max(1, W - 2 * LABEL_RESERVE);
+    const z = Math.max(ZOOM, (BUILDING_WIDTH * H) / (2 * free));
+    Object.assign(camera, { left: -z * a + BUILDING_SHIFT, right: z * a + BUILDING_SHIFT, top: z, bottom: -z });
     camera.updateProjectionMatrix();
     dirty = true;
   };

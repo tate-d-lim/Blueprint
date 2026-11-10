@@ -165,8 +165,15 @@ export function Hotel({
                 key={p.id}
                 data-label={p.id}
                 aria-hidden="true"
+                // Pointing at a label shows its part, the same as pointing at the part itself.
+                onPointerEnter={() => {
+                  if (!interactive) return;
+                  hover.current = p.id;
+                  onSelectRef.current(p.id);
+                }}
+                onPointerMove={e => e.stopPropagation()}
                 style={{ top, left, width: LABEL_WIDTH, height: LABEL_HEIGHT }}
-                className={`narrow pointer-events-none absolute flex flex-col justify-center overflow-hidden rounded-sm border bg-paper px-2 text-[12px] leading-[1.2] ${
+                className={`narrow absolute flex ${interactive ? "cursor-default" : "pointer-events-none"} flex-col justify-center overflow-hidden rounded-sm border bg-paper px-2 text-[12px] leading-[1.2] ${
                   spot.side === "right" ? "text-right" : ""
                 } ${chosen ? "border-ink" : "border-rule"} ${selected && !chosen ? "opacity-40" : ""}`}
               >

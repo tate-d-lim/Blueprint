@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Hotel } from "@/app/hotel/hotel";
 import { HotelFrame } from "@/app/hotel/hotel-frame";
 import { PartsList } from "@/app/hotel/parts-list";
@@ -31,19 +31,19 @@ export interface NeedsViewProps {
 /** Step 4: everything the app needs, drawn as the hotel with no tools, and the save. */
 export function NeedsView({ profileTitle, line, coverageLine, parts, details, skipped, query, answers, facts, edit }: NeedsViewProps) {
   const [selected, setSelected] = useState<PartId | null>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
   useUnsavedGuard(edit?.dirty ?? false);
+  // The details open above the parts list, so a pick in the list brings them into view.
+  useEffect(() => {
+    if (selected) detailsRef.current?.scrollIntoView({ block: "nearest" });
+  }, [selected]);
 
   const part = PARTS.find(p => p.id === selected);
   const state = parts.find(p => p.id === selected);
 
   return (
     <HotelFrame
-      hotel={
-        <>
-          <Hotel parts={parts} selected={selected} onSelect={setSelected} interactive />
-          <PartsList parts={parts} selected={selected} onSelect={setSelected} />
-        </>
-      }
+      hotel={<Hotel parts={parts} selected={selected} onSelect={setSelected} interactive />}
       panel={
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
@@ -66,10 +66,14 @@ export function NeedsView({ profileTitle, line, coverageLine, parts, details, sk
           </div>
 
           {part && state ? (
-            <PartDetails part={part} state={state} rows={details[part.id]} />
+            <div ref={detailsRef} className="scroll-mt-6">
+              <PartDetails part={part} state={state} rows={details[part.id]} />
+            </div>
           ) : (
             <p className="max-w-measure text-body text-ink-soft">Point at a part, or pick it in the list, to see what it asks for.</p>
           )}
+
+          <PartsList parts={parts} selected={selected} onSelect={setSelected} />
 
           {skipped.length > 0 && (
             <Disclosure summary={<span className="text-body font-semibold">Left out because of your answers ({skipped.length})</span>}>

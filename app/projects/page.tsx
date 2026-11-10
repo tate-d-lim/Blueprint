@@ -9,7 +9,7 @@ export default async function ProjectsPage() {
   const projects = await withDb(listProjects);
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title="Saved projects" actions={<ButtonLink href="/start" variant="secondary">Start a new plan</ButtonLink>}>
+      <PageHeader title="Projects" actions={<ButtonLink href="/start">Start a new plan</ButtonLink>}>
         Pick up a plan where you left off. Everyone here shares one list.
       </PageHeader>
       {projects.length === 0 ? (
