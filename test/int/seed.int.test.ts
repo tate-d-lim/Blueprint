@@ -11,7 +11,7 @@ afterAll(closeDb);
 
 test('loadPlanData returns both profiles and pairs each tool’s versions', async () => {
   const data = await loadPlanData(await getDb());
-  expect(data.profiles.map(p => p._id).sort()).toEqual(['generative-ai', 'low-risk-cloud']);
+  expect(data.profiles.map(p => p._id).sort()).toEqual(['generative-ai', 'high-risk-cloud-cii', 'low-risk-cloud', 'medium-risk-cloud']);
   const appcentral = data.versions.find(v => v.current.toolId === 'appcentral')!;
   expect(appcentral.current.version).toBe(1);
   expect(appcentral.lastApproved).toEqual(appcentral.current);

@@ -106,8 +106,7 @@ test("editing a saved project writes to the same project and keeps statuses", as
   await expect(page.getByRole("link", { name: /Sample project/ })).toHaveCount(1);
 });
 
-// Needs the Medium-Risk Cloud profile (Task 16); the fixme is removed there.
-test.fixme("a profile change is announced and the save opens step 5", async ({ page }) => {
+test("a profile change is announced and the save opens step 5", async ({ page }) => {
   await page.goto(`/start/needs?c=restricted&s=sh&i=slight&d=min&k=&project=sample-two-weeks-in`);
   await expect(page.getByText(/^Your app type changes from Low-Risk Cloud to Medium-Risk Cloud\. \d+ tasks are added\. Tasks you marked done stay done\.$/)).toBeVisible();
   await page.getByRole("button", { name: /^Save changes to / }).click();
@@ -154,4 +153,12 @@ test("a tool row states both sides", async ({ page }) => {
 
 test("an unknown project has no tools page", async ({ page }) => {
   expect((await page.goto("/projects/nope/tools"))?.status()).toBe(404);
+});
+
+test("Medium: you can plan it, and no tool covers it yet", async ({ page }) => {
+  await page.goto("/start/verdict?c=restricted&s=sh&i=slight&d=min&k=");
+  await expect(page.getByRole("heading", { level: 1, name: "Medium-Risk Cloud" })).toBeVisible();
+  await expect(page.getByText("No tool covers Medium-Risk Cloud yet, so more of the work is yours.")).toBeVisible();
+  await page.goto("/start/needs?c=restricted&s=sh&i=slight&d=min&k=&f=uses-genai.no");
+  await expect(page.getByText("No tool covers Medium-Risk Cloud yet, so every part is yours.")).toBeVisible();
 });

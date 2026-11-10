@@ -1,6 +1,7 @@
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { Catalog, Level, Profile, ProfileEntry, Requirement, RequirementKey } from '../domain/types';
+import type { Catalog, Level, PlainText, Profile, ProfileEntry, Requirement, RequirementKey } from '../domain/types';
 import { cellText, readSheet } from './xlsx';
 
 export class UnknownRequirementError extends Error {
@@ -48,6 +49,13 @@ async function readCatalogRows(file: string): Promise<CatalogRow[]> {
 }
 
 const familyOf = (id: string) => id.split('-')[0];
+
+/** True when the statement has a placeholder for a value the organisation sets (`[x: default = …]` or `[ insert: … ]`). */
+export const hasParameter = (statement: string): boolean => /\[[^\]]*(default\s*=|insert:)[^\]]*\]/.test(statement);
+
+/** A short fingerprint of the official wording, so a change of one word is noticed. Whitespace does not count. */
+export const wordingOf = (statement: string): string =>
+  createHash('sha256').update(statement.replace(/\s+/g, ' ').trim()).digest('hex').slice(0, 16);
 const latest = (dates: string[]) => dates.filter(Boolean).sort().at(-1) ?? 'unknown';
 
 function toRequirement(catalogId: string, r: CatalogRow): Requirement {
@@ -106,6 +114,7 @@ export async function loadLowRiskCloudProfile(
       rationale: cellText(row.getCell(5)),
       references: cellText(row.getCell(7)),
       ifUncovered: 'ask',
+      wording: wordingOf(cellText(row.getCell(3))),
     });
   });
   return {
@@ -119,6 +128,84 @@ export async function loadLowRiskCloudProfile(
     sourceFile: SSP_FILE,
     entries,
   };
+}
+
+const PLAIN_TITLES = { low: 'Low-risk app on the cloud', medium: 'Medium-risk app on the cloud', high: 'High-risk app on the cloud' } as const;
+
+/**
+ * A cloud profile taken from the lite catalog: the entries whose "SSP-Profile Level" tag (column G) has `{name} - Level {n}`.
+ * The wording is the catalog's, with parameters as written there. Low-Risk Cloud keeps its own file with resolved values.
+ */
+export async function loadLiteProfile(
+  dataDir: string,
+  name: string,
+  id: string,
+  riskLevel: 'low' | 'medium' | 'high',
+  opts: { requiresCii?: boolean } = {},
+): Promise<Profile> {
+  const rows = await readCatalogRows(path.join(dataDir, 'source', IM8_FILE));
+  const tag = new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} - Level (\\d)$`);
+  const entries: ProfileEntry[] = [];
+  for (const r of rows) {
+    const level = r.levelText
+      .split(';')
+      .map(part => tag.exec(part.trim())?.[1])
+      .find(Boolean);
+    if (level === undefined) continue;
+    entries.push({
+      key: `im8-reform:${r.id}` as RequirementKey,
+      id: r.id,
+      family: familyOf(r.id),
+      title: r.title,
+      level: Number(level) as Level,
+      statement: r.statement,
+      recommendations: r.recommendations,
+      rationale: r.rationale,
+      references: r.references,
+      ifUncovered: 'ask',
+      wording: wordingOf(r.statement),
+    });
+  }
+  const release = latest(rows.map(r => r.lastModified));
+  return {
+    _id: id,
+    title: name,
+    plainTitle: PLAIN_TITLES[riskLevel],
+    version: `${release} (locally derived)`,
+    release,
+    riskLevel,
+    ...(opts.requiresCii ? { requiresCii: true } : {}),
+    hosting: 'cloud',
+    sourceFile: IM8_FILE,
+    entries,
+  };
+}
+
+/**
+ * Puts plain-language text on the entries of these profiles. A text goes where it was checked (its `checkedFor`, or the
+ * home profile when it names none). Anywhere else it goes only when the official statement has no parameter and its wording
+ * is the same as in a profile it was checked for, and then without its `appliesWhen` rule: an unknown never removes a requirement.
+ */
+export function attachPlain(profiles: Profile[], plainById: Record<string, Partial<PlainText>>, homeProfileId: string): void {
+  const byId = new Map(profiles.map(p => [p._id, p]));
+  for (const profile of profiles) {
+    for (const entry of profile.entries) {
+      const found = plainById[entry.id];
+      if (!found) continue;
+      const checkedFor = found.checkedFor ?? [homeProfileId];
+      const plain = { ...found, checkedFor } as PlainText;
+      if (checkedFor.includes(profile._id)) {
+        entry.plain = plain;
+        continue;
+      }
+      if (hasParameter(entry.statement)) continue;
+      const sameWording = checkedFor.some(id => byId.get(id)?.entries.find(e => e.id === entry.id)?.wording === entry.wording);
+      if (!sameWording) continue;
+      const { appliesWhen: _rule, ...withoutRule } = plain;
+      void _rule;
+      entry.plain = withoutRule;
+    }
+  }
 }
 
 export async function loadGenAi(
@@ -138,6 +225,7 @@ export async function loadGenAi(
     rationale: r.rationale,
     references: r.references,
     ifUncovered: 'ask',
+    wording: wordingOf(r.statement),
   }));
   return {
     catalog: {

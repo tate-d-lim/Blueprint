@@ -89,9 +89,9 @@ describe('checkRule', () => {
 
 describe('factsToAsk', () => {
   const profile = makeProfile('p', [
-    { id: 'a-1', plain: { title: '', task: '', why: '', appliesWhen: { fact: 'web', is: 'yes' } } },
-    { id: 'a-2', plain: { title: '', task: '', why: '', appliesWhen: { fact: 'web', is: 'yes' } } },
-    { id: 'a-3', plain: { title: '', task: '', why: '', appliesWhen: { fact: 'sms', is: 'yes' } } },
+    { id: 'a-1', plain: { title: '', task: '', why: '', checkedFor: [], appliesWhen: { fact: 'web', is: 'yes' } } },
+    { id: 'a-2', plain: { title: '', task: '', why: '', checkedFor: [], appliesWhen: { fact: 'web', is: 'yes' } } },
+    { id: 'a-3', plain: { title: '', task: '', why: '', checkedFor: [], appliesWhen: { fact: 'sms', is: 'yes' } } },
     { id: 'a-4' },
   ]);
   profile.facts = [reach, sms, web, { id: 'unused', kind: 'tick', label: 'Nobody uses this', noReason: 'x' }];
@@ -112,8 +112,8 @@ describe('factsToAsk', () => {
 
 test('ruleDecides lists the requirements whose rule uses a fact', () => {
   const profile = makeProfile('p', [
-    { id: 'a-1', plain: { title: '', task: '', why: '', appliesWhen: { all: [{ fact: 'web', is: 'yes' }, { fact: 'reach', is: 'public' }] } } },
-    { id: 'a-2', plain: { title: '', task: '', why: '', appliesWhen: { fact: 'sms', is: 'yes' } } },
+    { id: 'a-1', plain: { title: '', task: '', why: '', checkedFor: [], appliesWhen: { all: [{ fact: 'web', is: 'yes' }, { fact: 'reach', is: 'public' }] } } },
+    { id: 'a-2', plain: { title: '', task: '', why: '', checkedFor: [], appliesWhen: { fact: 'sms', is: 'yes' } } },
     { id: 'a-3' },
   ]);
   expect(profile.entries.filter(e => ruleDecides(e.plain?.appliesWhen, 'reach')).map(e => e.id)).toEqual(['a-1']);

@@ -34,6 +34,10 @@ describe.each(['low-risk-cloud', 'generative-ai'])('%s plain language', profileI
     }
   });
 
+  test('every entry says which profiles its text and rules were checked for', () => {
+    for (const [id, p] of Object.entries(file)) expect(p.checkedFor, `${id} checkedFor`).toEqual([profileId]);
+  });
+
   test('builder language only: no IM8, SSP, OSCAL, "control" or "agency"', () => {
     for (const [id, p] of Object.entries(file)) {
       for (const [field, text] of Object.entries(p)) if (typeof text === 'string') expect(text, `${id}.${field}`).not.toMatch(BANNED);

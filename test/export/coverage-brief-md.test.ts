@@ -1,7 +1,7 @@
 import { coverageTemplate, renderCoverageBrief } from '@/lib/export/coverage-brief-md';
 import { makeProfile, makeTool } from '../helpers/factories';
 
-const profile = makeProfile('low', [{ id: 'as-3', plain: { title: 'Lock it', task: 'Do X', why: 'Because' } }, { id: 'ac-7' }]);
+const profile = makeProfile('low', [{ id: 'as-3', plain: { title: 'Lock it', task: 'Do X', why: 'Because', checkedFor: ['low'] } }, { id: 'ac-7' }]);
 const tool = makeTool('probe', { name: 'Probe' });
 const otherTools = [makeTool('dbaas', { name: 'DBaaS' })];
 const generatedAt = '2026-10-29T00:00:00.000Z';

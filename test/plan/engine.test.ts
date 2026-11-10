@@ -244,7 +244,7 @@ describe('answers about the app', () => {
     label: 'People use it in a web browser',
     noReason: "Your app isn't used in a web browser.",
   };
-  const rule = { title: 'T', task: 't', why: 'w', appliesWhen: { fact: 'web', is: 'yes' } };
+  const rule = { title: 'T', task: 't', why: 'w', checkedFor: ['p'], appliesWhen: { fact: 'web', is: 'yes' } };
   const profile = () => {
     const p = makeProfile('p', [{ id: 'as-3', plain: rule }, { id: 'as-1' }, { id: 'lm-6', plain: rule, level: 2 }]);
     p.facts = [web];

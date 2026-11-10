@@ -20,7 +20,7 @@ import type {
 } from '../domain/types';
 import { buildImportEntries, previewImport } from '../import/plan-import';
 import { parseGuide } from '../import/parse-guide';
-import { UnknownRequirementError, loadGenAi, loadIm8Catalog, loadLowRiskCloudProfile } from './load-sources';
+import { UnknownRequirementError, attachPlain, loadGenAi, loadIm8Catalog, loadLiteProfile, loadLowRiskCloudProfile } from './load-sources';
 
 export interface SeedDocuments {
   catalogs: Catalog[];
@@ -200,21 +200,34 @@ export async function buildSeedDocuments(
   const im8 = await loadIm8Catalog(dataDir);
   const profile = await loadLowRiskCloudProfile(dataDir, new Map(im8.requirements.map(r => [r._id, r])));
   const genai = await loadGenAi(dataDir);
-  const profiles = [profile, genai.profile];
+  // The three cloud profiles share requirement IDs, so they share defaults, plain text and facts (checked per profile).
+  const cloud = [
+    profile,
+    await loadLiteProfile(dataDir, 'Medium-Risk Cloud', 'medium-risk-cloud', 'medium'),
+    await loadLiteProfile(dataDir, 'High-Risk Cloud CII', 'high-risk-cloud-cii', 'high', { requiresCii: true }),
+  ];
+  const profiles = [...cloud, genai.profile];
 
   const defaults = await readJson<Record<string, string[]>>(path.join(dataDir, 'seed', 'defaults.json'));
-  for (const p of profiles) {
-    for (const id of defaults[p._id] ?? []) {
-      const entry = p.entries.find(e => e.id === id);
-      if (!entry) throw new UnknownRequirementError(id, 'defaults.json');
+  const applyDefaults = (target: Profile, ids: string[], strict: boolean) => {
+    for (const id of ids) {
+      const entry = target.entries.find(e => e.id === id);
+      if (!entry) {
+        if (strict) throw new UnknownRequirementError(id, 'defaults.json');
+        continue;
+      }
       entry.ifUncovered = 'app-builder';
     }
-    const plainFile = path.join(dataDir, 'plain-language', `${p._id}.json`);
-    if (existsSync(plainFile)) {
-      const plain = await readJson<Record<string, PlainText>>(plainFile);
-      for (const entry of p.entries) if (plain[entry.id]) entry.plain = plain[entry.id];
-    }
-    // One facts file for every cloud profile. Its rules act only where a plain entry's `checkedFor` allows (Task 16).
+  };
+  for (const p of cloud) applyDefaults(p, defaults['low-risk-cloud'] ?? [], p === profile);
+  applyDefaults(genai.profile, defaults[genai.profile._id] ?? [], true);
+
+  for (const [home, targets] of [['low-risk-cloud', cloud], ['generative-ai', [genai.profile]]] as const) {
+    const plainFile = path.join(dataDir, 'plain-language', `${home}.json`);
+    if (existsSync(plainFile)) attachPlain([...targets], await readJson<Record<string, PlainText>>(plainFile), home);
+  }
+  for (const p of profiles) {
+    // One facts file for every cloud profile. Its rules act only where a plain entry's `checkedFor` allows.
     const factsFile = path.join(dataDir, 'facts', p.hosting === 'cloud' ? 'cloud.json' : `${p._id}.json`);
     if (existsSync(factsFile)) p.facts = await readJson<Fact[]>(factsFile);
   }

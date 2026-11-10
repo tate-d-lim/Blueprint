@@ -3,48 +3,72 @@
     "title": "Send only low-sensitivity data to overseas AI",
     "task": "With AI services hosted overseas, use data up to Restricted and Sensitive Normal only.",
     "why": "Data processed in another country carries more legal, privacy and leak risk.",
-    "question": "Will your app send data to an AI service hosted overseas, and is it no higher than Restricted and Sensitive Normal?"
+    "question": "Will your app send data to an AI service hosted overseas, and is it no higher than Restricted and Sensitive Normal?",
+    "checkedFor": [
+      "generative-ai"
+    ]
   },
   "ga-2": {
     "title": "Limit data sent to Singapore-hosted AI services",
     "task": "With AI services hosted in Singapore, use data up to Confidential and Sensitive High only.",
     "why": "Even in Singapore, data sent to an AI service can leak or be misused.",
-    "question": "Will your app send data to a Singapore-hosted AI service, and is it no higher than Confidential and Sensitive High?"
+    "question": "Will your app send data to a Singapore-hosted AI service, and is it no higher than Confidential and Sensitive High?",
+    "checkedFor": [
+      "generative-ai"
+    ]
   },
   "ga-3": {
     "title": "Get a no-logging, no-training agreement",
     "task": "Get a legally binding commitment that the provider doesn't log, store or keep your inputs and outputs, and doesn't train on them (short-term prompt caching is allowed).",
     "why": "Without it, the provider could read or reuse your data, including classified data.",
-    "question": "Do you have a legally binding no-logging, no-training agreement with the AI service provider?"
+    "question": "Do you have a legally binding no-logging, no-training agreement with the AI service provider?",
+    "checkedFor": [
+      "generative-ai"
+    ]
   },
   "ga-4": {
     "title": "Host AI models where your data is allowed",
     "task": "Host self-hosted AI models in an environment approved for the highest data classification the system holds.",
     "why": "A model in a less secure environment than its data opens a path for attackers.",
-    "question": "If you host an AI model yourself, is the environment approved for the highest classification of data in your system?"
+    "question": "If you host an AI model yourself, is the environment approved for the highest classification of data in your system?",
+    "checkedFor": [
+      "generative-ai"
+    ]
   },
   "ga-5": {
     "title": "Use approved formats and loaders for AI models",
     "task": "If you use open-weights models, use only approved model formats and approved loaders.",
     "why": "Some model formats and loaders can run malicious code when loaded.",
-    "question": "Do you use open-weights AI models? If so, which formats and loaders are approved for you?"
+    "question": "Do you use open-weights AI models? If so, which formats and loaders are approved for you?",
+    "checkedFor": [
+      "generative-ai"
+    ]
   },
   "ga-6": {
     "title": "Protect file uploads in AI features",
     "task": "If users can upload files to your AI app, add safeguards for what they upload and what the model can reveal.",
     "why": "Uploads can leak sensitive data or carry attacks aimed at the model.",
-    "question": "Can users upload files in your AI app, and what safeguards are planned?"
+    "question": "Can users upload files in your AI app, and what safeguards are planned?",
+    "checkedFor": [
+      "generative-ai"
+    ]
   },
   "ga-7": {
     "title": "Test your AI's accuracy and safety",
     "task": "Test the accuracy, safety and quality of outputs using clear measures, test scenarios and pass criteria.",
     "why": "Untested AI can give wrong or harmful answers that people act on.",
-    "question": "Who tests your AI's outputs, and against what measures and scenarios?"
+    "question": "Who tests your AI's outputs, and against what measures and scenarios?",
+    "checkedFor": [
+      "generative-ai"
+    ]
   },
   "ga-8": {
     "title": "Make users acknowledge AI can be wrong",
     "task": "Require users to explicitly agree, for example with a checkbox, that outputs can be inaccurate before they use the app.",
     "why": "Users who aren't warned may trust made-up answers.",
-    "question": "Will users have to acknowledge the risk of inaccurate AI answers before using your app?"
+    "question": "Will users have to acknowledge the risk of inaccurate AI answers before using your app?",
+    "checkedFor": [
+      "generative-ai"
+    ]
   }
 }

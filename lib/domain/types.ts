@@ -69,6 +69,8 @@ export interface PlainText {
   question?: string;
   /** The requirement only applies to apps whose answers satisfy this. No rule means it applies to every app. */
   appliesWhen?: Rule;
+  /** The profiles this text and rule were checked for. Elsewhere the rule never applies, and the text only when the wording matches. */
+  checkedFor: string[];
 }
 
 export interface ProfileEntry {
@@ -82,6 +84,8 @@ export interface ProfileEntry {
   rationale: string;
   references: string;
   ifUncovered: 'app-builder' | 'ask';
+  /** The first 16 hex characters of the SHA-256 of the statement with whitespace collapsed: the wording fingerprint. */
+  wording: string;
   plain?: PlainText;
 }
 

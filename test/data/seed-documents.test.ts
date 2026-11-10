@@ -70,7 +70,7 @@ test('tools: appCentral, DBaaS, IGA, genCentral, then sample libraries, the SHIP
   expect(tools.map(t => t._id)).toEqual(['appcentral', 'dbaas', 'iga', 'gencentral', 'zod', 'prisma', 'ship-hats', 'websg', 'isomer']);
   expect(tools.find(t => t._id === 'gencentral')).toMatchObject({ isSample: true });
   expect(tools.some(t => 'activatesProfiles' in t)).toBe(false);
-  expect(profiles.map(p => p._id)).toEqual(['low-risk-cloud', 'generative-ai']);
+  expect(profiles.map(p => p._id)).toEqual(['low-risk-cloud', 'medium-risk-cloud', 'high-risk-cloud-cii', 'generative-ai']);
   expect(catalogs.map(c => c._id)).toEqual(['im8-reform', 'genai']);
   expect(requirements).toHaveLength(149 + 8);
 });
@@ -202,5 +202,42 @@ describe('checks in the seed', () => {
     expect(new Set(version.entries.map(e => e.explanation)).size).toBe(5);
     expect(version.approval).toBeUndefined();
     expect(seed.tools.find(t => t._id === 'ship-hats')?.isSample).toBe(true);
+  });
+});
+
+describe('plain text per profile', () => {
+  const seedProfiles = async () => {
+    const all = (await loadSeed()).profiles;
+    const get = (id: string) => all.find(p => p._id === id)!;
+    return { low: get('low-risk-cloud'), medium: get('medium-risk-cloud'), high: get('high-risk-cloud-cii') };
+  };
+
+  test('Low keeps its plain text and rules; Medium gets plain text only where the wording has no parameter and matches', async () => {
+    const { low, medium } = await seedProfiles();
+    expect(low.entries.every(e => e.plain)).toBe(true);
+    expect(low.entries.some(e => e.plain?.appliesWhen)).toBe(true);
+    const as1 = medium.entries.find(e => e.id === 'as-1')!;
+    const as5 = medium.entries.find(e => e.id === 'as-5')!;
+    expect(as1.plain?.task).toBeTruthy();
+    expect(as5.plain).toBeUndefined();
+    expect(medium.entries.filter(e => e.plain).length).toBe(92);
+  });
+
+  test('an appliesWhen rule never removes a requirement on a profile outside checkedFor', async () => {
+    const { medium, high } = await seedProfiles();
+    expect(medium.entries.some(e => e.plain?.appliesWhen)).toBe(false);
+    expect(high.entries.some(e => e.plain?.appliesWhen)).toBe(false);
+  });
+
+  test('the High-only requirements have no plain text', async () => {
+    const { high } = await seedProfiles();
+    expect(high.entries.filter(e => ['hr', 'rs'].includes(e.family)).every(e => !e.plain)).toBe(true);
+  });
+
+  test('defaults for Low-Risk Cloud apply to every cloud profile that has the requirement', async () => {
+    const { low, medium } = await seedProfiles();
+    const ids = low.entries.filter(e => e.ifUncovered === 'app-builder').map(e => e.id);
+    expect(ids.length).toBeGreaterThan(0);
+    expect(medium.entries.filter(e => e.ifUncovered === 'app-builder').map(e => e.id).sort()).toEqual([...ids].sort());
   });
 });

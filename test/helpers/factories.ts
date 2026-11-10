@@ -29,6 +29,7 @@ export function makeProfile(
       rationale: `Rationale ${e.id}`,
       references: '',
       ifUncovered: 'ask',
+      wording: `wording ${e.id}`,
       ...e,
     })),
   };
