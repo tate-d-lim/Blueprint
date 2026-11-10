@@ -71,6 +71,71 @@ export function parsePlanQuery(
   };
 }
 
+const PROJECT_ID = /^[A-Za-z0-9-]{1,64}$/;
+
+/**
+ * The query string (without "?") for steps 1–4. It carries the risk answers that are known, the facts, and the saved
+ * project being edited. It never carries tools: those are on the project only.
+ */
+export function startQuery(answers: Partial<RiskAnswers>, facts: FactAnswers = {}, projectId?: string): string {
+  const parts: string[] = [];
+  const put = (key: string, table: Record<string, string>, value: string | undefined) => {
+    if (value !== undefined) parts.push(`${key}=${codeFor(table, value)}`);
+  };
+  put('c', CLASSIFICATION, answers.classification);
+  put('s', SENSITIVITY, answers.sensitivity);
+  put('i', IMPACT, answers.impact);
+  put('d', DOWNSTREAM, answers.downstream);
+  if (answers.cii !== undefined || answers.sii !== undefined) {
+    parts.push(`k=${[answers.cii ? 'cii' : '', answers.sii ? 'sii' : ''].filter(Boolean).join(',')}`);
+  }
+  if (Object.keys(facts).length) parts.push(`f=${writeFactAnswers(facts)}`);
+  if (projectId && PROJECT_ID.test(projectId)) parts.push(`project=${projectId}`);
+  return parts.join('&');
+}
+
+/**
+ * Reads a step link. Each key is read on its own, so one bad value is dropped and the rest stay. `complete` is set only
+ * when all four choices parse. CII and SII are `false` when `k` is in the link and absent when it is not.
+ */
+export function parseStartQuery(sp: SearchParams): {
+  answers: Partial<RiskAnswers>;
+  complete: RiskAnswers | null;
+  facts: FactAnswers;
+  projectId: string | null;
+} {
+  const first = (key: string) => {
+    const v = sp[key];
+    return Array.isArray(v) ? v[0] : v;
+  };
+  const answers: Partial<RiskAnswers> = {};
+  const c = oneOf(CLASSIFICATION).safeParse(first('c'));
+  if (c.success) answers.classification = c.data;
+  const s = oneOf(SENSITIVITY).safeParse(first('s'));
+  if (s.success) answers.sensitivity = s.data;
+  const i = oneOf(IMPACT).safeParse(first('i'));
+  if (i.success) answers.impact = i.data;
+  const d = oneOf(DOWNSTREAM).safeParse(first('d'));
+  if (d.success) answers.downstream = d.data;
+  const k = first('k');
+  if (k !== undefined) {
+    const ticks = list(k);
+    answers.cii = ticks.includes('cii');
+    answers.sii = ticks.includes('sii');
+  }
+  const complete =
+    answers.classification && answers.sensitivity && answers.impact && answers.downstream
+      ? ({ ...answers, cii: answers.cii ?? false, sii: answers.sii ?? false } as RiskAnswers)
+      : null;
+  const project = first('project');
+  return {
+    answers,
+    complete,
+    facts: parseFactAnswers(first('f') ?? ''),
+    projectId: project && PROJECT_ID.test(project) ? project : null,
+  };
+}
+
 function decodeURIComponentSafe(s: string): string {
   try {
     return decodeURIComponent(s);

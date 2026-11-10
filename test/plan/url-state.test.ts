@@ -1,4 +1,5 @@
-import { parsePlanQuery, planQuery } from '@/lib/plan/url-state';
+import { parsePlanQuery, parseStartQuery, planQuery, startQuery } from '@/lib/plan/url-state';
+import { DEMO_ANSWERS, DEMO_FACTS } from '../helpers/demo';
 import type { RiskAnswers } from '@/lib/risk/assess';
 
 const demo: RiskAnswers = {
@@ -57,4 +58,40 @@ test('answers about the app travel in the link, and an old link without them sti
   expect(parse(planQuery(demo, ['iga'], facts))?.facts).toEqual(facts);
   expect(planQuery(demo, ['iga'])).not.toContain('&f=');
   expect(parse('c=restricted&s=sn&i=slight&d=min&k=&t=iga')?.facts).toEqual({});
+});
+
+describe('step links (steps 1–4)', () => {
+  const fromQuery = (q: string) => parseStartQuery(Object.fromEntries(new URLSearchParams(q)));
+
+  test('round trip with facts and project', () => {
+    const q = startQuery(DEMO_ANSWERS, DEMO_FACTS, 'abc-123');
+    expect(fromQuery(q)).toEqual({ answers: DEMO_ANSWERS, complete: DEMO_ANSWERS, facts: DEMO_FACTS, projectId: 'abc-123' });
+  });
+
+  test('a bad value is dropped and the rest stay', () => {
+    const r = parseStartQuery({ c: 'bad', s: 'sn', i: 'slight', d: 'min', k: '' });
+    expect(r.complete).toBeNull();
+    expect(r.answers).toEqual({ sensitivity: 'sensitive-normal', impact: 'slight', downstream: 'minimal', cii: false, sii: false });
+  });
+
+  test('no query gives empty answers', () => expect(parseStartQuery({})).toEqual({ answers: {}, complete: null, facts: {}, projectId: null }));
+
+  test('a project id with odd characters is ignored', () => expect(parseStartQuery({ project: '../x' }).projectId).toBeNull());
+
+  test('startQuery carries no tools', () => expect(startQuery(DEMO_ANSWERS)).not.toMatch(/(^|&)t=/));
+
+  test('partial answers write only what is known, and read back the same', () => {
+    const q = startQuery({ classification: 'restricted', impact: 'slight' });
+    expect(q).toBe('c=restricted&i=slight');
+    expect(fromQuery(q).answers).toEqual({ classification: 'restricted', impact: 'slight' });
+  });
+
+  test('CII and SII ticks round trip', () => {
+    const answers = { ...DEMO_ANSWERS, cii: true, sii: true };
+    expect(fromQuery(startQuery(answers)).answers).toEqual(answers);
+  });
+
+  test('a repeated key takes the first value', () => {
+    expect(parseStartQuery({ c: ['conf-ce', 'conf'] }).answers).toEqual({ classification: 'confidential-cloud-eligible' });
+  });
 });
