@@ -42,3 +42,25 @@ test("a verdict link with a broken answer opens step 1 with the rest filled in",
   await expect(page).toHaveURL(/\/start\?/);
   await expect(page.getByRole("radio", { name: "Sensitive Normal" })).toBeChecked();
 });
+
+const LOW_QUERY = "c=restricted&s=sn&i=slight&d=min&k=";
+
+/** Public, web, sign-in and SMS ticked, no domain, no short links, GenAI no. */
+async function answerDemoFacts(page: Page) {
+  await page.getByRole("radio", { name: "Members of the public" }).check();
+  await page.getByRole("checkbox", { name: "People use it in a web browser" }).check();
+  await page.getByRole("checkbox", { name: "People sign in to it" }).check();
+  await page.getByRole("checkbox", { name: "It sends SMS text messages" }).check();
+  await page.getByRole("group", { name: "Does your app use generative AI, for example a chatbot or a text summary?" }).getByRole("radio", { name: "No" }).check();
+}
+
+test("step 3 asks about GenAI and keeps the answers on the way back", async ({ page }) => {
+  await page.goto(`/start/app?${LOW_QUERY}`);
+  await expect(page.getByText("Step 3 of 5")).toBeVisible();
+  await expect(page.getByRole("group", { name: "Does your app use generative AI, for example a chatbot or a text summary?" })).toBeVisible();
+  await answerDemoFacts(page);
+  await page.getByRole("button", { name: "Next: what your app needs" }).click();
+  await expect(page).toHaveURL(/\/start\/needs\?.*f=/);
+  await page.goBack();
+  await expect(page.getByRole("checkbox", { name: "It sends SMS text messages" })).toBeChecked();
+});
