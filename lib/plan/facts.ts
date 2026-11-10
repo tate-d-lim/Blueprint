@@ -67,12 +67,12 @@ export function checkRule(rule: Rule | undefined, facts: Fact[], answers: FactAn
 }
 
 /**
- * The facts to put on the screen: those some rule reads (plus the facts they depend on), in the order of the
+ * The facts to put on the screen: those some rule reads or that are marked always (plus the facts they depend on), in the order of the
  * facts file, minus those the answers so far do not make relevant. Adding a rule to the catalogue adds its fact here.
  */
 export function factsToAsk(profile: FactProfile, answers: FactAnswers): Fact[] {
   const facts = profile.facts ?? [];
-  const used = new Set(profile.entries.flatMap(e => factIdsIn(e.plain?.appliesWhen)));
+  const used = new Set([...profile.entries.flatMap(e => factIdsIn(e.plain?.appliesWhen)), ...facts.filter(f => f.always).map(f => f.id)]);
   // A fact that only gates another fact is needed too, however deep the chain.
   for (let grew = true; grew; ) {
     grew = false;

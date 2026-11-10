@@ -65,10 +65,11 @@ test('every must-or-should requirement is yours to build by default, except the 
   expect(asked.sort()).toEqual([...TRUE_QUESTION_IDS].sort());
 });
 
-test('tools: appCentral, DBaaS, IGA, genCentral (which activates the GenAI profile), then sample libraries, the SHIP-HATS sample and the GovTech tools', async () => {
+test('tools: appCentral, DBaaS, IGA, genCentral, then sample libraries, the SHIP-HATS sample and the GovTech tools', async () => {
   const { tools, profiles, catalogs, requirements } = await loadSeed();
   expect(tools.map(t => t._id)).toEqual(['appcentral', 'dbaas', 'iga', 'gencentral', 'zod', 'prisma', 'ship-hats', 'websg', 'isomer']);
-  expect(tools.find(t => t._id === 'gencentral')).toMatchObject({ isSample: true, activatesProfiles: ['generative-ai'] });
+  expect(tools.find(t => t._id === 'gencentral')).toMatchObject({ isSample: true });
+  expect(tools.some(t => 'activatesProfiles' in t)).toBe(false);
   expect(profiles.map(p => p._id)).toEqual(['low-risk-cloud', 'generative-ai']);
   expect(catalogs.map(c => c._id)).toEqual(['im8-reform', 'genai']);
   expect(requirements).toHaveLength(149 + 8);

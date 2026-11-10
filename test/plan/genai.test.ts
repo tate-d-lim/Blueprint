@@ -1,37 +1,42 @@
 import ExcelJS from 'exceljs';
 import { cellText } from '@/lib/data/xlsx';
 import { fillSspWorkbook } from '@/lib/export/ssp-xlsx';
-import { buildPlan, type PlanData } from '@/lib/plan/engine';
-import { pairVersions, selectPlanInput } from '@/lib/plan/select';
+import { DEMO_FACTS, demoPlan } from '../helpers/demo';
 import { loadSeed } from '../helpers/seed';
 
 const TEMPLATE = 'data/source/low-risk-cloud-ssp.xlsx';
 
-async function setup(toolIds: string[]) {
+/** The demo plan with GenAI on or off (the fact), and the GenAI profile. */
+async function setup(genai: boolean) {
   const seed = await loadSeed();
-  const data: PlanData = { profiles: seed.profiles, tools: seed.tools, versions: pairVersions(seed.toolVersions) };
-  const plan = buildPlan(selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds }));
+  const plan = await demoPlan(['appcentral'], genai ? { ...DEMO_FACTS, 'uses-genai': 'yes' } : DEMO_FACTS);
   return { plan, genai: seed.profiles.find(p => p._id === 'generative-ai')! };
 }
 
-test('picking genCentral adds the 8 GenAI requirements as open questions', async () => {
-  const without = (await setup(['appcentral'])).plan;
-  const withGenAi = (await setup(['appcentral', 'gencentral'])).plan;
-  const genai = withGenAi.items.filter(i => i.key.startsWith('genai:'));
+test('uses-genai yes adds the 8 GenAI requirements as open questions, with no tool ticked', async () => {
+  const plan = await demoPlan([], { ...DEMO_FACTS, 'uses-genai': 'yes' });
+  const genai = plan.items.filter(i => i.profileId === 'generative-ai');
   expect(genai.map(i => i.id)).toEqual(['ga-1', 'ga-2', 'ga-3', 'ga-4', 'ga-5', 'ga-6', 'ga-7', 'ga-8']);
   expect(genai.every(i => i.heading === 'questions' && i.placement === 'open')).toBe(true);
-  expect(withGenAi.counts.questions).toBe(without.counts.questions + 8);
-  expect(without.items.some(i => i.key.startsWith('genai:'))).toBe(false);
+});
+
+test('uses-genai no, or not answered, adds nothing', async () => {
+  expect((await demoPlan([], { ...DEMO_FACTS, 'uses-genai': 'no' })).items.some(i => i.profileId === 'generative-ai')).toBe(false);
+  expect((await demoPlan([], DEMO_FACTS)).items.some(i => i.profileId === 'generative-ai')).toBe(false);
+});
+
+test('picking genCentral no longer adds requirements', async () => {
+  expect((await demoPlan(['gencentral'], DEMO_FACTS)).counts).toEqual((await demoPlan([], DEMO_FACTS)).counts);
 });
 
 test('the GenAI requirements have plain-language questions', async () => {
-  const { plan } = await setup(['gencentral']);
+  const { plan } = await setup(true);
   const ga1 = plan.items.find(i => i.id === 'ga-1')!;
   expect(ga1.plain?.question).toMatch(/overseas/i);
 });
 
 test('the spreadsheet gets a "genai" sheet with a header and 8 rows', async () => {
-  const { plan, genai } = await setup(['appcentral', 'gencentral']);
+  const { plan, genai } = await setup(true);
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load((await fillSspWorkbook(plan, { templatePath: TEMPLATE, genai: { profile: genai } })) as unknown as ArrayBuffer);
   const sheet = wb.getWorksheet('genai')!;
@@ -48,7 +53,7 @@ test('the spreadsheet gets a "genai" sheet with a header and 8 rows', async () =
 });
 
 test('without the option there is no "genai" sheet', async () => {
-  const { plan } = await setup(['appcentral']);
+  const { plan } = await setup(false);
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load((await fillSspWorkbook(plan, { templatePath: TEMPLATE })) as unknown as ArrayBuffer);
   expect(wb.getWorksheet('genai')).toBeUndefined();

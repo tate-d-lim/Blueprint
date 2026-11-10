@@ -2,6 +2,9 @@ import type { ToolVersion } from '../domain/types';
 import type { PlanData, PlanInput, PlanState, ProjectOverlay } from './engine';
 import type { VersionPair } from './verification';
 
+export const GENAI_FACT = 'uses-genai';
+export const GENAI_PROFILE_ID = 'generative-ai';
+
 /** One pair per (tool, profile): the highest version, and the highest approved one. */
 export function pairVersions(toolVersions: ToolVersion[]): VersionPair[] {
   const groups = new Map<string, ToolVersion[]>();
@@ -23,8 +26,9 @@ export function selectPlanInput(data: PlanData, state: PlanState, project?: Proj
   const wanted = new Set(state.toolIds.filter(id => known.has(id)));
   const pickedTools = data.tools.filter(t => wanted.has(t._id));
 
+  // Generative AI is added by what the builder says about the app, never by a tool.
   const profileIds = new Set([state.profileId]);
-  for (const tool of pickedTools) for (const id of tool.activatesProfiles ?? []) profileIds.add(id);
+  if (state.facts?.[GENAI_FACT] === 'yes') profileIds.add(GENAI_PROFILE_ID);
   if (!data.profiles.some(p => p._id === state.profileId)) throw new Error(`Unknown profile ${state.profileId}`);
   const profiles = data.profiles.filter(p => profileIds.has(p._id));
   const active = new Set(profiles.map(p => p._id));

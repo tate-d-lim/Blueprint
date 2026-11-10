@@ -200,7 +200,7 @@ describe('selectPlanInput', () => {
   const tools = [
     makeTool('appcentral'),
     makeTool('dbaas'),
-    makeTool('gencentral', { activatesProfiles: ['generative-ai'] }),
+    makeTool('gencentral'),
   ];
   const versions = pairVersions([
     makeVersion('appcentral', 'low-risk-cloud', 1, [makeEntry('as-1')]),
@@ -214,11 +214,13 @@ describe('selectPlanInput', () => {
     expect(input.versions.map(v => v.current.toolId).sort()).toEqual(['appcentral', 'dbaas']);
   });
 
-  test('adds the GenAI profile when genCentral is picked', () => {
-    const input = selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds: ['gencentral'] });
-    expect(input.profiles.map(p => p._id)).toEqual(['low-risk-cloud', 'generative-ai']);
-    const plain = selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds: ['appcentral'] });
-    expect(plain.profiles.map(p => p._id)).toEqual(['low-risk-cloud']);
+  test('adds the GenAI profile when the uses-genai fact is yes, whatever the tools', () => {
+    const yes = selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds: [], facts: { 'uses-genai': 'yes' } });
+    expect(yes.profiles.map(p => p._id)).toEqual(['low-risk-cloud', 'generative-ai']);
+    for (const facts of [{ 'uses-genai': 'no' }, {}, undefined] as (Record<string, string> | undefined)[]) {
+      const plain = selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds: ['gencentral'], facts });
+      expect(plain.profiles.map(p => p._id)).toEqual(['low-risk-cloud']);
+    }
   });
 
   test('an unknown profile is an error', () => {

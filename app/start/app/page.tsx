@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { withPlanData } from "@/app/plan/plan-data";
 import { PageHeader } from "@/app/ui/panel";
-import { factsToAsk } from "@/lib/plan/facts";
-import { parsePlanQuery, planQuery } from "@/lib/plan/url-state";
+import { parsePlanQuery } from "@/lib/plan/url-state";
 import { profileFor } from "@/lib/risk/assess";
 import { AppForm } from "./app-form";
 
@@ -13,8 +12,6 @@ export default async function AppFactsPage({ searchParams }: { searchParams: Pro
     const profileId = parsed && profileFor(parsed.answers, data.profiles);
     const profile = data.profiles.find(p => p._id === profileId);
     if (!parsed || !profile) redirect("/start");
-    // A profile with nothing to ask goes straight on.
-    if (factsToAsk(profile, {}).length === 0) redirect(`/plan?${planQuery(parsed.answers, [], parsed.facts)}`);
     return (
       <div className="flex max-w-page flex-col gap-8">
         <PageHeader title="About your app">

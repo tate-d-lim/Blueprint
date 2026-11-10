@@ -40,14 +40,15 @@ test('every fact is used by some rule, so none is asked for nothing', async () =
   const used = new Set(profile.entries.flatMap(e => factIdsIn(e.plain?.appliesWhen)));
   for (const fact of profile.facts ?? []) {
     const gates = (profile.facts ?? []).some(f => factIdsIn(f.showIf).includes(fact.id));
-    expect(used.has(fact.id) || gates, `${fact.id} is never used`).toBe(true);
+    expect(used.has(fact.id) || gates || fact.always, `${fact.id} is never used`).toBe(true);
   }
 });
 
 test('every answer that can rule a requirement out has a reason', async () => {
   for (const fact of (await lowRiskCloud()).facts ?? []) {
     if (fact.kind === 'tick') expect(fact.noReason.trim(), fact.id).toBeTruthy();
-    else for (const o of fact.options) expect(o.reason?.trim(), `${fact.id}.${o.value}`).toBeTruthy();
+    // An always fact adds requirements instead of ruling them out, so only its "no" says why.
+    else for (const o of fact.options.filter(o => !fact.always || o.value === 'no')) expect(o.reason?.trim(), `${fact.id}.${o.value}`).toBeTruthy();
   }
 });
 

@@ -52,6 +52,8 @@ export type Fact = {
   id: string;
   hint?: string;
   showIf?: Rule;
+  /** Asked even when no rule reads it, for a fact that adds requirements by itself (such as using generative AI). */
+  always?: true;
 } & (
   | { kind: 'tick'; label: string; noReason: string }
   | { kind: 'choice'; question: string; options: FactOption[] }
@@ -108,7 +110,6 @@ export interface Tool {
   section: Section;
   oscalType: 'service' | 'software';
   isSample: boolean;
-  activatesProfiles?: string[];
 }
 
 export type CheckKind = 'code-rule' | 'sbom' | 'pipeline';

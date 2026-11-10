@@ -5,7 +5,7 @@ import { makeProfile } from '../helpers/factories';
 const reach: Fact = {
   id: 'reach',
   kind: 'choice',
-  question: 'Who will use your app?',
+  question: 'Who is your app for?',
   options: [
     { value: 'public', label: 'The public', reason: 'Your app is not for the public.' },
     { value: 'staff', label: 'Government staff only', reason: 'Your app is for government staff only.' },
@@ -132,5 +132,19 @@ describe('fact answers in a link', () => {
 
   test('malformed parts are dropped', () => {
     expect(parseFactAnswers('web.yes,broken,,x.y.z,sms.no')).toEqual({ web: 'yes', sms: 'no' });
+  });
+});
+
+describe('an always fact', () => {
+  const genai: Fact = { id: 'uses-genai', kind: 'choice', always: true, question: 'Does your app use generative AI?', options: [{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }] };
+
+  test('is asked even when no rule reads it', () => {
+    const profile = { ...makeProfile('p', [{ id: 'as-1' }]), facts: [genai] };
+    expect(factsToAsk(profile, {}).map(f => f.id)).toEqual(['uses-genai']);
+  });
+
+  test('a fact with no rule and no "always" is still left out', () => {
+    const profile = { ...makeProfile('p', [{ id: 'as-1' }]), facts: [{ ...genai, always: undefined }] };
+    expect(factsToAsk(profile, {})).toEqual([]);
   });
 });

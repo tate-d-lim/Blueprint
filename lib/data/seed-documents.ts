@@ -212,7 +212,8 @@ export async function buildSeedDocuments(
       const plain = await readJson<Record<string, PlainText>>(plainFile);
       for (const entry of p.entries) if (plain[entry.id]) entry.plain = plain[entry.id];
     }
-    const factsFile = path.join(dataDir, 'facts', `${p._id}.json`);
+    // One facts file for every cloud profile. Its rules act only where a plain entry's `checkedFor` allows (Task 16).
+    const factsFile = path.join(dataDir, 'facts', p.hosting === 'cloud' ? 'cloud.json' : `${p._id}.json`);
     if (existsSync(factsFile)) p.facts = await readJson<Fact[]>(factsFile);
   }
 

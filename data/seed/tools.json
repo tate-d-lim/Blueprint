@@ -29,10 +29,7 @@
     "description": "Generative AI service",
     "section": "cpf",
     "oscalType": "service",
-    "isSample": true,
-    "activatesProfiles": [
-      "generative-ai"
-    ]
+    "isSample": true
   },
   {
     "_id": "zod",

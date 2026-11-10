@@ -2,11 +2,19 @@
   {
     "id": "reach",
     "kind": "choice",
-    "question": "Who will use your app?",
+    "question": "Who is your app for?",
     "hint": "If both staff and the public use it, choose the public.",
     "options": [
-      { "value": "public", "label": "Members of the public", "reason": "Your app is open to the public." },
-      { "value": "staff", "label": "Government staff only", "reason": "Your app is only for government staff, not the public." }
+      {
+        "value": "public",
+        "label": "Members of the public",
+        "reason": "Your app is open to the public."
+      },
+      {
+        "value": "staff",
+        "label": "Government staff only",
+        "reason": "Your app is only for government staff, not the public."
+      }
     ]
   },
   {
@@ -29,7 +37,10 @@
     "label": "It sends SMS text messages",
     "hint": "For example one-time passwords or reminders.",
     "noReason": "Your app doesn't send SMS text messages to the public.",
-    "showIf": { "fact": "reach", "is": "public" }
+    "showIf": {
+      "fact": "reach",
+      "is": "public"
+    }
   },
   {
     "id": "domain",
@@ -44,5 +55,22 @@
     "label": "It shows or sends shortened links",
     "hint": "Links that redirect to a longer address.",
     "noReason": "Your app doesn't use shortened links."
+  },
+  {
+    "id": "uses-genai",
+    "kind": "choice",
+    "always": true,
+    "question": "Does your app use generative AI, for example a chatbot or a text summary?",
+    "options": [
+      {
+        "value": "yes",
+        "label": "Yes"
+      },
+      {
+        "value": "no",
+        "label": "No",
+        "reason": "Your app doesn't use generative AI."
+      }
+    ]
   }
 ]

@@ -12,7 +12,7 @@ const answers: RiskAnswers = { classification: 'restricted', sensitivity: 'sensi
 async function build(toolIds = ['appcentral', 'dbaas', 'iga'], profileIds = ['low-risk-cloud']) {
   const seed = await loadSeed();
   const data: PlanData = { profiles: seed.profiles, tools: seed.tools, versions: pairVersions(seed.toolVersions) };
-  const input = selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds });
+  const input = selectPlanInput(data, { profileId: 'low-risk-cloud', toolIds, facts: profileIds.includes('generative-ai') ? { 'uses-genai': 'yes' } : undefined });
   const profiles = profileIds.map(id => seed.profiles.find(p => p._id === id)!);
   const tools = input.pickedTools.map(tool => ({
     tool,
