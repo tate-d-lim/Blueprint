@@ -20,7 +20,9 @@ const natural = (a: string, b: string) => a.localeCompare(b, undefined, { numeri
 
 /** The requirements behind each part's count: tasks and open questions only, in requirement order. */
 export function needsDetails(plan: Plan, profiles: Profile[]): Record<PartId, DetailRow[]> {
-  const statements = new Map(profiles.flatMap(p => p.entries.map(e => [e.key, e.statement] as const)));
+  // Cloud profiles share requirement keys, so only the profiles this plan is built from may speak.
+  const active = new Set(plan.items.map(i => i.profileId));
+  const statements = new Map(profiles.filter(p => active.has(p._id)).flatMap(p => p.entries.map(e => [e.key, e.statement] as const)));
   const out = Object.fromEntries(PARTS.map(p => [p.id, [] as DetailRow[]])) as Record<PartId, DetailRow[]>;
   for (const item of plan.items) {
     const as = countsAs(item);

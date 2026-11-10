@@ -37,3 +37,10 @@ test('skipped items carry their reason', async () => {
   expect(skipped.map(s => s.id)).toEqual(['is-11', 'is-15']);
   expect(skipped.every(s => s.reason.length > 0 && s.title.length > 0)).toBe(true);
 });
+
+test('official wording comes from the plan\'s own profile, not from Medium or High', async () => {
+  const { profiles } = await loadSeed();
+  const rows = needsDetails(await demoPlan([], DEMO_FACTS), profiles);
+  const all = Object.values(rows).flat();
+  expect(all.find(r => r.id === 'as-5')!.official).not.toContain('to be set by your organisation');
+});

@@ -6,19 +6,19 @@ import { withDb } from "@/lib/data/db";
 import { createProject, getProject, markToolsReviewed, setProjectTools, setQuestionAnswer, setTaskStatus, updateProjectAnswers } from "@/lib/data/repos/projects";
 import type { FactAnswers, TaskStatus } from "@/lib/domain/types";
 import type { SaveOutcome } from "@/lib/plan/save";
+import { parseSaveInput, parseToolIds } from "@/lib/plan/validate";
 import { profileFor, type RiskAnswers } from "@/lib/risk/assess";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
 
-/** Step 4's save: a new project with the answers, no tools yet, and the default owner. (`ownerName` and `toolIds` are only for the old save dialog, until Task 14 removes it.) */
+/** Step 4's save: a new project with the answers, no tools yet, and the default owner. */
 export async function createProjectAction(input: {
   name: string;
   riskAnswers: RiskAnswers;
   facts?: FactAnswers;
-  ownerName?: string;
-  toolIds?: string[];
 }): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
   try {
-    const project = await withDb(db => createProject(db, { ...input, toolIds: input.toolIds ?? [] }));
+    const checked = parseSaveInput(input);
+    const project = await withDb(db => createProject(db, { name: checked.name ?? "", riskAnswers: checked.riskAnswers, facts: checked.facts, toolIds: [] }));
     revalidatePath("/projects");
     return { ok: true, id: project._id };
   } catch (err) {
@@ -45,7 +45,7 @@ export async function setQuestionAnswerAction(projectId: string, key: string, an
 }
 
 export async function setProjectToolsAction(projectId: string, toolIds: string[]) {
-  return saved(projectId, () => withDb(db => setProjectTools(db, projectId, toolIds)));
+  return saved(projectId, () => withDb(db => setProjectTools(db, projectId, parseToolIds(toolIds))));
 }
 
 /**
@@ -57,11 +57,12 @@ export async function saveProjectAnswersAction(
   input: { riskAnswers: RiskAnswers; facts: FactAnswers },
 ): Promise<{ ok: true; profileChanged: boolean } | { ok: false; error: string }> {
   try {
+    const checked = parseSaveInput(input);
     const profileChanged = await withDb(async db => {
       const [project, data] = await Promise.all([getProject(db, projectId), loadPlanData(db)]);
       if (!project) throw new Error("This project no longer exists.");
-      const changed = profileFor(project.riskAnswers, data.profiles) !== profileFor(input.riskAnswers, data.profiles);
-      await updateProjectAnswers(db, projectId, { ...input, clearToolsReviewed: changed });
+      const changed = profileFor(project.riskAnswers, data.profiles) !== profileFor(checked.riskAnswers, data.profiles);
+      await updateProjectAnswers(db, projectId, { riskAnswers: checked.riskAnswers, facts: checked.facts, clearToolsReviewed: changed });
       return changed;
     });
     revalidatePath(`/projects/${projectId}`);

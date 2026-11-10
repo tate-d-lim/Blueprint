@@ -166,7 +166,7 @@ export function Hotel({
                 data-label={p.id}
                 aria-hidden="true"
                 style={{ top, left, width: LABEL_WIDTH, height: LABEL_HEIGHT }}
-                className={`narrow pointer-events-none absolute flex flex-col justify-center rounded-sm border bg-paper px-2 text-[12px] leading-[1.2] ${
+                className={`narrow pointer-events-none absolute flex flex-col justify-center overflow-hidden rounded-sm border bg-paper px-2 text-[12px] leading-[1.2] ${
                   spot.side === "right" ? "text-right" : ""
                 } ${chosen ? "border-ink" : "border-rule"} ${selected && !chosen ? "opacity-40" : ""}`}
               >

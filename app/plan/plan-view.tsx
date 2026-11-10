@@ -40,7 +40,11 @@ export function PlanView({ data, project, profileId }: { data: PlanData; project
     () => buildPlan(selectPlanInput(data, { profileId, toolIds: project.toolIds, facts }, overlay)),
     [data, profileId, project.toolIds, facts, overlay],
   );
-  const entries = useMemo(() => new Map(data.profiles.flatMap(p => p.entries.map(e => [e.key, e] as const))), [data]);
+  // Cloud profiles share requirement keys, so only the profiles this plan is built from may speak.
+  const entries = useMemo(() => {
+    const active = new Set(plan.items.map(i => i.profileId));
+    return new Map(data.profiles.filter(p => active.has(p._id)).flatMap(p => p.entries.map(e => [e.key, e] as const)));
+  }, [data, plan]);
   const parts = useMemo(() => visibleParts(plan).map(p => partState(p, plan, "tools")), [plan]);
   const profileTitle = data.profiles.find(p => p._id === profileId)?.title ?? "";
   const toolNames = data.tools.filter(t => project.toolIds.includes(t._id)).map(t => t.name);
