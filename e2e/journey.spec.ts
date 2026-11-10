@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { DEMO_QUERY, LOW_QUERY, answerDemoFacts, answerLowRisk } from "./helpers";
+import { DEMO_QUERY, LOW_QUERY, answerDemoFacts, answerLowRisk, saveDemoPlan } from "./helpers";
 
 test.beforeEach(async ({ request }) => {
   await request.post("/api/reset");
@@ -119,4 +119,38 @@ test("leaving with unsaved changes asks first", async ({ page }) => {
   const dialog = page.waitForEvent("dialog");
   await page.close({ runBeforeUnload: true });
   expect((await dialog).type()).toBe("beforeunload");
+});
+
+test("step 5: ticks build the plan, save at once, and keep their order", async ({ page }) => {
+  const id = await saveDemoPlan(page);
+  await expect(page.getByText("Step 5 of 5")).toBeVisible();
+  await expect(page.getByText("Tick the tools that are part of your app.")).toBeVisible();
+  await expect(page.getByText("84 are yours · 0 your tools do · 0 questions")).toBeVisible();
+  const order = () => page.locator("[data-tool-id]").evaluateAll(els => els.map(e => (e as HTMLElement).dataset.toolId));
+  const before = await order();
+  await page.getByRole("checkbox", { name: "appCentral" }).check();
+  await expect(page.getByText("18 are yours · 51 your tools do · 15 questions")).toBeVisible();
+  await expect(page.getByText("Saved", { exact: true })).toBeVisible();
+  expect(await order()).toEqual(before);
+  await page.getByRole("checkbox", { name: "DBaaS" }).check();
+  await page.getByRole("checkbox", { name: "IGA" }).check();
+  await expect(page.getByText("18 are yours · 66 your tools do (15 not yet verified) · 0 questions")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("checkbox", { name: "IGA" })).toBeChecked();
+  await page.goto(`/projects/${id}`);
+  await expect(page).toHaveURL(new RegExp(`/projects/${id}/tools$`));
+  await page.getByRole("button", { name: "Continue to your plan" }).click();
+  await expect(page).toHaveURL(new RegExp(`/projects/${id}$`));
+  await page.goto(`/projects/${id}`);
+  await expect(page).toHaveURL(new RegExp(`/projects/${id}$`));
+});
+
+test("a tool row states both sides", async ({ page }) => {
+  await saveDemoPlan(page);
+  await expect(page.getByText("Removes 51 tasks · adds 15 questions")).toBeVisible();
+  await expect(page.getByText("No Low-Risk Cloud coverage yet")).toBeVisible();
+});
+
+test("an unknown project has no tools page", async ({ page }) => {
+  expect((await page.goto("/projects/nope/tools"))?.status()).toBe(404);
 });

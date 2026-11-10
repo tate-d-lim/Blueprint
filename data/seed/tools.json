@@ -5,7 +5,8 @@
     "description": "Hosting platform for CPFB apps",
     "section": "cpf",
     "oscalType": "service",
-    "isSample": false
+    "isSample": false,
+    "partOfAppWhen": "your app is deployed on appCentral."
   },
   {
     "_id": "dbaas",
@@ -13,7 +14,8 @@
     "description": "Managed database service",
     "section": "cpf",
     "oscalType": "service",
-    "isSample": false
+    "isSample": false,
+    "partOfAppWhen": "your app keeps its data in a DBaaS database."
   },
   {
     "_id": "iga",
@@ -21,7 +23,8 @@
     "description": "Identity and access governance",
     "section": "cpf",
     "oscalType": "service",
-    "isSample": false
+    "isSample": false,
+    "partOfAppWhen": "your staff sign in and get access through IGA."
   },
   {
     "_id": "gencentral",
@@ -29,7 +32,8 @@
     "description": "Generative AI service",
     "section": "cpf",
     "oscalType": "service",
-    "isSample": true
+    "isSample": true,
+    "partOfAppWhen": "your app calls a model through genCentral."
   },
   {
     "_id": "zod",
@@ -37,7 +41,8 @@
     "description": "TypeScript schema validation library",
     "section": "code",
     "oscalType": "software",
-    "isSample": true
+    "isSample": true,
+    "partOfAppWhen": "your code checks its inputs with Zod."
   },
   {
     "_id": "prisma",
@@ -45,7 +50,8 @@
     "description": "Database toolkit with a query builder",
     "section": "code",
     "oscalType": "software",
-    "isSample": true
+    "isSample": true,
+    "partOfAppWhen": "your code reaches its database through Prisma."
   },
   {
     "_id": "ship-hats",
@@ -53,6 +59,7 @@
     "description": "GovTech CI/CD pipeline with the compliance framework at level 4",
     "section": "wog",
     "oscalType": "service",
-    "isSample": true
+    "isSample": true,
+    "partOfAppWhen": "your code is built and shipped with SHIP-HATS."
   }
 ]

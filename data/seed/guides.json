@@ -5,7 +5,8 @@
     "description": "GovTech's website builder",
     "file": "WebSG-LowRiskCloud_2026-06-22.xlsx",
     "profileId": "low-risk-cloud",
-    "source": "WebSG Component Guide, Low-Risk Cloud (published 2026-07-28)"
+    "source": "WebSG Component Guide, Low-Risk Cloud (published 2026-07-28)",
+    "partOfAppWhen": "your site is built and hosted on WebSG."
   },
   {
     "toolId": "isomer",
@@ -13,6 +14,7 @@
     "description": "GovTech's website builder",
     "file": "Isomer-low-risk-cloud-ssp_06Oct2025_Final.xlsx",
     "profileId": "low-risk-cloud",
-    "source": "Isomer Component Guide, Low-Risk Cloud (baseline 2025-09-17, file dated 6 Oct 2025)"
+    "source": "Isomer Component Guide, Low-Risk Cloud (baseline 2025-09-17, file dated 6 Oct 2025)",
+    "partOfAppWhen": "your site is built and hosted on Isomer."
   }
 ]

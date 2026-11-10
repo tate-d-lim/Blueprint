@@ -100,6 +100,7 @@ export interface SeedGuideFile {
   file: string;
   profileId: string;
   source: string;
+  partOfAppWhen: string;
 }
 
 const GOVTECH_APPROVAL_BY = 'GovTech (published Component Guide)';
@@ -121,7 +122,7 @@ async function importSeedGuide(
     mapping[pair.pairKey] = pair.suggested;
   }
   return {
-    tool: { _id: seed.toolId, name: seed.name, description: seed.description, section: 'wog', oscalType: 'service', isSample: false },
+    tool: { _id: seed.toolId, name: seed.name, description: seed.description, section: 'wog', oscalType: 'service', isSample: false, partOfAppWhen: seed.partOfAppWhen },
     version: {
       _id: `${seed.toolId}:${seed.profileId}:v1`,
       toolId: seed.toolId,

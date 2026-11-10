@@ -110,6 +110,8 @@ export interface Tool {
   section: Section;
   oscalType: 'service' | 'software';
   isSample: boolean;
+  /** One line that finishes "It is part of your app if …", so a builder can tell whether to tick the tool. */
+  partOfAppWhen: string;
 }
 
 export type CheckKind = 'code-rule' | 'sbom' | 'pipeline';

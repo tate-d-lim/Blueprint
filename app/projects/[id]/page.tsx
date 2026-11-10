@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { PlanView } from "@/app/plan/plan-view";
 import { Breadcrumb } from "@/app/ui/table";
 import { withDb } from "@/lib/data/db";
@@ -9,6 +9,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const { project, data } = await withDb(async db => ({ project: await getProject(db, id), data: await loadPlanData(db) }));
   if (!project) notFound();
+  // A new project opens on the tools step until the builder leaves it with "Continue to your plan".
+  if (!project.toolsReviewedAt) redirect(`/projects/${id}/tools`);
   return (
     <div className="flex flex-col gap-6">
       <Breadcrumb items={[{ label: "Saved projects", href: "/projects" }, { label: project.name }]} />

@@ -35,7 +35,7 @@ export function makeProfile(
 }
 
 export function makeTool(id: string, opts: Partial<Tool> = {}): Tool {
-  return { _id: id, name: id, description: '', section: 'cpf', oscalType: 'service', isSample: false, ...opts };
+  return { _id: id, name: id, description: '', section: 'cpf', oscalType: 'service', isSample: false, partOfAppWhen: 'x.', ...opts };
 }
 
 export function makeVersion(

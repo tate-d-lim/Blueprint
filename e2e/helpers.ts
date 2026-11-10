@@ -28,3 +28,16 @@ export async function openNeeds(page: Page, query = DEMO_QUERY) {
   await page.goto(`/start/needs?${query}`);
   await expect(page.getByText("Step 4 of 5")).toBeVisible();
 }
+
+/** Steps 1 to 4 through the screens with the demo answers. Saves the plan and returns the new project's id (step 5 is open). */
+export async function saveDemoPlan(page: Page): Promise<string> {
+  await page.goto("/start");
+  await answerLowRisk(page);
+  await page.getByRole("button", { name: "Work out my app type" }).click();
+  await page.getByRole("link", { name: "Next: about your app" }).click();
+  await answerDemoFacts(page);
+  await page.getByRole("button", { name: "Next: what your app needs" }).click();
+  await page.getByRole("button", { name: "Save this plan" }).click();
+  await page.waitForURL(/\/projects\/[^/]+\/tools$/);
+  return new URL(page.url()).pathname.split("/")[2];
+}
