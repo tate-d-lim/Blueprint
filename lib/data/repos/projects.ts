@@ -9,16 +9,21 @@ function assertKey(key: string): asserts key is RequirementKey {
   if (!KEY_PATTERN.test(key)) throw new Error(`Not a valid requirement key: ${key}`);
 }
 
+/** Saving takes one click, so a project is not asked for an owner. */
+export const DEFAULT_OWNER = 'App builder';
+
+/** The longest reason a builder can give for a question. */
+export const MAX_REASON = 280;
+
 const projects = (db: Db) => db.collection<Project>('projects');
 
 export async function createProject(
   db: Db,
-  input: { name: string; ownerName: string; riskAnswers: RiskAnswers; toolIds: string[]; facts?: FactAnswers },
+  input: { name: string; ownerName?: string; riskAnswers: RiskAnswers; toolIds: string[]; facts?: FactAnswers },
 ): Promise<Project> {
   const name = input.name.trim();
-  const ownerName = input.ownerName.trim();
+  const ownerName = input.ownerName?.trim() || DEFAULT_OWNER;
   if (!name) throw new Error('Give the project a name.');
-  if (!ownerName) throw new Error('Add the owner’s name.');
   const now = new Date().toISOString();
   const project: Project = {
     _id: crypto.randomUUID(),
@@ -64,10 +69,36 @@ export async function setQuestionAnswer(
   const path = `questionAnswers.${key}`;
   await projects(db).updateOne(
     { _id: id },
-    answer ? { $set: { [path]: { applies: answer.applies, reason: answer.reason.trim() }, ...touch() } } : { $unset: { [path]: '' }, $set: touch() },
+    answer ? { $set: { [path]: { applies: answer.applies, reason: answer.reason.trim().slice(0, MAX_REASON) }, ...touch() } } : { $unset: { [path]: '' }, $set: touch() },
   );
 }
 
 export async function setProjectTools(db: Db, id: string, toolIds: string[]): Promise<void> {
   await projects(db).updateOne({ _id: id }, { $set: { toolIds: [...new Set(toolIds)], ...touch() } });
+}
+
+/**
+ * Writes new risk answers and facts to the same project. Tools and task statuses stay. `clearToolsReviewed` sends the
+ * builder back to the tools step (when the app type changed). Returns false when the project does not exist.
+ */
+export async function updateProjectAnswers(
+  db: Db,
+  id: string,
+  input: { riskAnswers: RiskAnswers; facts: FactAnswers; clearToolsReviewed: boolean },
+): Promise<boolean> {
+  const hasFacts = Object.keys(input.facts).length > 0;
+  const unset: Record<string, ''> = {};
+  if (!hasFacts) unset.facts = '';
+  if (input.clearToolsReviewed) unset.toolsReviewedAt = '';
+  const update = {
+    $set: { riskAnswers: input.riskAnswers, ...(hasFacts ? { facts: input.facts } : {}), ...touch() },
+    ...(Object.keys(unset).length ? { $unset: unset } : {}),
+  };
+  const result = await projects(db).updateOne({ _id: id }, update);
+  return result.matchedCount === 1;
+}
+
+/** The builder has left the tools step, so the project now opens on the plan page. */
+export async function markToolsReviewed(db: Db, id: string): Promise<void> {
+  await projects(db).updateOne({ _id: id }, { $set: { toolsReviewedAt: new Date().toISOString(), ...touch() } });
 }

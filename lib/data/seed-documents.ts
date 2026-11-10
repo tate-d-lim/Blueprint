@@ -177,6 +177,7 @@ export function expandSeedProject(
     toolIds: seed.toolIds,
     taskStatus,
     questionAnswers,
+    toolsReviewedAt: now,
     createdAt: now,
     updatedAt: now,
   };

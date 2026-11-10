@@ -1,7 +1,7 @@
 import { closeDb, getDb } from '@/lib/data/db';
 import { loadPlanData } from '@/lib/data/repos/plan-data';
 import {
-  createProject, getProject, listProjects, setProjectTools, setQuestionAnswer, setTaskStatus,
+  createProject, getProject, listProjects, markToolsReviewed, setProjectTools, setQuestionAnswer, setTaskStatus, updateProjectAnswers,
 } from '@/lib/data/repos/projects';
 import { seedDatabase } from '@/lib/data/seed';
 import { BadPlanRequestError, resolvePlanRequest } from '@/lib/export/plan-request';
@@ -64,9 +64,50 @@ test('keys that could reach other fields are rejected', async () => {
   await expect(setQuestionAnswer(await getDb(), project._id, '$set', { applies: true, reason: '' })).rejects.toThrow(/key/i);
 });
 
-test('a project needs a name and an owner', async () => {
-  await expect(make({ name: '  ' })).rejects.toThrow(/name/i);
-  await expect(make({ ownerName: '' })).rejects.toThrow(/owner/i);
+test('a project needs a name; the owner defaults to "App builder"', async () => {
+  const db = await getDb();
+  await expect(createProject(db, { name: ' ', riskAnswers: answers, toolIds: [] })).rejects.toThrow('Give the project a name.');
+  expect((await createProject(db, { name: 'Low-Risk Cloud app', riskAnswers: answers, toolIds: [] })).ownerName).toBe('App builder');
+});
+
+test('a new project has no toolsReviewedAt until it is marked', async () => {
+  const db = await getDb();
+  const p = await createProject(db, { name: 'A', riskAnswers: answers, toolIds: [] });
+  expect(p.toolsReviewedAt).toBeUndefined();
+  await markToolsReviewed(db, p._id);
+  expect((await getProject(db, p._id))!.toolsReviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  expect((await getProject(db, 'sample-two-weeks-in'))!.toolsReviewedAt).toBeDefined();
+});
+
+test('saving changed answers keeps the id, the tools and the statuses', async () => {
+  const db = await getDb();
+  const p = await createProject(db, { name: 'A', riskAnswers: answers, toolIds: ['appcentral'] });
+  await setTaskStatus(db, p._id, 'im8-reform:pm-1', { status: 'done' });
+  await markToolsReviewed(db, p._id);
+  expect(await updateProjectAnswers(db, p._id, { riskAnswers: { ...answers, sensitivity: 'sensitive-high' }, facts: { reach: 'staff' }, clearToolsReviewed: true })).toBe(true);
+  const after = (await getProject(db, p._id))!;
+  expect(after).toMatchObject({ _id: p._id, toolIds: ['appcentral'], facts: { reach: 'staff' } });
+  expect(after.riskAnswers.sensitivity).toBe('sensitive-high');
+  expect(after.taskStatus['im8-reform:pm-1']).toEqual({ status: 'done' });
+  expect(after.toolsReviewedAt).toBeUndefined();
+  expect(await updateProjectAnswers(db, 'nope', { riskAnswers: answers, facts: {}, clearToolsReviewed: false })).toBe(false);
+});
+
+test('saving answers without clearing keeps toolsReviewedAt', async () => {
+  const db = await getDb();
+  const p = await createProject(db, { name: 'A', riskAnswers: answers, toolIds: [] });
+  await markToolsReviewed(db, p._id);
+  await updateProjectAnswers(db, p._id, { riskAnswers: answers, facts: {}, clearToolsReviewed: false });
+  expect((await getProject(db, p._id))!.toolsReviewedAt).toBeDefined();
+});
+
+test('a question reason is stored as typed, and cut at 280 characters', async () => {
+  const db = await getDb();
+  const p = await createProject(db, { name: 'A', riskAnswers: answers, toolIds: [] });
+  await setQuestionAnswer(db, p._id, 'im8-reform:is-1', { applies: false, reason: 'No  SMS & no café sign-in — 済' });
+  expect((await getProject(db, p._id))!.questionAnswers['im8-reform:is-1'].reason).toBe('No  SMS & no café sign-in — 済');
+  await setQuestionAnswer(db, p._id, 'im8-reform:is-1', { applies: false, reason: 'x'.repeat(300) });
+  expect((await getProject(db, p._id))!.questionAnswers['im8-reform:is-1'].reason).toHaveLength(280);
 });
 
 test('the list is newest-updated first and includes the sample project', async () => {

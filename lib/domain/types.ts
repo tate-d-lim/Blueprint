@@ -165,6 +165,8 @@ export interface Project {
   questionAnswers: Record<RequirementKey, { applies: boolean; reason: string }>;
   /** Answers about the app. Projects saved before these existed have none, and every requirement applies. */
   facts?: FactAnswers;
+  /** Set when the builder leaves the tools step. A project without it opens on the tools step. ISO date-time. */
+  toolsReviewedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
