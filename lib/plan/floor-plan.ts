@@ -1,4 +1,5 @@
 import type { PlanItem } from './engine';
+import { familyName } from './hotel';
 import { taskStatusOf } from './progress';
 
 /** One room of the floor plan: every must-or-should requirement of one family, sorted by who handles it. */
@@ -16,31 +17,11 @@ export interface Room {
   settled: number;
 }
 
-/** Families in catalogue order, each with the one name its room has on every screen. */
-const FAMILIES: [code: string, name: string][] = [
-  ['as', 'App security'],
-  ['sc', 'Supply chain'],
-  ['st', 'Testing'],
-  ['ns', 'Network'],
-  ['br', 'Backup'],
-  ['dp', 'Data'],
-  ['lm', 'Logging'],
-  // Builder screens never say "control", so Access Control gets a plain name.
-  ['ac', 'Access'],
-  ['cs', 'Containers'],
-  ['pm', 'Security programme'],
-  ['is', 'Infrastructure'],
-  ['sd', 'Secure development'],
-  ['dc', 'Datacentre'],
-  ['tp', 'Third parties'],
-  ['ck', 'Cryptography'],
-  ['ga', 'Generative AI'],
-];
-const ORDER = new Map(FAMILIES.map(([code], i) => [code, i]));
+/** Families in catalogue order. Their names live in the hotel model. */
+const FAMILIES = ['as', 'sc', 'st', 'ns', 'br', 'dp', 'lm', 'ac', 'cs', 'pm', 'is', 'sd', 'dc', 'tp', 'ck', 'ga'];
+const ORDER = new Map(FAMILIES.map((code, i) => [code, i]));
 
-export function roomName(family: string): string {
-  return FAMILIES.find(([code]) => code === family)?.[1] ?? family.toUpperCase();
-}
+export const roomName = familyName;
 
 /** The rooms of a plan, in catalogue order. Good-to-have extras are not part of the building. */
 export function floorPlanRooms(items: PlanItem[]): Room[] {

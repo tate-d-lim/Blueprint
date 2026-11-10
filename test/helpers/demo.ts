@@ -1,5 +1,5 @@
 import type { FactAnswers } from '@/lib/domain/types';
-import { buildPlan, type Plan, type PlanData } from '@/lib/plan/engine';
+import { buildPlan, type Plan, type PlanData, type ProjectOverlay } from '@/lib/plan/engine';
 import { pairVersions, selectPlanInput } from '@/lib/plan/select';
 import type { RiskAnswers } from '@/lib/risk/assess';
 import { loadSeed } from './seed';
@@ -24,6 +24,6 @@ export async function demoData(): Promise<PlanData> {
 }
 
 /** The demo plan on Low-Risk Cloud for these ticked tools and facts. */
-export async function demoPlan(toolIds: string[], facts: FactAnswers = DEMO_FACTS): Promise<Plan> {
-  return buildPlan(selectPlanInput(await demoData(), { profileId: 'low-risk-cloud', toolIds, facts }));
+export async function demoPlan(toolIds: string[], facts: FactAnswers = DEMO_FACTS, project?: ProjectOverlay): Promise<Plan> {
+  return buildPlan(selectPlanInput(await demoData(), { profileId: 'low-risk-cloud', toolIds, facts }, project));
 }

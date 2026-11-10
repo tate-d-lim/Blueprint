@@ -1,6 +1,6 @@
 import type { ProfileEntry } from "@/lib/domain/types";
 import type { PlanItem } from "@/lib/plan/engine";
-import { roomName } from "@/lib/plan/floor-plan";
+import { familyName } from "@/lib/plan/hotel";
 import { GOOD_TO_HAVE_LABEL } from "@/lib/plan/labels";
 import { itemVerification } from "@/lib/plan/verification";
 import { Badge, Chip } from "./badge";
@@ -55,7 +55,7 @@ export function PlanItemView({
 
   const reference = (
     <p className="tnum text-small text-ink-soft">
-      {item.id} in {roomName(item.family)}
+      {item.id} in {familyName(item.family)}
     </p>
   );
 

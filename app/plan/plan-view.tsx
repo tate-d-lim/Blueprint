@@ -11,7 +11,8 @@ import { Segmented } from "@/app/ui/segmented";
 import { Tag } from "@/app/ui/stamp";
 import type { FactAnswers, Project, TaskStatus } from "@/lib/domain/types";
 import { buildPlan, type Heading, type PlanData, type PlanItem, type ProjectOverlay } from "@/lib/plan/engine";
-import { floorPlanRooms, roomName } from "@/lib/plan/floor-plan";
+import { floorPlanRooms } from "@/lib/plan/floor-plan";
+import { familyName } from "@/lib/plan/hotel";
 import { HEADING_TITLES, STATUS_LABEL } from "@/lib/plan/labels";
 import { planProgress, taskStatusOf } from "@/lib/plan/progress";
 import { runSave, type SaveOutcome } from "@/lib/plan/save";
@@ -142,7 +143,7 @@ export function PlanView({
   const questions = byHeading("questions");
   const skipped = byHeading("skipped");
   const extras = byHeading("good-to-have");
-  const emptyInRoom = room ? `Nothing here for ${roomName(room)}.` : "Nothing here.";
+  const emptyInRoom = room ? `Nothing here for ${familyName(room)}.` : "Nothing here.";
   const view = (item: PlanItem, compact = false) => (
     <PlanItemView
       key={`${item.profileId}:${item.key}`}
@@ -197,7 +198,7 @@ export function PlanView({
           className="sticky top-6 flex max-h-[calc(100vh-48px)] min-h-0 min-w-0 flex-col rounded-sm border border-ink bg-paper"
         >
           <div className="flex flex-col gap-1 border-b border-ink px-5 py-3">
-            <h2 className="text-title font-semibold">{room ? roomName(room) : "All rooms"}</h2>
+            <h2 className="text-title font-semibold">{room ? familyName(room) : "All rooms"}</h2>
             <p className="tnum text-small text-ink-soft">
               {tasks.length} to build, {platformCount} built by your tools, {questions.length} to answer
             </p>
