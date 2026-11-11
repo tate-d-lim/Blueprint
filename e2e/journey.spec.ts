@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { DEMO_QUERY, LOW_QUERY, answerDemoFacts, answerLowRisk, saveDemoPlan } from "./helpers";
+import { DEMO_QUERY, LOW_QUERY, answerDemoFacts, answerLowRisk, expectStep, openTools, saveDemoPlan } from "./helpers";
 
 test.beforeEach(async ({ request }) => {
   await request.post("/api/reset");
@@ -8,26 +8,99 @@ test.beforeEach(async ({ request }) => {
 test("step 1 to step 2, and back keeps every answer", async ({ page }) => {
   await page.goto("/start");
   await answerLowRisk(page);
-  await page.getByRole("button", { name: "Work out my app type" }).click();
+  await page.getByRole("button", { name: "Find your app type" }).click();
   await expect(page).toHaveURL(/\/start\/verdict\?/);
   await expect(page.getByRole("heading", { level: 1, name: "Low-Risk Cloud" })).toBeVisible();
-  await expect(page.getByText("You can plan this app with Blueprint.")).toBeVisible();
-  await expect(page.getByText("Step 2 of 5")).toBeVisible();
-  await page.getByRole("link", { name: "Change answers" }).click();
+  await expect(page.getByText("Blueprint can plan your app.")).toBeVisible();
+  await expectStep(page, 2);
+  await page.getByRole("link", { name: "Back" }).click();
   await expect(page.getByRole("radio", { name: "Restricted" })).toBeChecked();
   await expect(page.getByRole("radio", { name: "Slight" })).toBeChecked();
 });
 
 test("Critical impact without CII cannot be planned yet, with who to ask", async ({ page }) => {
   await page.goto("/start/verdict?c=restricted&s=sn&i=critical&d=min&k=");
-  await expect(page.getByText("Blueprint can't plan this app yet.")).toBeVisible();
+  await expect(page.getByText("Blueprint cannot plan your app yet.")).toBeVisible();
   await expect(page.getByText("Your IT security officer (ACISO or MCISO)")).toBeVisible();
   await expect(page.getByRole("link", { name: "Next: about your app" })).toHaveCount(0);
 });
 
+test("a new plan asks one question at a time, and an answer can be changed on the way", async ({ page }) => {
+  await page.goto("/start");
+  await expectStep(page, 1);
+  await expect(page.getByRole("radio")).toHaveCount(6);
+  await expect(page.getByRole("button", { name: "Next question" })).toBeDisabled();
+  await expect(page.getByText("Question 1 of 5")).toBeVisible();
+  await page.getByRole("radio", { name: "Restricted" }).check();
+  await page.getByRole("button", { name: "Next question" }).click();
+  await expect(page.getByRole("group", { name: "How sensitive is the data?" })).toBeVisible();
+  await expect(page.getByText("Question 2 of 5")).toBeVisible();
+  const sofar = page.getByRole("definition").filter({ hasText: "Restricted" });
+  await expect(sofar).toBeVisible();
+  await page.getByRole("button", { name: "Previous question" }).click();
+  await expect(page.getByRole("radio", { name: "Restricted" })).toBeChecked();
+  await page.getByRole("radio", { name: "Official (Open)" }).check();
+  await page.getByRole("button", { name: "Next question" }).click();
+  for (const name of ["Sensitive Normal", "Slight", "None or minimal"]) {
+    await page.getByRole("radio", { name }).check();
+    await page.getByRole("button", { name: "Next question" }).click();
+  }
+  await expect(page.getByRole("group", { name: "Does either of these apply?" })).toBeVisible();
+  await page.getByRole("button", { name: "Change highest data classification" }).click();
+  await page.getByRole("radio", { name: "Restricted" }).check();
+  for (let i = 0; i < 4; i++) await page.getByRole("button", { name: "Next question" }).click();
+  await page.getByRole("button", { name: "Find your app type" }).click();
+  await expect(page).toHaveURL(/\/start\/verdict\?c=restricted&s=sn&i=slight&d=min/);
+});
+
+test("help me choose works out the classification with the RML decision tree", async ({ page }) => {
+  await page.goto("/start");
+  await page.getByText("Help me choose").click();
+  await expect(page.getByText("Would a leak cause some damage to the nation?")).toBeVisible();
+  await page.getByRole("button", { name: "No", exact: true }).click();
+  await page.getByRole("button", { name: "No", exact: true }).click();
+  await expect(page.getByText("Would a leak cause some damage to CPFB?")).toBeVisible();
+  await page.getByRole("button", { name: "Yes", exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Restricted" })).toBeChecked();
+  await expect(page.getByRole("button", { name: "Next question" })).toBeEnabled();
+  await page.getByRole("button", { name: "Start again" }).click();
+  for (let i = 0; i < 4; i++) await page.getByRole("button", { name: "No", exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Official (Open)" })).toBeChecked();
+});
+
+test("show all questions puts every question on the page at once", async ({ page }) => {
+  await page.goto("/start");
+  await page.getByRole("button", { name: "Show all questions" }).click();
+  await expect(page.getByRole("radio")).toHaveCount(6 + 3 + 5 + 2);
+  await expect(page.getByRole("button", { name: "Find your app type" })).toBeDisabled();
+});
+
+test("Back on each step goes one step back, and Back on step 1 goes to Projects", async ({ page }) => {
+  await page.goto(`/start/needs?${DEMO_QUERY}`);
+  await expectStep(page, 4);
+  await page.getByRole("link", { name: "Back" }).click();
+  await expect(page).toHaveURL(/\/start\/app\?/);
+  await page.getByRole("link", { name: "Back" }).click();
+  await expect(page).toHaveURL(/\/start\/verdict\?/);
+  await page.getByRole("link", { name: "Back" }).click();
+  await expect(page).toHaveURL(/\/start\?/);
+  await page.getByRole("link", { name: "Back" }).click();
+  await expect(page).toHaveURL(/\/projects$/);
+  // A saved project is no step: it has tabs, not steps.
+  await page.goto("/projects/sample-two-weeks-in");
+  await expect(page.getByRole("navigation", { name: "Steps" })).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Project" }).locator('[aria-current="page"]')).toHaveText("Plan");
+});
+
+test("the header shows no step; the step is on the page", async ({ page }) => {
+  await page.goto("/start");
+  await expect(page.getByRole("banner").getByText(/Step \d of 4/)).toHaveCount(0);
+  await expect(page.getByRole("main").getByRole("navigation", { name: "Steps" })).toBeVisible();
+});
+
 test("Confidential data is not for the cloud", async ({ page }) => {
   await page.goto("/start/verdict?c=conf&s=sn&i=slight&d=min&k=");
-  await expect(page.getByText("This data can't be hosted on the cloud, so Blueprint can't plan it with CPF's cloud tools.")).toBeVisible();
+  await expect(page.getByText("This data cannot go on the cloud, so Blueprint cannot plan your app with CPF's cloud tools.")).toBeVisible();
 });
 
 test("a verdict link with a broken answer opens step 1 with the rest filled in", async ({ page }) => {
@@ -38,42 +111,72 @@ test("a verdict link with a broken answer opens step 1 with the rest filled in",
 
 test("step 3 asks about GenAI and keeps the answers on the way back", async ({ page }) => {
   await page.goto(`/start/app?${LOW_QUERY}`);
-  await expect(page.getByText("Step 3 of 5")).toBeVisible();
-  await expect(page.getByRole("group", { name: "Does your app use generative AI, for example a chatbot or a text summary?" })).toBeVisible();
+  await expectStep(page, 3);
+  await expect(page.getByRole("group", { name: "Is generative AI part of your app, for example a chatbot or a text summary?" })).toBeVisible();
   await answerDemoFacts(page);
   await page.getByRole("button", { name: "Next: what your app needs" }).click();
   await expect(page).toHaveURL(/\/start\/needs\?.*f=/);
   await page.goBack();
-  await expect(page.getByRole("checkbox", { name: "It sends SMS text messages" })).toBeChecked();
+  await expect(page.getByRole("checkbox", { name: "SMS text messages" })).toBeChecked();
 });
 
-test("step 4: the line, CCTV details, and the save opens step 5", async ({ page }) => {
+test("step 4: the tour, a part close up, and the save opens the plan page", async ({ page }) => {
   await page.goto(`/start/needs?${DEMO_QUERY}`);
-  await expect(page.getByText("Step 4 of 5")).toBeVisible();
-  await expect(page.getByText("This is everything your app needs: 84 requirements in 11 parts. Next, you choose the tools that meet part of it.")).toBeVisible();
-  await expect(page.getByText("Point at a part, or pick it in the list, to see what it asks for.")).toBeVisible();
-  const cctv = page.getByRole("button", { name: /CCTV · Logging/ });
-  await cctv.click();
-  await expect(cctv).toHaveAttribute("aria-pressed", "true");
+  await expectStep(page, 4);
+  await expect(page.getByRole("heading", { level: 1, name: "Here is your application’s security plan" })).toBeVisible();
+  await expect(page.getByText("Click on each part of the hotel to learn more about that set of controls.")).toBeVisible();
+  await expect(page.getByText("Your app needs 84 controls, in 11 parts. After you save, pick the tools that do some of them for you.")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Change/ })).toHaveCount(0);
+
+  // The tour: one tooltip at a time. The labels wait for step 2, and step 3 moves in on the entrance.
+  const tip = page.getByRole("dialog");
+  await expect(tip).toContainText("Step 1 of 4");
+  await expect(tip).toContainText("Based on your answers previously, here is your System Security Plan (SSP).");
+  await expect(page.locator('[data-label="cctv"]')).toBeHidden();
+  const next = tip.getByRole("button", { name: "Next", exact: true });
+  await next.click();
+  await expect(tip).toContainText("the foundation is your infrastructure, and the room keycards are access.");
+  await expect(page.locator('[data-label="cctv"]')).toBeVisible();
+  await next.click();
+  await expect(tip).toContainText("Your app has 8 of them.");
+  await expect(page.locator("[data-hotel]")).toHaveAttribute("data-focus", "entrance");
+  await tip.getByRole("button", { name: "Back" }).click();
+  await expect(tip).toContainText("Step 2 of 4");
+  await next.click();
+  await next.click();
+  await expect(tip).toContainText("When you are ready, save this plan.");
+  await expect(page.locator("[data-hotel]")).toHaveAttribute("data-focus", "");
+  await tip.getByRole("button", { name: "Explore the hotel" }).click();
+  await expect(tip).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Show the tour again" })).toBeVisible();
+
+  await page.getByRole("button", { name: /CCTV · Logging/ }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "CCTV" })).toBeFocused();
+  await expect(page.getByText("Part 2 of 11")).toBeVisible();
   await expect(page.getByText("A record of who did what, and when, so problems can be found and traced.")).toBeVisible();
-  await page.getByText("Show all 10 requirements").click();
+  await expect(page.getByText("Your app has 10 controls in this part.")).toBeVisible();
+  await page.getByText("Show all 10 controls").click();
   await expect(page.getByText("Official wording")).toHaveCount(10);
+  await page.getByRole("button", { name: "Next: Hotel rooms" }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "Hotel rooms" })).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(cctv).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("heading", { level: 1, name: "Here is your application’s security plan" })).toBeVisible();
+
   await expect(page.getByLabel("Plan name")).toHaveValue("Low-Risk Cloud app");
   await expect(page.getByRole("link", { name: /build plan/i })).toHaveCount(0);
   await page.getByRole("button", { name: "Save this plan" }).dblclick();
-  await expect(page).toHaveURL(/\/projects\/[^/]+\/tools$/);
+  await expect(page).toHaveURL(/\/projects\/[^/]+$/);
   await page.goto("/projects");
   await expect(page.getByRole("link", { name: "Low-Risk Cloud app" })).toHaveCount(1);
 });
 
-test("Back from step 5 lands on step 3", async ({ page }) => {
+test("Back from the saved plan lands on step 3", async ({ page }) => {
   await page.goto(`/start/app?${LOW_QUERY}`);
   await answerDemoFacts(page);
   await page.getByRole("button", { name: "Next: what your app needs" }).click();
   await page.getByRole("button", { name: "Save this plan" }).click();
-  await expect(page).toHaveURL(/\/tools$/);
+  await expect(page).toHaveURL(/\/projects\/[^/]+$/);
   await page.goBack();
   await expect(page).toHaveURL(/\/start\/app\?/);
 });
@@ -93,24 +196,55 @@ test("a step 4 link with an unknown project is not found", async ({ page }) => {
 test("editing a saved project writes to the same project and keeps statuses", async ({ page }) => {
   await page.goto("/projects/sample-two-weeks-in");
   await page.getByRole("link", { name: "Change answers" }).click();
-  await expect(page).toHaveURL(/\/start\/needs\?.*project=sample-two-weeks-in/);
-  await page.getByRole("link", { name: "Change app details" }).click();
+  await expect(page).toHaveURL(/\/start\/app\?.*project=sample-two-weeks-in/);
   await page.getByRole("radio", { name: "Government staff only" }).check();
-  await page.getByRole("group", { name: "Does your app use generative AI, for example a chatbot or a text summary?" }).getByRole("radio", { name: "No" }).check();
+  await page.getByRole("group", { name: "Is generative AI part of your app, for example a chatbot or a text summary?" }).getByRole("radio", { name: "No" }).check();
   await page.getByRole("button", { name: "Next: what your app needs" }).click();
   await page.getByRole("button", { name: "Save changes to Sample project (two weeks in)" }).click();
   await expect(page).toHaveURL(/\/projects\/sample-two-weeks-in$/);
-  await expect(page.getByRole("heading", { name: /^Your plan is ready\./ })).toBeVisible();
-  await expect(page.getByText(/\d+ of \d+ tasks done/)).toBeVisible(); // statuses are kept; the new facts may leave some tasks out
+  await expect(page.getByRole("heading", { level: 1, name: "Sample project (two weeks in)" })).toBeVisible();
+  await expect(page.getByText(/\d+ of \d+ done/).first()).toBeVisible(); // statuses are kept; the new facts may leave some controls out
   await page.goto("/projects");
   await expect(page.getByRole("link", { name: /Sample project/ })).toHaveCount(1);
 });
 
-test("a profile change is announced and the save opens step 5", async ({ page }) => {
+test("opening a saved project from Projects shows the hotel beside the checklist, with no steps", async ({ page }) => {
+  await page.goto("/projects");
+  await page.getByRole("link", { name: /Sample project/ }).click();
+  await expect(page).toHaveURL(/\/projects\/sample-two-weeks-in$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Sample project (two weeks in)" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Steps" })).toHaveCount(0);
+  await expect(page.getByRole("dialog")).toHaveCount(0); // no tour for a saved project
+  await expect(page.locator("[data-hotel]")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Your controls" })).toBeVisible();
+});
+
+test("a click on a part of the hotel opens the Hotel tab close up, and Escape goes back to the whole hotel", async ({ page }) => {
+  await page.goto("/projects/sample-two-weeks-in");
+  await expect(page.locator('[data-hotel="ready"]')).toBeVisible({ timeout: 20_000 });
+  await page.getByRole("button", { name: /Walls, windows and doors/ }).click();
+  await expect(page).toHaveURL(/\/projects\/sample-two-weeks-in\/hotel\?part=walls$/);
+  await expect(page.getByRole("heading", { level: 2, name: "Walls, windows and doors" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Project" }).locator('[aria-current="page"]')).toHaveText("Hotel");
+  await expect(page.getByText(/^\d+ of \d+ done/).first()).toBeVisible(); // the header stays
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("heading", { level: 2, name: "Explore your hotel" })).toBeVisible();
+  await expect(page).not.toHaveURL(/part=/);
+});
+
+test("the Hotel tab opens on the part named in its link", async ({ page }) => {
+  await page.goto("/projects/sample-two-weeks-in/hotel?part=cctv");
+  await expect(page.getByRole("heading", { level: 2, name: "CCTV" })).toBeVisible();
+  await page.goto("/projects/sample-two-weeks-in/hotel?part=nope");
+  await expect(page.getByRole("heading", { level: 2, name: "Explore your hotel" })).toBeVisible();
+});
+
+test("a profile change is announced and the save opens the plan page", async ({ page }) => {
   await page.goto(`/start/needs?c=restricted&s=sh&i=slight&d=min&k=&project=sample-two-weeks-in`);
-  await expect(page.getByText(/^Your app type changes from Low-Risk Cloud to Medium-Risk Cloud\. \d+ tasks are added\. Tasks you marked done stay done\.$/)).toBeVisible();
+  await expect(page.getByText(/^Your app type changes from Low-Risk Cloud to Medium-Risk Cloud\. \d+ controls are added\. Controls you marked done stay done\.$/)).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0); // the tour is for a new plan only
   await page.getByRole("button", { name: /^Save changes to / }).click();
-  await expect(page).toHaveURL(/\/projects\/sample-two-weeks-in\/tools$/);
+  await expect(page).toHaveURL(/\/projects\/sample-two-weeks-in$/);
 });
 
 test("leaving with unsaved changes asks first", async ({ page }) => {
@@ -121,38 +255,36 @@ test("leaving with unsaved changes asks first", async ({ page }) => {
   expect((await dialog).type()).toBe("beforeunload");
 });
 
-test("step 5: ticks build the plan, save at once, and keep their order", async ({ page }) => {
+test("tools: a pick marks its controls done at once, saves, and keeps the order of the list", async ({ page }) => {
   const id = await saveDemoPlan(page);
-  await expect(page.getByText("Step 5 of 5")).toBeVisible();
-  await expect(page.getByText("Tick the tools that are part of your app.")).toBeVisible();
-  await expect(page.getByText("84 are yours · 0 your tools do · 0 questions")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Low-Risk Cloud app" })).toBeVisible(); // a new plan opens on the plan page
+  await expect(page.getByText("No tools yet.")).toBeVisible();
+  await expect(page.getByText("0 of 84 done")).toBeVisible();
+  await openTools(page);
   const order = () => page.locator("[data-tool-id]").evaluateAll(els => els.map(e => (e as HTMLElement).dataset.toolId));
   const before = await order();
   await page.getByRole("checkbox", { name: "appCentral" }).check();
-  await expect(page.getByText("18 are yours · 51 your tools do · 15 questions")).toBeVisible();
+  await expect(page.getByText("51 of 84 done")).toBeVisible();
   await expect(page.getByText("Saved", { exact: true })).toBeVisible();
   expect(await order()).toEqual(before);
   await page.getByRole("checkbox", { name: "DBaaS" }).check();
   await page.getByRole("checkbox", { name: "IGA" }).check();
-  await expect(page.getByText("18 are yours · 66 your tools do (15 not yet verified) · 0 questions")).toBeVisible();
+  await expect(page.getByText("66 of 84 done")).toBeVisible();
   await page.reload();
-  await expect(page.getByRole("checkbox", { name: "IGA" })).toBeChecked();
-  await page.goto(`/projects/${id}`);
-  await expect(page).toHaveURL(new RegExp(`/projects/${id}/tools$`));
-  await page.getByRole("button", { name: "Continue to your plan" }).click();
-  await expect(page).toHaveURL(new RegExp(`/projects/${id}$`));
-  await page.goto(`/projects/${id}`);
+  await expect(page.getByText("appCentral, DBaaS, IGA")).toBeVisible();
   await expect(page).toHaveURL(new RegExp(`/projects/${id}$`));
 });
 
 test("a tool row states both sides", async ({ page }) => {
   await saveDemoPlan(page);
-  await expect(page.getByText("Removes 51 tasks · adds 15 questions")).toBeVisible();
+  await openTools(page);
+  await expect(page.getByText("Does 51 controls")).toBeVisible();
   await expect(page.getByText("No Low-Risk Cloud coverage yet")).toBeVisible();
 });
 
-test("an unknown project has no tools page", async ({ page }) => {
-  expect((await page.goto("/projects/nope/tools"))?.status()).toBe(404);
+test("an unknown project has no plan and no hotel", async ({ page }) => {
+  expect((await page.goto("/projects/nope"))?.status()).toBe(404);
+  expect((await page.goto("/projects/nope/hotel"))?.status()).toBe(404);
 });
 
 test("Medium: you can plan it, and no tool covers it yet", async ({ page }) => {

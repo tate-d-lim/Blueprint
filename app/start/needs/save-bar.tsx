@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { createProjectAction, saveProjectAnswersAction } from "@/app/projects/actions";
+import Link from "next/link";
 import { Button } from "@/app/ui/button";
 import { Field, inputClass } from "@/app/ui/field";
 import type { FactAnswers } from "@/lib/domain/types";
@@ -15,11 +16,14 @@ export function SaveBar({
   facts,
   defaultName,
   edit,
+  highlight = false,
 }: {
   answers: RiskAnswers;
   facts: FactAnswers;
   defaultName: string;
   edit: { projectId: string; projectName: string } | null;
+  /** The last step of the tour points at the save. */
+  highlight?: boolean;
 }) {
   const router = useRouter();
   const [name, setName] = useState(defaultName);
@@ -37,12 +41,12 @@ export function SaveBar({
       if (edit) {
         const result = await saveProjectAnswersAction(edit.projectId, { riskAnswers: answers, facts });
         if (!result.ok) throw new Error(result.error);
-        router.replace(result.profileChanged ? `/projects/${edit.projectId}/tools` : `/projects/${edit.projectId}`);
+        router.replace(`/projects/${edit.projectId}`);
       } else {
         const result = await createProjectAction({ name, riskAnswers: answers, facts });
         if (!result.ok) throw new Error(result.error);
-        // Replace, so Back from the tools step goes to step 3 and never saves a second copy.
-        router.replace(`/projects/${result.id}/tools`);
+        // Replace, so Back from the saved project goes to step 3 and never saves a second copy.
+        router.replace(`/projects/${result.id}`);
       }
     } catch (err) {
       busy.current = false;
@@ -56,10 +60,15 @@ export function SaveBar({
       {!edit && (
         <Field label="Plan name">{props => <input {...props} className={inputClass} value={name} onChange={e => setName(e.target.value)} />}</Field>
       )}
-      <div className="flex items-center gap-4">
-        <Button type="button" onClick={save} disabled={pending || (!edit && !name.trim())}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <Button type="button" onClick={save} disabled={pending || (!edit && !name.trim())} className={highlight ? "ring-in" : ""}>
           {edit ? `Save changes to ${edit.projectName}` : "Save this plan"}
         </Button>
+        {edit && !pending && (
+          <Link href={`/projects/${edit.projectId}`} className="text-body font-medium text-ink underline decoration-1 underline-offset-4 hover:decoration-2">
+            Cancel
+          </Link>
+        )}
         {pending && <span className="text-small text-ink-soft">Saving…</span>}
       </div>
       {error && (

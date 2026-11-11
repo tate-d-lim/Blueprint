@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Dialog } from "@/app/ui/dialog";
+import { Field as FormField, inputClass } from "@/app/ui/field";
 import type { ProfileEntry } from "@/lib/domain/types";
 import type { PlanItem } from "@/lib/plan/engine";
 import { areaOf } from "@/lib/plan/hotel";
@@ -14,11 +16,14 @@ export function ItemDetail({
   entry,
   open,
   onClose,
+  note,
 }: {
   item: PlanItem;
   entry?: ProfileEntry;
   open: boolean;
   onClose: () => void;
+  /** A control that is the builder's has a note. It goes into the security plan as the evidence. */
+  note?: { value: string; onSave: (value: string) => void };
 }) {
   const title = item.plain?.title ?? item.title;
   return (
@@ -32,24 +37,26 @@ export function ItemDetail({
       <div className="flex flex-col gap-8">
         <p className="max-w-measure text-ink-soft">{item.reason}</p>
 
+        {note && <NoteField key={item.key} value={note.value} onSave={note.onSave} />}
+
         <section className="flex flex-col gap-3">
           <h3 className="text-lead font-semibold">Official wording</h3>
           {entry ? (
             <dl className="flex flex-col border-t border-rule">
-              <Field label="Requirement" text={entry.statement} />
+              <Field label="Control" text={entry.statement} />
               <Field label="Recommendations" text={entry.recommendations} />
               <Field label="Why it matters (official)" text={entry.rationale} />
               <Field label="References" text={entry.references} />
             </dl>
           ) : (
-            <p className="text-ink-soft">The official wording isn&apos;t available.</p>
+            <p className="text-ink-soft">The official wording is not available.</p>
           )}
         </section>
 
         <section className="flex flex-col gap-3">
           <h3 className="text-lead font-semibold">What your tools say</h3>
           {item.claims.length === 0 ? (
-            <p className="text-ink-soft">None of the tools you picked say anything about this one.</p>
+            <p className="text-ink-soft">None of the tools you picked mention this control.</p>
           ) : (
             <ul className="flex flex-col gap-3">
               {item.claims.map(c => (
@@ -59,7 +66,7 @@ export function ItemDetail({
                     <Badge verification={c.verification} />
                   </div>
                   <div className="flex flex-col gap-2 px-4 py-3 text-body">
-                    <p>{VALUE_LABEL(c.value, c.toolName, c.otherToolName)}</p>
+                    <p>{VALUE_LABEL(c.value, c.toolName)}</p>
                     {c.explanation && <p className="text-ink-soft">{c.explanation}</p>}
                     {c.builderPart && (
                       <p>
@@ -86,5 +93,24 @@ function Field({ label, text }: { label: string; text: string }) {
       <dt className="text-small font-semibold">{label}</dt>
       <dd className="max-w-measure whitespace-pre-line text-body text-ink">{resolveParameters(text)}</dd>
     </div>
+  );
+}
+
+/** The note saves when the field loses focus, and only when it changed. */
+function NoteField({ value, onSave }: { value: string; onSave: (value: string) => void }) {
+  const [text, setText] = useState(value);
+  return (
+    <FormField label="Your note" hint="Who did it, or where it is recorded. It goes into your security plan as the evidence.">
+      {props => (
+        <input
+          {...props}
+          name="note"
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onBlur={() => text !== value && onSave(text)}
+          className={inputClass}
+        />
+      )}
+    </FormField>
   );
 }

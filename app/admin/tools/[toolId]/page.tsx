@@ -42,7 +42,6 @@ async function ToolEditor({
   const initial: DraftRow[] = (current?.entries ?? []).map(e => ({
     key: e.key,
     value: e.value,
-    otherToolId: e.otherToolId,
     explanation: e.explanation,
     builderPart: e.builderPart,
     source: e.source,
@@ -80,7 +79,6 @@ async function ToolEditor({
         profileId={profile._id}
         requirements={profile.entries.map(e => ({ key: e.key, id: e.id, family: e.family, title: e.title, level: e.level }))}
         initialRows={initial}
-        otherTools={data.tools.filter(t => t._id !== tool._id).map(t => ({ id: t._id, name: t.name }))}
         defaultSource={current?.source ?? ""}
       />
     </div>

@@ -11,7 +11,7 @@ export type RuleOutcome = { state: 'applies'; confirmed: boolean } | { state: 's
 
 type Check = { holds: true } | { holds: false; reason: string } | { unknown: true };
 
-const FALLBACK_REASON = 'Your answers about the app rule this out.';
+const FALLBACK_REASON = 'Your answers show this cannot apply to your app.';
 
 const optionsOf = (fact: Fact): FactOption[] =>
   fact.kind === 'choice'

@@ -44,10 +44,8 @@ test('an empty explanation equals a missing one', () => {
   expect(sameCoverage(makeEntry('as-4'), makeEntry('as-4', { explanation: '' }))).toBe(true);
 });
 
-test('changing the value or the other tool breaks sameCoverage', () => {
+test('changing the value breaks sameCoverage', () => {
   expect(sameCoverage(makeEntry('as-4'), makeEntry('as-4', { value: 'shared' }))).toBe(false);
-  const a = makeEntry('dp-1', { value: 'other-tool', otherToolId: 'dbaas' });
-  expect(sameCoverage(a, { ...a, otherToolId: 'iga' })).toBe(false);
   expect(sameCoverage(undefined, makeEntry('as-4'))).toBe(false);
 });
 

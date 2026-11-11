@@ -1,6 +1,6 @@
 import type { Profile } from '../domain/types';
 import type { Verification } from '../plan/verification';
-import type { BuildPlanMeta } from './build-plan-md';
+import type { PlanMeta } from './plan-meta';
 
 export interface AboutInfo {
   generatedAt: string;
@@ -10,7 +10,7 @@ export interface AboutInfo {
   tools: { name: string; version: number; verification: Verification }[];
 }
 
-export function buildAboutInfo(meta: BuildPlanMeta, profile: Profile, projectName?: string): AboutInfo {
+export function buildAboutInfo(meta: PlanMeta, profile: Profile, projectName?: string): AboutInfo {
   const about: AboutInfo = {
     generatedAt: meta.generatedAt,
     appType: meta.appType,

@@ -44,7 +44,7 @@ export function Dialog({
       aria-labelledby={titleId}
       onClose={onClose}
       onClick={e => e.target === e.currentTarget && onClose()}
-      className={`${frame} border-ink bg-paper p-0 text-ink backdrop:bg-ink/35`}
+      className={`${frame} border-ink bg-paper p-0 text-left whitespace-normal text-ink backdrop:bg-ink/35`}
     >
       <div className="flex h-full flex-col">
         <div className="flex items-start justify-between gap-4 border-b border-rule px-6 py-4">

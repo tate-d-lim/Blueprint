@@ -1,0 +1,140 @@
+"use client";
+
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { setProjectToolsAction, setQuestionAnswerAction, setTaskStatusAction } from "@/app/projects/actions";
+import type { ProfileEntry, Project, RequirementKey, TaskStatus } from "@/lib/domain/types";
+import { buildPlan, type Plan, type PlanData, type ProjectOverlay } from "@/lib/plan/engine";
+import { partState, planTotals, visibleParts, type PartState } from "@/lib/plan/hotel";
+import { runSave, type SaveOutcome } from "@/lib/plan/save";
+import { selectPlanInput } from "@/lib/plan/select";
+
+export interface ProjectValue {
+  data: PlanData;
+  project: Project;
+  profileId: string;
+  profileTitle: string;
+  toolIds: string[];
+  toolNames: string[];
+  overlay: ProjectOverlay;
+  plan: Plan;
+  /** The official wording of every requirement in this plan, by key. */
+  entries: Map<string, ProfileEntry>;
+  /** The hotel's parts with progress: what the tools do and what the builder has done. */
+  parts: PartState[];
+  totals: ReturnType<typeof planTotals>;
+  /** "Saved" for a moment after every save, so a tick is never silent. */
+  saved: boolean;
+  error: string | null;
+  dismissError: () => void;
+  setDone: (key: RequirementKey, done: boolean) => void;
+  setNote: (key: RequirementKey, note: string) => void;
+  answer: (key: RequirementKey, answer: { applies: boolean; reason: string } | null) => void;
+  toggleTool: (toolId: string) => void;
+}
+
+const Context = createContext<ProjectValue | null>(null);
+
+export function useProject(): ProjectValue {
+  const value = useContext(Context);
+  if (!value) throw new Error("useProject needs a ProjectProvider");
+  return value;
+}
+
+/**
+ * The state of one saved project, shared by its tabs. A tick or a tool change shows on screen at once and is saved in
+ * the background; if the save fails, the change is undone and the error says so.
+ */
+export function ProjectProvider({
+  data,
+  project,
+  profileId,
+  profileTitle,
+  children,
+}: {
+  data: PlanData;
+  project: Project;
+  profileId: string;
+  profileTitle: string;
+  children: React.ReactNode;
+}) {
+  const [toolIds, setToolIds] = useState(project.toolIds);
+  const [overlay, setOverlay] = useState<ProjectOverlay>({ taskStatus: project.taskStatus, questionAnswers: project.questionAnswers });
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => void (timer.current && clearTimeout(timer.current)), []);
+
+  const facts = useMemo(() => project.facts ?? {}, [project]);
+  const plan = useMemo(
+    () => buildPlan(selectPlanInput(data, { profileId, toolIds, facts }, overlay)),
+    [data, profileId, toolIds, facts, overlay],
+  );
+  // Cloud profiles share requirement keys, so only the profiles this plan is built from may speak.
+  const entries = useMemo(() => {
+    const active = new Set(plan.items.map(i => i.profileId));
+    return new Map(data.profiles.filter(p => active.has(p._id)).flatMap(p => p.entries.map(e => [e.key, e] as const)));
+  }, [data, plan]);
+  const parts = useMemo(() => visibleParts(plan).map(p => partState(p, plan, "progress")), [plan]);
+  const totals = useMemo(() => planTotals(plan), [plan]);
+  const toolNames = useMemo(() => data.tools.filter(t => toolIds.includes(t._id)).map(t => t.name), [data, toolIds]);
+
+  const save = useCallback(async (action: () => Promise<SaveOutcome>, rollback: () => void) => {
+    const failed = await runSave(action);
+    if (failed) {
+      rollback();
+      setError(failed);
+      return;
+    }
+    setError(null);
+    setSaved(true);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setSaved(false), 2000);
+  }, []);
+
+  const mark = useCallback(
+    (key: RequirementKey, value: { status: TaskStatus; note?: string }) => {
+      const previous = overlay;
+      setOverlay(o => ({ ...o, taskStatus: { ...o.taskStatus, [key]: value } }));
+      void save(() => setTaskStatusAction(project._id, key, value), () => setOverlay(previous));
+    },
+    [overlay, project._id, save],
+  );
+  const noteOf = (key: RequirementKey) => overlay.taskStatus[key]?.note;
+
+  const value: ProjectValue = {
+    data,
+    project,
+    profileId,
+    profileTitle,
+    toolIds,
+    toolNames,
+    overlay,
+    plan,
+    entries,
+    parts,
+    totals,
+    saved,
+    error,
+    dismissError: () => setError(null),
+    setDone: (key, done) => mark(key, { status: done ? "done" : "todo", note: noteOf(key) }),
+    setNote: (key, note) => mark(key, { status: overlay.taskStatus[key]?.status === "done" ? "done" : "todo", note }),
+    answer: (key, answer) => {
+      const previous = overlay;
+      setOverlay(o => {
+        const questionAnswers = { ...o.questionAnswers };
+        if (answer) questionAnswers[key] = answer;
+        else delete questionAnswers[key];
+        return { ...o, questionAnswers };
+      });
+      void save(() => setQuestionAnswerAction(project._id, key, answer), () => setOverlay(previous));
+    },
+    toggleTool: toolId => {
+      const previous = toolIds;
+      const next = previous.includes(toolId) ? previous.filter(id => id !== toolId) : [...previous, toolId];
+      setToolIds(next);
+      void save(() => setProjectToolsAction(project._id, next), () => setToolIds(previous));
+    },
+  };
+
+  return <Context.Provider value={value}>{children}</Context.Provider>;
+}

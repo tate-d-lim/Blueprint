@@ -54,7 +54,8 @@ export async function setTaskStatus(
   value: { status: TaskStatus; note?: string },
 ): Promise<void> {
   assertKey(key);
-  const stored = value.note?.trim() ? { status: value.status, note: value.note.trim() } : { status: value.status };
+  const status = value.status === 'done' ? 'done' : 'todo';
+  const stored = value.note?.trim() ? { status, note: value.note.trim() } : { status };
   await projects(db).updateOne({ _id: id }, { $set: { [`taskStatus.${key}`]: stored, ...touch() } });
 }
 
@@ -77,19 +78,24 @@ export async function setProjectTools(db: Db, id: string, toolIds: string[]): Pr
   await projects(db).updateOne({ _id: id }, { $set: { toolIds: [...new Set(toolIds)], ...touch() } });
 }
 
+/** Removes the project for good: its tools, done marks, notes and answers go with it. Returns false when there was none. */
+export async function deleteProject(db: Db, id: string): Promise<boolean> {
+  const result = await projects(db).deleteOne({ _id: id });
+  return result.deletedCount === 1;
+}
+
 /**
- * Writes new risk answers and facts to the same project. Tools and task statuses stay. `clearToolsReviewed` sends the
- * builder back to the tools step (when the app type changed). Returns false when the project does not exist.
+ * Writes new risk answers and facts to the same project. Tools and task statuses stay. Returns false when the project
+ * does not exist.
  */
 export async function updateProjectAnswers(
   db: Db,
   id: string,
-  input: { riskAnswers: RiskAnswers; facts: FactAnswers; clearToolsReviewed: boolean },
+  input: { riskAnswers: RiskAnswers; facts: FactAnswers },
 ): Promise<boolean> {
   const hasFacts = Object.keys(input.facts).length > 0;
   const unset: Record<string, ''> = {};
   if (!hasFacts) unset.facts = '';
-  if (input.clearToolsReviewed) unset.toolsReviewedAt = '';
   const update = {
     $set: { riskAnswers: input.riskAnswers, ...(hasFacts ? { facts: input.facts } : {}), ...touch() },
     ...(Object.keys(unset).length ? { $unset: unset } : {}),
@@ -98,7 +104,3 @@ export async function updateProjectAnswers(
   return result.matchedCount === 1;
 }
 
-/** The builder has left the tools step, so the project now opens on the plan page. */
-export async function markToolsReviewed(db: Db, id: string): Promise<void> {
-  await projects(db).updateOne({ _id: id }, { $set: { toolsReviewedAt: new Date().toISOString(), ...touch() } });
-}

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { withPlanData } from "@/app/plan/plan-data";
 import { parseStartQuery, startQuery } from "@/lib/plan/url-state";
 import { profileFor } from "@/lib/risk/assess";
-import { BackLink, StepHeading } from "../step-nav";
+import { StepBar, StepHeading } from "../step-nav";
 import { AppForm } from "./app-form";
 
 /** Step 3: what is true about the app. No profile for the answers (or broken answers) goes back to step 1. */
@@ -15,9 +15,9 @@ export default async function AppFactsPage({ searchParams }: { searchParams: Pro
     if (!profile) redirect(`/start?${query}`);
     return (
       <div className="flex max-w-form flex-col gap-8">
-        <BackLink href={`/start/verdict?${query}`}>Back</BackLink>
+        <StepBar step={3} back={`/start/verdict?${query}`} />
         <StepHeading title="About your app">
-          Tick what is true. We leave out the requirements that can&apos;t apply to your app, and we tell you which ones.
+          Answer for your app as it is now, or as you plan it. Your plan leaves out the controls that cannot apply, and lists them.
         </StepHeading>
         <AppForm
           risk={complete}

@@ -68,7 +68,7 @@ test('editing one row and saving with a new source leaves every other row attrib
   const previous = (await getCurrentVersion(db, 'appcentral', 'low-risk-cloud'))!;
   expect(previous.version).toBe(1);
   const rows: DraftRow[] = previous.entries.map(e => ({
-    key: e.key, value: e.value, otherToolId: e.otherToolId, explanation: e.explanation, builderPart: e.builderPart, source: e.source,
+    key: e.key, value: e.value, explanation: e.explanation, builderPart: e.builderPart, source: e.source,
   }));
   rows.find(r => r.key === 'im8-reform:as-4')!.explanation = 'appCentral rate-limits sign-ins at the gateway.';
 

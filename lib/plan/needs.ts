@@ -1,4 +1,4 @@
-import type { Profile, RequirementKey } from '../domain/types';
+import type { Level, Profile, RequirementKey } from '../domain/types';
 import type { Plan } from './engine';
 import { resolveParameters } from './format';
 import { PARTS, countsAs, partOf, type PartId } from './hotel';
@@ -12,6 +12,8 @@ export interface DetailRow {
   /** The official statement with its parameters filled in. */
   official: string;
   question: boolean;
+  /** 0 is a must-have, 1 a should-have. Good-to-have requirements (2) do not count, so they have no row. */
+  level: Level;
   /** False when no checked plain text exists for this profile, so `text` is the official wording. */
   plainChecked: boolean;
 }
@@ -30,7 +32,7 @@ export function needsDetails(plan: Plan, profiles: Profile[]): Record<PartId, De
     const official = resolveParameters(statements.get(item.key) ?? item.rationale);
     const question = as === 'question';
     const plain = question ? (item.plain?.question ?? item.plain?.task) : item.plain?.task;
-    out[partOf(item.family)].push({ key: item.key, id: item.id, text: plain ?? official, official, question, plainChecked: plain !== undefined });
+    out[partOf(item.family)].push({ key: item.key, id: item.id, text: plain ?? official, official, question, level: item.level, plainChecked: plain !== undefined });
   }
   for (const rows of Object.values(out)) rows.sort((a, b) => natural(a.id, b.id));
   return out;

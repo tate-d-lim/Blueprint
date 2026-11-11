@@ -6,7 +6,7 @@ import { Dialog } from "@/app/ui/dialog";
 
 const LINK = "font-medium text-ink underline decoration-1 hover:decoration-2";
 
-/** The files for the people who review the app. The build plan for the agent is the main action on the plan page. */
+/** The files for the people who review the app. "Prompt your agent" is the main action of a saved project. */
 export function ExportDialog({ query }: { query: string }) {
   const [open, setOpen] = useState(false);
   return (
@@ -14,7 +14,7 @@ export function ExportDialog({ query }: { query: string }) {
       <Button variant="secondary" onClick={() => setOpen(true)}>
         Export
       </Button>
-      <Dialog open={open} onClose={() => setOpen(false)} title="Export your plan" description="Take your plan out of the app.">
+      <Dialog open={open} onClose={() => setOpen(false)} title="Export your plan" description="Download your plan as files.">
         <div className="flex flex-col gap-4">
           <h3 className="text-lead font-semibold">For security review</h3>
           <p className="text-ink-soft">The same plan, filled in for the people who review your app.</p>

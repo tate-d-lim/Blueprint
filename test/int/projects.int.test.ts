@@ -1,7 +1,7 @@
 import { closeDb, getDb } from '@/lib/data/db';
 import { loadPlanData } from '@/lib/data/repos/plan-data';
 import {
-  createProject, getProject, listProjects, markToolsReviewed, setProjectTools, setQuestionAnswer, setTaskStatus, updateProjectAnswers,
+  createProject, deleteProject, getProject, listProjects, setProjectTools, setQuestionAnswer, setTaskStatus, updateProjectAnswers,
 } from '@/lib/data/repos/projects';
 import { seedDatabase } from '@/lib/data/seed';
 import { BadPlanRequestError, resolvePlanRequest } from '@/lib/export/plan-request';
@@ -70,35 +70,16 @@ test('a project needs a name; the owner defaults to "App builder"', async () => 
   expect((await createProject(db, { name: 'Low-Risk Cloud app', riskAnswers: answers, toolIds: [] })).ownerName).toBe('App builder');
 });
 
-test('a new project has no toolsReviewedAt until it is marked', async () => {
-  const db = await getDb();
-  const p = await createProject(db, { name: 'A', riskAnswers: answers, toolIds: [] });
-  expect(p.toolsReviewedAt).toBeUndefined();
-  await markToolsReviewed(db, p._id);
-  expect((await getProject(db, p._id))!.toolsReviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-  expect((await getProject(db, 'sample-two-weeks-in'))!.toolsReviewedAt).toBeDefined();
-});
-
 test('saving changed answers keeps the id, the tools and the statuses', async () => {
   const db = await getDb();
   const p = await createProject(db, { name: 'A', riskAnswers: answers, toolIds: ['appcentral'] });
   await setTaskStatus(db, p._id, 'im8-reform:pm-1', { status: 'done' });
-  await markToolsReviewed(db, p._id);
-  expect(await updateProjectAnswers(db, p._id, { riskAnswers: { ...answers, sensitivity: 'sensitive-high' }, facts: { reach: 'staff' }, clearToolsReviewed: true })).toBe(true);
+  expect(await updateProjectAnswers(db, p._id, { riskAnswers: { ...answers, sensitivity: 'sensitive-high' }, facts: { reach: 'staff' } })).toBe(true);
   const after = (await getProject(db, p._id))!;
   expect(after).toMatchObject({ _id: p._id, toolIds: ['appcentral'], facts: { reach: 'staff' } });
   expect(after.riskAnswers.sensitivity).toBe('sensitive-high');
   expect(after.taskStatus['im8-reform:pm-1']).toEqual({ status: 'done' });
-  expect(after.toolsReviewedAt).toBeUndefined();
-  expect(await updateProjectAnswers(db, 'nope', { riskAnswers: answers, facts: {}, clearToolsReviewed: false })).toBe(false);
-});
-
-test('saving answers without clearing keeps toolsReviewedAt', async () => {
-  const db = await getDb();
-  const p = await createProject(db, { name: 'A', riskAnswers: answers, toolIds: [] });
-  await markToolsReviewed(db, p._id);
-  await updateProjectAnswers(db, p._id, { riskAnswers: answers, facts: {}, clearToolsReviewed: false });
-  expect((await getProject(db, p._id))!.toolsReviewedAt).toBeDefined();
+  expect(await updateProjectAnswers(db, 'nope', { riskAnswers: answers, facts: {} })).toBe(false);
 });
 
 test('a question reason is stored as typed, and cut at 280 characters', async () => {
@@ -115,7 +96,7 @@ test('the list is newest-updated first and includes the sample project', async (
   const list = await listProjects(await getDb());
   expect(list.map(p => p._id)).toContain('sample-two-weeks-in');
   expect(list[0]._id).toBe(project._id);
-  await setTaskStatus(await getDb(), 'sample-two-weeks-in', 'im8-reform:cs-3', { status: 'in-progress' });
+  await setTaskStatus(await getDb(), 'sample-two-weeks-in', 'im8-reform:cs-3', { status: 'done' });
   expect((await listProjects(await getDb()))[0]._id).toBe('sample-two-weeks-in');
 });
 
@@ -143,4 +124,19 @@ test('a saved project keeps its answers about the app, and its plan leaves out w
 test('a project saved without answers has none, and every requirement applies', async () => {
   const stored = (await getProject(await getDb(), (await make())._id))!;
   expect(stored.facts).toBeUndefined();
+});
+
+test('a deleted project is gone from the list and from lookups, and the others stay', async () => {
+  const db = await getDb();
+  const project = await make({ name: 'Short-lived' });
+  expect(await deleteProject(db, project._id)).toBe(true);
+  expect(await getProject(db, project._id)).toBeNull();
+  const ids = (await listProjects(db)).map(p => p._id);
+  expect(ids).not.toContain(project._id);
+  expect(ids).toContain('sample-two-weeks-in');
+  await expect(resolvePlanRequest(new URLSearchParams({ project: project._id }))).rejects.toBeInstanceOf(BadPlanRequestError);
+});
+
+test('deleting a project that does not exist is not an error, and says so', async () => {
+  expect(await deleteProject(await getDb(), 'nope')).toBe(false);
 });

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-type Variant = "primary" | "secondary" | "quiet";
+type Variant = "primary" | "secondary" | "quiet" | "danger";
 type Size = "md" | "sm";
 
 const BASE =
@@ -9,6 +9,8 @@ const VARIANTS: Record<Variant, string> = {
   primary: "bg-ink text-paper hover:bg-ink/90",
   secondary: "border border-rule-strong bg-paper text-ink hover:border-ink hover:bg-ground",
   quiet: "text-ink underline-offset-4 hover:underline",
+  /** The final button of an action that cannot be undone. */
+  danger: "bg-redline text-paper hover:bg-redline/90",
 };
 const SIZES: Record<Size, string> = {
   md: "h-10 px-4 text-body",

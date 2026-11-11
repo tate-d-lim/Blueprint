@@ -39,7 +39,7 @@ test('fills Implemented (H) and Explanation (I) for the demo plan', async () => 
   expect(h('dp-1')).toBe('Y');
   expect(i('dp-1')).toMatch(/^\[Not yet verified\] Provided by DBaaS/);
   expect(h('as-1')).toBe('N');
-  expect(i('as-1')).toBe("App builder's responsibility. Status: To do (self-declared).");
+  expect(i('as-1')).toBe("App builder's responsibility. Status: Not done (self-declared).");
   expect(h('is-1')).toBe('N/A');
   expect(h('is-11')).toBe('');
   expect(i('is-11')).toBe('');

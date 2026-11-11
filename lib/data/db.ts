@@ -2,7 +2,7 @@ import { MongoClient, MongoNetworkError, MongoServerSelectionError, type Db } fr
 
 export class DatabaseUnavailableError extends Error {
   constructor() {
-    super("The database isn't running. Start it with `docker compose up -d`.");
+    super("The database is not running. Start it with `docker compose up -d`.");
     this.name = 'DatabaseUnavailableError';
   }
 }

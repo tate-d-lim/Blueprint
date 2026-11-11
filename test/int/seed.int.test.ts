@@ -48,7 +48,7 @@ test('withDb reports an unreachable database in plain words', async () => {
   try {
     const attempt = withDb(async db => db.collection('tools').countDocuments());
     await expect(attempt).rejects.toBeInstanceOf(DatabaseUnavailableError);
-    await expect(attempt).rejects.toThrow("The database isn't running. Start it with `docker compose up -d`.");
+    await expect(attempt).rejects.toThrow("The database is not running. Start it with `docker compose up -d`.");
   } finally {
     if (saved === undefined) delete process.env.MONGODB_URI;
     else process.env.MONGODB_URI = saved;

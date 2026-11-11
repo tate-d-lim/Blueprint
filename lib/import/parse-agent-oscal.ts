@@ -25,12 +25,12 @@ function unwrap(raw: string): string {
  * Reads the component definition a coding agent wrote from the coverage brief, as one editor row per
  * requirement in profile order. A missing or empty answer is a blank row, never a refusal: the admin fills it.
  */
-export function parseAgentOscal(raw: string, profile: Profile, toolId: string, otherToolIds: string[]): AgentParseResult {
+export function parseAgentOscal(raw: string, profile: Profile): AgentParseResult {
   let doc: unknown;
   try {
     doc = JSON.parse(unwrap(raw));
   } catch {
-    return refuse("This file isn't JSON. Upload the file your agent wrote.");
+    return refuse("This file is not JSON. Upload the file your agent wrote.");
   }
   const definition = (doc as Record<string, unknown> | null)?.['component-definition'] as Record<string, unknown> | undefined;
   if (!definition || typeof definition !== 'object') return refuse('This file has no component definition. Check that the agent followed the brief.');
@@ -45,9 +45,8 @@ export function parseAgentOscal(raw: string, profile: Profile, toolId: string, o
 
   const byId = new Map(profile.entries.map(e => [e.id.toLowerCase(), e]));
   const unknown = requirements.map(r => text(r['control-id'])).filter(id => !byId.has(id.toLowerCase()));
-  if (unknown.length) return refuse(`${unknown.length} requirement IDs aren't in ${profile.title}: ${unknown.slice(0, 5).join(', ')}`);
+  if (unknown.length) return refuse(`${unknown.length} control IDs are not in ${profile.title}: ${unknown.slice(0, 5).join(', ')}`);
 
-  const tools = new Set(otherToolIds.filter(id => id !== toolId));
   const found = new Map<RequirementKey, DraftRow>();
   for (const requirement of requirements) {
     const entry = byId.get(text(requirement['control-id']).toLowerCase())!;
@@ -58,14 +57,11 @@ export function parseAgentOscal(raw: string, profile: Profile, toolId: string, o
       if (text(p?.value)) props.set(text(p?.name), text(p.value));
     }
     const value = (props.get('responsibility') ?? '').toLowerCase();
-    if (value && !VALUES.has(value)) return refuse(`${entry.id} has the answer "${props.get('responsibility')}", which isn't one of the five answers in the brief.`);
-    const handledBy = props.get('handled-by');
-    if (handledBy && !tools.has(handledBy)) return refuse(`${entry.id} says another tool handles it, but "${handledBy}" isn't a tool here.`);
+    if (value && !VALUES.has(value)) return refuse(`${entry.id} has the answer "${props.get('responsibility')}", which is not one of the four answers in the brief.`);
 
     const row: DraftRow = { key: entry.key, value: value as CoverageValue | '' };
     const description = text(requirement.description);
     const builderPart = props.get('builder-part');
-    if (handledBy) row.otherToolId = handledBy;
     if (value === 'app-builder' && !builderPart) {
       if (description) row.builderPart = description;
     } else {

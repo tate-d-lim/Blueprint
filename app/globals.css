@@ -117,3 +117,75 @@
 @utility narrow {
   font-stretch: 80%;
 }
+
+/*
+ * Step 4: the card's words come out as the camera arrives on a part. A short rise and an unblur, eased out hard, a
+ * little after the move starts. With reduced motion the words are simply there.
+ */
+@keyframes story-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(3px);
+  }
+}
+
+@keyframes nudge-right {
+  0%,
+  70%,
+  100% {
+    transform: translateX(0);
+  }
+  85% {
+    transform: translateX(4px);
+  }
+}
+
+@utility story-in {
+  animation: story-in 420ms cubic-bezier(0.16, 1, 0.3, 1) 160ms backwards;
+}
+
+/* The arrow after "Click on each part" points at the hotel now and then, without a loop that never rests. */
+@utility nudge-right {
+  animation: nudge-right 2.4s cubic-bezier(0.16, 1, 0.3, 1) 1.2s 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-in,
+  .nudge-right {
+    animation: none;
+  }
+}
+
+/* Step 4's tour: the labels come in one by one, top floor first, then their lines. */
+@keyframes label-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@utility label-in {
+  animation: label-in 360ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+/* The last step of the tour shows where the save is. */
+@keyframes ring-in {
+  0% {
+    box-shadow: 0 0 0 0 rgb(28 43 58 / 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgb(28 43 58 / 0);
+  }
+}
+
+@utility ring-in {
+  animation: ring-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) 300ms 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .label-in,
+  .ring-in {
+    animation: none;
+  }
+}

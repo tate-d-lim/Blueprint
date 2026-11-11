@@ -6,24 +6,24 @@ async function effects(ticked: string[], facts: FactAnswers = DEMO_FACTS) {
   return toolEffects(await demoData(), { profileId: 'low-risk-cloud', facts }, ticked);
 }
 
-test('appCentral from nothing: removes 51 tasks, adds 15 questions (redirects), net 36', async () => {
+test('appCentral from nothing: does 51 controls and adds nothing, net 51', async () => {
   const e = (await effects([]))['appcentral'];
-  expect(e).toEqual({ removed: { tasks: 51, questions: 0 }, added: { tasks: 0, questions: 15 }, unverified: 0, net: 36, noCoverage: false });
-  expect(effectText(e, 'Low-Risk Cloud')).toBe('Removes 51 tasks · adds 15 questions');
+  expect(e).toEqual({ removed: { tasks: 51, questions: 0 }, added: { tasks: 0, questions: 0 }, unverified: 0, net: 51, noCoverage: false });
+  expect(effectText(e, 'Low-Risk Cloud')).toBe('Does 51 controls');
 });
 
-test('DBaaS with appCentral ticked answers 4 questions, all not yet verified', async () => {
+test('DBaaS with appCentral ticked does 4 controls, all not yet verified', async () => {
   const e = (await effects(['appcentral']))['dbaas'];
-  expect(e).toMatchObject({ removed: { tasks: 0, questions: 4 }, added: { tasks: 0, questions: 0 }, unverified: 4, net: 4 });
-  expect(effectText(e, 'Low-Risk Cloud')).toBe('Answers 4 questions (4 not yet verified)');
+  expect(e).toMatchObject({ removed: { tasks: 4, questions: 0 }, added: { tasks: 0, questions: 0 }, unverified: 4, net: 4 });
+  expect(effectText(e, 'Low-Risk Cloud')).toBe('Does 4 controls (4 not yet verified)');
 });
 
 test('a ticked tool is measured against the plan without it', async () => {
-  expect((await effects(['appcentral', 'dbaas']))['dbaas'].removed.questions).toBe(4);
+  expect((await effects(['appcentral', 'dbaas']))['dbaas'].removed.tasks).toBe(4);
 });
 
-test('IGA after appCentral and DBaaS answers 11 questions', async () => {
-  expect((await effects(['appcentral', 'dbaas']))['iga']).toMatchObject({ removed: { tasks: 0, questions: 11 }, unverified: 11, net: 11 });
+test('IGA after appCentral and DBaaS does 11 controls', async () => {
+  expect((await effects(['appcentral', 'dbaas']))['iga']).toMatchObject({ removed: { tasks: 11, questions: 0 }, unverified: 11, net: 11 });
 });
 
 test('a tool with no coverage for the profile', async () => {
@@ -60,9 +60,9 @@ test('tasksAdded counts tasks new in the second plan', async () => {
 
 describe('effectText', () => {
   const base = { added: { tasks: 0, questions: 0 }, unverified: 0, noCoverage: false };
-  test('words for tasks, questions, singulars and the not-yet-verified part', () => {
-    expect(effectText({ ...base, removed: { tasks: 6, questions: 2 }, unverified: 4, net: 8 }, 'X')).toBe('Removes 6 tasks, answers 2 questions (4 not yet verified)');
-    expect(effectText({ ...base, removed: { tasks: 1, questions: 1 }, net: 2 }, 'X')).toBe('Removes 1 task, answers 1 question');
+  test('words for controls, questions, singulars and the not-yet-verified part', () => {
+    expect(effectText({ ...base, removed: { tasks: 6, questions: 2 }, unverified: 4, net: 8 }, 'X')).toBe('Does 6 controls, answers 2 questions (4 not yet verified)');
+    expect(effectText({ ...base, removed: { tasks: 1, questions: 1 }, net: 2 }, 'X')).toBe('Does 1 control, answers 1 question');
   });
   test('nothing to remove or add', () => {
     expect(effectText({ ...base, removed: { tasks: 0, questions: 0 }, net: 0 }, 'X')).toBe('Nothing for your app');

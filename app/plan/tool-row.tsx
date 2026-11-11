@@ -1,10 +1,6 @@
 import { Badge, SampleTag } from "@/app/plan/badge";
-import { Button } from "@/app/ui/button";
 import { Checkbox } from "@/app/ui/field";
-import { Note } from "@/app/ui/note";
 import type { Tool } from "@/lib/domain/types";
-import type { ToolHint } from "@/lib/plan/engine";
-import { HINT_TEXT } from "@/lib/plan/labels";
 import type { Verification } from "@/lib/plan/verification";
 
 /** One tool: the tick, what it is, when it is part of the app, and both sides of what it does for this app. */
@@ -43,22 +39,4 @@ export function ToolRow({
       />
     </li>
   );
-}
-
-/** "appCentral expects DBaaS": shown once, above the tool groups. */
-export function ToolHints({ tools, hints, onToggle }: { tools: Tool[]; hints: ToolHint[]; onToggle: (toolId: string) => void }) {
-  const nameOf = (id: string) => tools.find(t => t._id === id)?.name ?? id;
-  return hints.map(h => (
-    <Note
-      key={`${h.fromToolId}>${h.suggestToolId}`}
-      tone="attention"
-      action={
-        <Button size="sm" onClick={() => onToggle(h.suggestToolId)}>
-          Add {nameOf(h.suggestToolId)}
-        </Button>
-      }
-    >
-      {HINT_TEXT(nameOf(h.fromToolId), nameOf(h.suggestToolId), h.count)}
-    </Note>
-  ));
 }

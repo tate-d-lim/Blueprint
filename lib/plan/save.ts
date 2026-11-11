@@ -1,4 +1,4 @@
-export const SAVE_FAILED = "Your last change wasn't saved. Check the server is running, then reload the page.";
+export const SAVE_FAILED = "Your last change was not saved. Check the server is running, then reload the page.";
 
 export type SaveOutcome = { ok: true } | { ok: false; error: string };
 

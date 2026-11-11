@@ -30,7 +30,6 @@ export function sameCoverage(a?: CoverageEntry, b?: CoverageEntry): boolean {
   if (!a || !b) return false;
   return (
     a.value === b.value &&
-    blank(a.otherToolId) === blank(b.otherToolId) &&
     blank(a.explanation) === blank(b.explanation) &&
     blank(a.builderPart) === blank(b.builderPart) &&
     checksKey(a.checks) === checksKey(b.checks)

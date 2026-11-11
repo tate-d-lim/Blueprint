@@ -9,7 +9,7 @@ import { parseStartQuery, startQuery } from "@/lib/plan/url-state";
 import { profileFor } from "@/lib/risk/assess";
 import { NeedsView, type NeedsViewProps } from "./needs-view";
 
-const NO_PLAN: Plan = { items: [], counts: { you: 0, platform: 0, questions: 0, skipped: 0, "good-to-have": 0 }, hints: [] };
+const NO_PLAN: Plan = { items: [], counts: { you: 0, platform: 0, questions: 0, skipped: 0, "good-to-have": 0 } };
 
 /**
  * Step 4: what your app needs. Broken answers or no profile for them go back to step 1; a project in the link that does
@@ -37,7 +37,7 @@ export default async function NeedsPage({ searchParams }: { searchParams: Promis
         const after = buildPlan(selectPlanInput(data, { profileId: profile._id, toolIds: project.toolIds, facts }, project));
         const k = tasksAdded(before, after);
         const from = data.profiles.find(p => p._id === oldId)?.title ?? "your current app type";
-        typeChange = `Your app type changes from ${from} to ${profile.title}. ${k === 1 ? "1 task is" : `${k} tasks are`} added. Tasks you marked done stay done.`;
+        typeChange = `Your app type changes from ${from} to ${profile.title}. ${k === 1 ? "1 control is" : `${k} controls are`} added. Controls you marked done stay done.`;
       }
       const dirty = JSON.stringify(project.riskAnswers) !== JSON.stringify(complete) || JSON.stringify(project.facts ?? {}) !== JSON.stringify(facts);
       edit = { projectId: project._id, projectName: project.name, dirty, typeChange };
@@ -46,7 +46,7 @@ export default async function NeedsPage({ searchParams }: { searchParams: Promis
     return (
       <NeedsView
         profileTitle={profile.title}
-        line={needsLine(planTotals(plan))}
+        line={needsLine(planTotals(plan), !!project)}
         coverageLine={noCoverage ? `No tool covers ${profile.title} yet, so every part is yours.` : null}
         parts={parts}
         details={needsDetails(plan, data.profiles)}

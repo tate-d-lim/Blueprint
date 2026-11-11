@@ -9,15 +9,15 @@
   },
   "as-2": {
     "title": "Use parameterised queries, never string-built ones",
-    "task": "Pass user values to the database and to system commands as parameters (for example through an ORM), never by joining strings together.",
-    "why": "Joining user input into a query lets an attacker change what the query does, which can expose or alter your data.",
+    "task": "Pass user values to the database and to system commands as parameters, for example through an ORM. Never join them into strings.",
+    "why": "If user input is joined into a query, an attacker can change what the query does. This can expose or change your data.",
     "checkedFor": [
       "low-risk-cloud"
     ]
   },
   "as-3": {
     "title": "Escape output before it reaches the browser",
-    "task": "Sanitise or escape every value you put into an HTML page so the browser shows it as text and never runs it as code.",
+    "task": "Sanitise or escape every value that you put into an HTML page. The browser then shows it as text and never runs it as code.",
     "why": "Unescaped output lets an attacker run their own script in your users' browsers (cross-site scripting).",
     "appliesWhen": {
       "fact": "web",
@@ -28,7 +28,7 @@
     ]
   },
   "as-4": {
-    "title": "Slow down repeated sign-in attempts",
+    "title": "Limit repeated sign-in attempts",
     "task": "Rate-limit every sign-in mechanism so repeated attempts are delayed or blocked.",
     "why": "Without limits, attackers can guess passwords at high speed until one works.",
     "appliesWhen": {
@@ -41,7 +41,7 @@
   },
   "as-5": {
     "title": "Set strong password rules",
-    "task": "If you can't use single sign-on, require long passwords and block weak or commonly used ones.",
+    "task": "If you cannot use single sign-on, require long passwords and block weak or commonly used ones.",
     "why": "Short or common passwords are guessed quickly and lead to hijacked accounts.",
     "appliesWhen": {
       "fact": "signin",
@@ -54,7 +54,7 @@
   "as-6": {
     "title": "Store passwords as salted hashes",
     "task": "Store passwords only as salted hashes made with a slow password-hashing scheme, never as plain text.",
-    "why": "If your data leaks, properly hashed passwords can't simply be read out and reused.",
+    "why": "If your data leaks, attackers cannot read and reuse passwords that are correctly hashed.",
     "appliesWhen": {
       "fact": "signin",
       "is": "yes"
@@ -65,7 +65,7 @@
   },
   "as-7": {
     "title": "Check permissions on every request",
-    "task": "Check on the server that the signed-in user is allowed to do what each request asks, using a shared filter or middleware.",
+    "task": "On the server, check that the signed-in user may do what each request asks. Use a shared filter or middleware.",
     "why": "Skipping these checks lets one user read or change another user's data.",
     "checkedFor": [
       "low-risk-cloud"
@@ -74,7 +74,7 @@
   "as-8": {
     "title": "Keep secrets in a secrets manager",
     "task": "Store passwords, keys and tokens in a secrets manager, never in code or config files.",
-    "why": "Secrets left in code are easy to leak and hand attackers direct access to your systems.",
+    "why": "Secrets in code often leak, and they give attackers direct access to your systems.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -93,16 +93,16 @@
   },
   "as-10": {
     "title": "Force HTTPS with HSTS",
-    "task": "Send an HSTS header with a max age of at least one year.",
-    "why": "It stops browsers being tricked into using an unencrypted connection.",
+    "task": "Send an HSTS header with a max age of at least 1 year.",
+    "why": "It stops attackers from tricking browsers into an unencrypted connection.",
     "checkedFor": [
       "low-risk-cloud"
     ]
   },
   "as-11": {
-    "title": "Make users sign in again after a while",
-    "task": "Require users to sign in again after your session time limit, or end the session.",
-    "why": "A forgotten open session would otherwise let anyone using that device act as the user.",
+    "title": "End sessions after a time limit",
+    "task": "When a session reaches your time limit, end it or make the user sign in again.",
+    "why": "Otherwise, anyone who uses a device with a forgotten open session can act as that user.",
     "appliesWhen": {
       "fact": "signin",
       "is": "yes"
@@ -120,9 +120,9 @@
     ]
   },
   "as-13": {
-    "title": "Don't expose internal details in errors",
+    "title": "Do not show internal details in errors",
     "task": "Show users generic error messages and keep stack traces and version details in your logs.",
-    "why": "Debug details help attackers find weaknesses in your system.",
+    "why": "Debug details help attackers find weaknesses in your app.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -130,7 +130,7 @@
   "as-14": {
     "title": "Use trusted cryptography libraries",
     "task": "Use well-known, maintained cryptographic libraries instead of writing your own.",
-    "why": "Home-made or outdated encryption is often broken in ways you won't notice.",
+    "why": "Encryption that you write yourself, or that is out of date, often has flaws that you cannot see.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -157,14 +157,14 @@
   },
   "sc-2": {
     "title": "Require signed commits",
-    "task": "Configure the repository to reject commits that aren't signed.",
-    "why": "Signatures make it harder to slip in changes while pretending to be a teammate.",
+    "task": "Configure the repository to reject commits that are not signed.",
+    "why": "Signatures make it harder for someone to add changes in a teammate's name.",
     "checkedFor": [
       "low-risk-cloud"
     ]
   },
   "sc-3": {
-    "title": "Get a second pair of eyes on every change",
+    "title": "Get every change reviewed",
     "task": "Require review and approval from a designated reviewer before merging to the main branch.",
     "why": "A second reviewer catches mistakes and malicious changes before they ship.",
     "checkedFor": [
@@ -174,7 +174,7 @@
   "sc-4": {
     "title": "Pin your dependency versions",
     "task": "Pin exact versions of your direct and indirect dependencies in the manifest, and commit the lock file.",
-    "why": "Unpinned versions can change silently and bring in bugs or malicious code.",
+    "why": "Unpinned versions can change without warning and add bugs or malicious code.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -182,7 +182,7 @@
   "sc-5": {
     "title": "Build and release the same way every time",
     "task": "Use one repeatable build and release process that records how each release was built and deployed.",
-    "why": "Ad-hoc releases drift and break, and make it hard to trace what is running.",
+    "why": "Releases done by hand are different each time, break more often, and make it hard to know what is running.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -190,7 +190,7 @@
   "sc-6": {
     "title": "Install only pinned versions when you deploy",
     "task": "Make your deployment install exactly the versions pinned in your lock file, nothing newer.",
-    "why": "A deploy that picks the latest version can pull in changes nobody reviewed.",
+    "why": "A deploy that takes the latest version can add changes that nobody reviewed.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -198,7 +198,7 @@
   "sc-7": {
     "title": "Sign your build outputs",
     "task": "Sign code and container images during the build with a trusted key.",
-    "why": "A signature proves an artefact is yours and hasn't been tampered with.",
+    "why": "A signature proves that an artefact is yours and that nobody changed it.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -206,7 +206,7 @@
   "sc-8": {
     "title": "Verify signatures before deploying",
     "task": "Verify the signatures of code and images before you deploy or run them.",
-    "why": "It stops tampered or fake artefacts reaching production.",
+    "why": "It stops changed or fake artefacts from reaching production.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -229,7 +229,7 @@
   },
   "st-2": {
     "title": "Watch your cloud settings for mistakes",
-    "task": "Set up continuous scanning of your cloud configuration to catch misconfigurations.",
+    "task": "Scan your cloud configuration continuously to find settings that are wrong.",
     "why": "A single wrong setting, such as a public storage bucket, can expose your data.",
     "checkedFor": [
       "low-risk-cloud"
@@ -238,14 +238,14 @@
   "st-3": {
     "title": "Offer a way to report vulnerabilities",
     "task": "Publish a public channel, such as the Government Vulnerability Disclosure Programme, for reporting vulnerabilities.",
-    "why": "Outsiders often spot problems first and need somewhere safe to tell you.",
+    "why": "People outside your team often find problems first. They need a safe way to tell you.",
     "checkedFor": [
       "low-risk-cloud"
     ]
   },
   "st-4": {
     "title": "Get your app security-tested every year",
-    "task": "Have your app penetration-tested, or put it through a bug bounty, by an internal or independent team at least every 365 days, and keep the report.",
+    "task": "Get your app penetration-tested, or put it through a bug bounty, at least every 365 days. An internal or independent team can do it. Keep the report.",
     "why": "Testers find weaknesses that normal reviews miss.",
     "checkedFor": [
       "low-risk-cloud"
@@ -254,7 +254,7 @@
   "st-5": {
     "title": "Fix vulnerabilities within the deadlines",
     "task": "Triage every vulnerability and fix it, or formally accept the risk, within the deadline for its severity.",
-    "why": "Known weaknesses left unfixed are the easiest way into your system.",
+    "why": "Known weaknesses that nobody fixes are the easiest way into your app.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -262,7 +262,7 @@
   "ns-1": {
     "title": "Separate public and private network zones",
     "task": "Place components in separate networks or environments based on how sensitive they are.",
-    "why": "If one part is compromised, separation stops the problem spreading.",
+    "why": "If one part is compromised, separation stops the problem from spreading.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -270,15 +270,15 @@
   "ns-2": {
     "title": "Restrict access to cloud services outside your network",
     "task": "Limit who can reach cloud resources that sit outside your virtual network, such as storage and API gateways.",
-    "why": "Open cloud services are a common way data gets exposed.",
+    "why": "Open cloud services are a common cause of data leaks.",
     "checkedFor": [
       "low-risk-cloud"
     ]
   },
   "ns-3": {
-    "title": "Block network traffic unless it's allowed",
+    "title": "Block all network traffic that you do not allow",
     "task": "Deny all network traffic by default and allow only what is needed.",
-    "why": "Fewer open doors means fewer ways in.",
+    "why": "Each open path is a way in, so allow as few as you can.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -302,7 +302,7 @@
   "ns-6": {
     "title": "Use valid HTTPS certificates",
     "task": "Make sure certificates come from a trusted authority, match your domain, and are neither expired nor revoked.",
-    "why": "A bad certificate breaks encryption and lets attackers sit in the middle.",
+    "why": "A bad certificate lets attackers intercept the traffic between your users and your app.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -310,7 +310,7 @@
   "ns-7": {
     "title": "Secure how your services talk to each other",
     "task": "Make service-to-service calls authenticated, authorised and encrypted.",
-    "why": "Unprotected internal calls let an attacker move around freely once they are in.",
+    "why": "If internal calls are not protected, an attacker who gets in can move freely between your services.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -334,7 +334,7 @@
   "br-2": {
     "title": "Test that you can restore from backup",
     "task": "Test your recovery process at least once a year.",
-    "why": "A backup you haven't tested may not work when you need it.",
+    "why": "A backup that you have not tested may not work when you need it.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -342,7 +342,7 @@
   "br-3": {
     "title": "Protect backups from being changed or deleted",
     "task": "Make backups impossible to change or delete for 365 days, or as your data retention policy says.",
-    "why": "Attackers often delete backups first so you can't recover.",
+    "why": "Attackers often delete backups first, so that you cannot recover.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -350,7 +350,7 @@
   "dp-1": {
     "title": "Keep your data in Singapore",
     "task": "Keep restricted and classified data in Singapore, in line with the rules for your classification.",
-    "why": "Data stored abroad can break legal and privacy requirements.",
+    "why": "Data stored abroad can break legal and privacy rules.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -382,7 +382,7 @@
   "lm-1": {
     "title": "Store logs away from the system that made them",
     "task": "Send logs to a different system from the one that generated them.",
-    "why": "Attackers who break in can't easily erase their tracks.",
+    "why": "Attackers who get in then cannot delete the record of what they did.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -406,7 +406,7 @@
   "lm-4": {
     "title": "Log security-relevant events",
     "task": "Log management and audit events, such as sign-ins and permission changes.",
-    "why": "Without an audit trail you can't tell who did what.",
+    "why": "Without an audit trail, you cannot tell who did what.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -420,7 +420,7 @@
     ]
   },
   "lm-6": {
-    "title": "Log requests to your web front door",
+    "title": "Log requests that reach your app from the web",
     "task": "Log access requests reaching your firewalls, load balancers, proxies and web servers.",
     "why": "These logs show attacks as they happen.",
     "appliesWhen": {
@@ -449,7 +449,7 @@
   },
   "lm-9": {
     "title": "Get alerts about security problems",
-    "task": "Set up security monitoring that raises automatic alerts, and respond to them.",
+    "task": "Monitor security with automatic alerts, and respond to each alert.",
     "why": "Alerts let you act in minutes instead of finding a breach weeks later.",
     "checkedFor": [
       "low-risk-cloud"
@@ -474,7 +474,7 @@
   "lm-12": {
     "title": "Send security logs to the central security team",
     "task": "Centralise security logs and monitoring with the Government Cyber Security Operations Centre (GCSOC).",
-    "why": "The central team can spot patterns across government that you can't see alone.",
+    "why": "The central team can see patterns across government that you cannot see alone.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -504,7 +504,7 @@
     ]
   },
   "lm-16": {
-    "title": "Monitor the signals your users feel",
+    "title": "Monitor how your app performs for users",
     "task": "Monitor latency, traffic, errors and saturation.",
     "why": "These show service problems early.",
     "checkedFor": [
@@ -522,7 +522,7 @@
   "lm-19": {
     "title": "Keep sensitive data out of logs",
     "task": "Remove or mask classified and sensitive data before it is logged or shared.",
-    "why": "Logs get copied widely, so secrets in them leak.",
+    "why": "Logs are copied to many places, so secrets in logs leak.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -538,7 +538,7 @@
   "ac-2": {
     "title": "Require multi-factor sign-in for admins",
     "task": "Require multi-factor authentication for privileged accounts at sign-in.",
-    "why": "A stolen password alone is no longer enough to take over an admin account.",
+    "why": "A stolen password alone is then not enough to get into an admin account.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -546,7 +546,7 @@
   "ac-3": {
     "title": "Remove unused admin accounts",
     "task": "Disable or remove privileged accounts within 7 days of last authorised use, or after 90 days unused.",
-    "why": "Dormant accounts are easy to take over without anyone noticing.",
+    "why": "Attackers can use dormant accounts, and often nobody notices.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -554,7 +554,7 @@
   "ac-4": {
     "title": "Review who has access every year",
     "task": "Review access at least yearly and remove unneeded access within 7 days.",
-    "why": "People change roles and leave, and old access builds up.",
+    "why": "People change roles and leave, so access that nobody needs increases over time.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -562,7 +562,7 @@
   "ac-5": {
     "title": "Use hardened devices for remote admin work",
     "task": "Require hardened devices for developers and administrators who work remotely.",
-    "why": "A compromised laptop can hand an attacker your admin access.",
+    "why": "A compromised laptop can give an attacker your admin access.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -606,7 +606,7 @@
   "ac-10": {
     "title": "Use identity-based remote access",
     "task": "Use identity- and device-aware access to private resources instead of plain VPNs.",
-    "why": "It checks who and what is connecting, not just where from.",
+    "why": "It checks who and what connects, not only where the connection comes from.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -638,7 +638,7 @@
   "ac-14": {
     "title": "Keep a list of all accounts",
     "task": "Maintain an inventory of all accounts and what each can access.",
-    "why": "You can't protect or review accounts you don't know exist.",
+    "why": "You cannot protect or review accounts that you do not know about.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -646,7 +646,7 @@
   "cs-1": {
     "title": "Pin base container image versions",
     "task": "Use specific base image tags instead of rolling ones such as latest.",
-    "why": "Rolling tags change underneath you without warning.",
+    "why": "Rolling tags change without warning.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -661,16 +661,16 @@
   },
   "cs-3": {
     "title": "Pass secrets to containers at run time",
-    "task": "Provide secrets to the container when it runs, and never bake them into the image at build time.",
-    "why": "Secrets baked into an image can be pulled out by anyone who has the image.",
+    "task": "Give secrets to the container when it runs. Never put them into the image when you build it.",
+    "why": "Anyone who has the image can read the secrets in it.",
     "checkedFor": [
       "low-risk-cloud"
     ]
   },
   "cs-4": {
-    "title": "Don't run containers as root",
+    "title": "Do not run containers as root",
     "task": "Create a non-root user in the image and make it the default user.",
-    "why": "If the app is compromised, a non-root user limits what the attacker can do.",
+    "why": "If your app is compromised, a non-root user limits what the attacker can do.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -686,7 +686,7 @@
   "cs-6": {
     "title": "Make the container filesystem read-only",
     "task": "Make the container's root filesystem read-only, except for designated writable locations.",
-    "why": "It stops attackers modifying the running container.",
+    "why": "It stops attackers from changing the running container.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -694,7 +694,7 @@
   "cs-7": {
     "title": "Scan container images for known vulnerabilities",
     "task": "Scan images in the container registry for known vulnerabilities.",
-    "why": "It stops you shipping images with known holes.",
+    "why": "It stops you from shipping images with known vulnerabilities.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -710,7 +710,7 @@
   "cs-9": {
     "title": "Keep the cluster API off the internet",
     "task": "Disable public internet access to the container orchestrator's API.",
-    "why": "An exposed cluster API is a direct way to take over your workloads.",
+    "why": "An exposed cluster API gives attackers a direct way into your workloads.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -718,7 +718,7 @@
   "cs-10": {
     "title": "Separate container workloads",
     "task": "Isolate container workloads from each other, for example in separate namespaces.",
-    "why": "Isolation contains an attack to one workload.",
+    "why": "Isolation keeps an attack inside one workload.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -735,25 +735,25 @@
     "title": "Have a plan for cyber incidents",
     "task": "Have a documented cybersecurity incident plan for your organisation and share it with the team.",
     "why": "When something goes wrong, a ready plan saves hours.",
-    "question": "Does your organisation already have a cybersecurity incident plan that covers this app?",
+    "question": "Does your organisation already have a cybersecurity incident plan that covers your app?",
     "checkedFor": [
       "low-risk-cloud"
     ]
   },
   "pm-2": {
     "title": "Assess the risks before launch",
-    "task": "Document a risk assessment for the system and get it approved before the first full release.",
-    "why": "It surfaces risks while they are cheap to fix.",
-    "question": "Has a risk assessment been written and approved for this app, and by whom?",
+    "task": "Document a risk assessment for your app, and get it approved before the first full release.",
+    "why": "It finds risks while they are cheap to fix.",
+    "question": "Has someone written and approved a risk assessment for your app? Who approved it?",
     "checkedFor": [
       "low-risk-cloud"
     ]
   },
   "pm-3": {
     "title": "Write your security plan",
-    "task": "Write, and keep up to date, a plan describing the system and the protections in place.",
+    "task": "Write a plan that describes your app and its protections, and keep it up to date.",
     "why": "It is the record that reviewers and future teammates rely on.",
-    "question": "Is someone already writing the security plan for this app, or is it on you?",
+    "question": "Does someone else write the security plan for your app, or do you write it?",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -761,8 +761,8 @@
   "pm-4": {
     "title": "Get leftover risks formally accepted",
     "task": "Get the remaining risks accepted and approved by the right authority, and review that regularly.",
-    "why": "Someone with authority must own the risks you can't remove.",
-    "question": "Who in your organisation has to accept the leftover risks for this app, and have they?",
+    "why": "Someone with authority should own the risks that you cannot remove.",
+    "question": "Who in your organisation should accept the leftover risks for your app? Have they accepted them?",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -771,16 +771,16 @@
     "title": "Submit the approved security plan centrally",
     "task": "Submit the approved security plan to the central repository.",
     "why": "It gives government a view of security across all systems.",
-    "question": "Has the approved security plan been submitted to the central repository, and who does that?",
+    "question": "Who submits the approved security plan to the central repository? Is it submitted?",
     "checkedFor": [
       "low-risk-cloud"
     ]
   },
   "pm-6": {
     "title": "Keep your system documentation up to date",
-    "task": "Keep detailed, current documentation of the system, its architecture and its parts.",
-    "why": "Good documentation is essential for running and securing the system.",
-    "question": "Is the documentation for this app kept up to date, and where does it live?",
+    "task": "Keep detailed, current documentation of your app, its architecture and its parts.",
+    "why": "Good documentation is necessary to run and secure your app.",
+    "question": "Is the documentation for your app up to date? Where is it kept?",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -810,7 +810,7 @@
     ]
   },
   "is-4": {
-    "title": "Turn off what you don't need",
+    "title": "Disable what you do not need",
     "task": "Disable or remove unused functions, ports, protocols, software and services on hosts.",
     "why": "Everything that is running is something an attacker can try.",
     "checkedFor": [
@@ -836,7 +836,7 @@
   "is-7": {
     "title": "Protect hosts against malware",
     "task": "Run anti-malware tools that detect and quarantine malware on hosts.",
-    "why": "Malware you don't detect can steal data for months.",
+    "why": "Malware that you do not detect can steal data for months.",
     "checkedFor": [
       "low-risk-cloud"
     ]
@@ -850,8 +850,8 @@
     ]
   },
   "is-9": {
-    "title": "Don't run unsupported software",
-    "task": "Make sure deployed software hasn't reached end of support, and get risk approval if it has.",
+    "title": "Do not run unsupported software",
+    "task": "Make sure deployed software has not reached end of support. If it has, get risk approval.",
     "why": "Unsupported software no longer gets security fixes.",
     "checkedFor": [
       "low-risk-cloud"
@@ -896,9 +896,9 @@
   },
   "is-14": {
     "title": "Register your SMS sender ID",
-    "task": "Register and use whitelisted SMS Sender IDs for any SMS you send to the public.",
+    "task": "Register your SMS Sender IDs, and use only registered IDs for SMS to the public.",
     "why": "It stops scammers spoofing government SMS.",
-    "question": "Will your app send SMS to members of the public? If so, is your sender ID registered?",
+    "question": "Does your app send SMS to members of the public? If so, is your sender ID registered?",
     "appliesWhen": {
       "fact": "sms",
       "is": "yes"
@@ -911,7 +911,7 @@
     "title": "Use only go.gov.sg for short links",
     "task": "Use only the go.gov.sg URL shortener to shorten links.",
     "why": "Official short links tell people a link is genuine.",
-    "question": "Will your app share shortened links? If so, are you using go.gov.sg?",
+    "question": "Does your app share shortened links? If so, do you use go.gov.sg?",
     "appliesWhen": {
       "fact": "shortlinks",
       "is": "yes"
@@ -962,7 +962,7 @@
   },
   "sd-6": {
     "title": "Detect secrets in your code",
-    "task": "Set up secret detection in the repository and fix real findings within 1 day.",
+    "task": "Detect secrets in the repository automatically, and fix real findings within 1 day.",
     "why": "Exposed secrets are abused quickly.",
     "checkedFor": [
       "low-risk-cloud"
@@ -979,7 +979,7 @@
   "sd-8": {
     "title": "Separate production from test environments",
     "task": "Keep production and non-production environments apart: applications, data, secrets, roles and networks.",
-    "why": "A mistake or breach in test shouldn't touch real data.",
+    "why": "A mistake or breach in test should not affect real data.",
     "checkedFor": [
       "low-risk-cloud"
     ]

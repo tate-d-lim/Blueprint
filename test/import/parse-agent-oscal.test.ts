@@ -4,7 +4,6 @@ import { key, makeProfile, makeTool } from '../helpers/factories';
 
 const profile = makeProfile('low', [{ id: 'as-3' }, { id: 'ac-7' }, { id: 'is-14' }]);
 const tool = makeTool('probe', { name: 'Probe' });
-const others = ['dbaas'];
 
 type Answer = { r?: string; d?: string; bp?: string; ho?: string; ev?: string };
 type Row = { 'control-id': string; description: string; props: { name: string; ns?: string; value: string }[] };
@@ -30,14 +29,13 @@ function fill(answers: Record<string, Answer>, edit?: (doc: ReturnType<typeof te
     set('responsibility', a.r);
     set('evidence', a.ev);
     set('builder-part', a.bp);
-    set('handled-by', a.ho);
     if (a.d) row.description = a.d;
   }
   edit?.(doc);
   return JSON.stringify(doc);
 }
 
-const parse = (text: string) => parseAgentOscal(text, profile, 'probe', others);
+const parse = (text: string) => parseAgentOscal(text, profile);
 const error = (text: string) => {
   const result = parse(text);
   if (result.ok) throw new Error('expected a refusal');
@@ -51,10 +49,10 @@ test('the empty template gives every row blank, in profile order', () => {
 });
 
 test('maps each field to the editor row', () => {
-  const result = parse(fill({ 'as-3': { r: 'shared', d: 'Does A', bp: 'You do B', ev: 'src/auth.ts' }, 'ac-7': { r: 'other-tool', ho: 'dbaas' } }));
+  const result = parse(fill({ 'as-3': { r: 'shared', d: 'Does A', bp: 'You do B', ev: 'src/auth.ts' }, 'ac-7': { r: 'not-applicable', d: 'No login here' } }));
   if (!result.ok) throw new Error(result.error);
   expect(result.rows[0]).toEqual({ key: key('as-3'), value: 'shared', explanation: 'Does A', builderPart: 'You do B', source: 'src/auth.ts' });
-  expect(result.rows[1]).toEqual({ key: key('ac-7'), value: 'other-tool', otherToolId: 'dbaas' });
+  expect(result.rows[1]).toEqual({ key: key('ac-7'), value: 'not-applicable', explanation: 'No login here' });
   expect(result.filled).toBe(2);
   expect(result.blank).toEqual([key('is-14')]);
 });
@@ -78,7 +76,7 @@ test('a missing requirement comes back blank and listed', () => {
 
 describe('refusals', () => {
   test('not JSON', () => {
-    expect(error('not json')).toBe("This file isn't JSON. Upload the file your agent wrote.");
+    expect(error('not json')).toBe("This file is not JSON. Upload the file your agent wrote.");
   });
 
   test('no component definition', () => {
@@ -98,7 +96,7 @@ describe('refusals', () => {
     const text = fill({}, doc => {
       rowsOf(doc).push({ 'control-id': 'zz-1', description: '', props: [] });
     });
-    expect(error(text)).toBe("1 requirement IDs aren't in low: zz-1");
+    expect(error(text)).toBe("1 control IDs are not in low: zz-1");
   });
 
   test('a requirement twice', () => {
@@ -108,13 +106,8 @@ describe('refusals', () => {
     expect(error(text)).toBe('as-3 appears twice.');
   });
 
-  test('an answer that is not one of the five', () => {
-    expect(error(fill({ 'as-3': { r: 'mostly' } }))).toBe('as-3 has the answer "mostly", which isn\'t one of the five answers in the brief.');
-  });
-
-  test('another tool that does not exist, or is this tool', () => {
-    expect(error(fill({ 'as-3': { r: 'other-tool', ho: 'nope' } }))).toBe('as-3 says another tool handles it, but "nope" isn\'t a tool here.');
-    expect(error(fill({ 'as-3': { r: 'other-tool', ho: 'probe' } }))).toBe('as-3 says another tool handles it, but "probe" isn\'t a tool here.');
+  test('an answer that is not one of the four', () => {
+    expect(error(fill({ 'as-3': { r: 'mostly' } }))).toBe('as-3 has the answer "mostly", which is not one of the four answers in the brief.');
   });
 });
 

@@ -23,7 +23,6 @@ export type Placement =
   | 'app-builder'
   | 'default-builder'
   | 'answered-applies'
-  | 'redirect'
   | 'conflict'
   | 'open'
   | 'answered-not-applicable'
@@ -34,8 +33,6 @@ export interface Claim {
   toolId: string;
   toolName: string;
   value: CoverageValue;
-  otherToolId?: string;
-  otherToolName?: string;
   explanation?: string;
   builderPart?: string;
   checks?: CoverageCheck[];
@@ -66,16 +63,9 @@ export interface PlanItem {
   status?: ItemStatus;
 }
 
-export interface ToolHint {
-  fromToolId: string;
-  suggestToolId: string;
-  count: number;
-}
-
 export interface Plan {
   items: PlanItem[];
   counts: Record<Heading, number>;
-  hints: ToolHint[];
 }
 
 export type ProjectOverlay = Pick<Project, 'taskStatus' | 'questionAnswers'>;
@@ -103,7 +93,7 @@ export interface PlanState {
 }
 
 const YOU_PLACEMENTS: Placement[] = ['shared', 'app-builder', 'default-builder', 'answered-applies'];
-const QUESTION_PLACEMENTS: Placement[] = ['redirect', 'conflict', 'open'];
+const QUESTION_PLACEMENTS: Placement[] = ['conflict', 'open'];
 
 function headingOf(placement: Placement, level: Level): Heading {
   if (level === 2) return 'good-to-have';
@@ -120,13 +110,8 @@ interface Verdict {
 }
 
 /** The sorting rules, top to bottom; the first that matches wins. */
-function classify(entry: ProfileEntry, claims: Claim[], picked: Set<string>): Verdict {
-  const direct = claims.filter(c => c.value !== 'other-tool');
-  // A redirect to a picked tool is set aside: that tool's own claim decides.
-  const openRedirects = claims.filter(
-    c => c.value === 'other-tool' && !(c.otherToolId && picked.has(c.otherToolId)),
-  );
-  const of = (value: CoverageValue) => direct.filter(c => c.value === value);
+function classify(entry: ProfileEntry, claims: Claim[]): Verdict {
+  const of = (value: CoverageValue) => claims.filter(c => c.value === value);
   const names = (cs: Claim[]) => cs.map(c => c.toolName);
   const provided = of('provided');
   const notApplicable = of('not-applicable');
@@ -134,8 +119,8 @@ function classify(entry: ProfileEntry, claims: Claim[], picked: Set<string>): Ve
   const builder = of('app-builder');
 
   if (notApplicable.length && (provided.length || shared.length || builder.length)) {
-    const others = direct.filter(c => c.value !== 'not-applicable');
-    return { placement: 'conflict', decisive: direct, reason: REASON.conflict(names(notApplicable), names(others)) };
+    const others = claims.filter(c => c.value !== 'not-applicable');
+    return { placement: 'conflict', decisive: claims, reason: REASON.conflict(names(notApplicable), names(others)) };
   }
   if (provided.length) return { placement: 'provided', decisive: provided, reason: REASON.provided(names(provided)) };
   if (notApplicable.length) {
@@ -143,10 +128,6 @@ function classify(entry: ProfileEntry, claims: Claim[], picked: Set<string>): Ve
   }
   if (shared.length) return { placement: 'shared', decisive: shared, reason: REASON.shared(names(shared)) };
   if (builder.length) return { placement: 'app-builder', decisive: builder, reason: REASON['app-builder'](names(builder)) };
-  if (openRedirects.length) {
-    const pairs = openRedirects.map(c => ({ from: c.toolName, other: c.otherToolName ?? c.otherToolId ?? 'another tool' }));
-    return { placement: 'redirect', decisive: openRedirects, reason: REASON.redirect(pairs) };
-  }
   if (entry.ifUncovered === 'app-builder') return { placement: 'default-builder', decisive: [], reason: REASON['default-builder']() };
   return { placement: 'open', decisive: [], reason: REASON.open() };
 }
@@ -171,10 +152,6 @@ export function buildPlan(input: PlanInput): Plan {
           source: row.source ?? pair.current.source,
           verification: rowVerification(entry.key, pair),
         };
-        if (row.otherToolId !== undefined) {
-          claim.otherToolId = row.otherToolId;
-          claim.otherToolName = toolName(row.otherToolId);
-        }
         if (row.explanation !== undefined) claim.explanation = row.explanation;
         if (row.builderPart !== undefined) claim.builderPart = row.builderPart;
         if (row.checks?.length) claim.checks = row.checks;
@@ -185,7 +162,7 @@ export function buildPlan(input: PlanInput): Plan {
       let verdict: Verdict =
         rule.state === 'skipped'
           ? { placement: 'not-for-app', decisive: [], reason: rule.reason }
-          : classify(entry, claims, picked);
+          : classify(entry, claims);
       // An answer that confirms the requirement applies settles a question nothing else could.
       if (rule.state === 'applies' && rule.confirmed && verdict.placement === 'open') {
         verdict = { placement: 'default-builder', decisive: [], reason: REASON.confirmed() };
@@ -202,7 +179,9 @@ export function buildPlan(input: PlanInput): Plan {
         }
       }
       if (project && YOU_PLACEMENTS.includes(verdict.placement)) {
-        status = project.taskStatus[entry.key] ?? { status: 'todo' };
+        const saved = project.taskStatus[entry.key];
+        // Projects saved before "done or not done" may hold 'in-progress'. That reads as not done.
+        status = saved ? { ...saved, status: saved.status === 'done' ? 'done' : 'todo' } : { status: 'todo' };
       }
 
       const item: PlanItem = {
@@ -231,18 +210,7 @@ export function buildPlan(input: PlanInput): Plan {
   const counts: Record<Heading, number> = { you: 0, platform: 0, questions: 0, skipped: 0, 'good-to-have': 0 };
   for (const item of items) counts[item.heading]++;
 
-  const hintCounts = new Map<string, ToolHint>();
-  for (const item of items) {
-    if (item.placement !== 'redirect') continue;
-    for (const claim of item.decisive) {
-      if (!claim.otherToolId) continue;
-      const k = `${claim.toolId}>${claim.otherToolId}`;
-      const hint = hintCounts.get(k) ?? { fromToolId: claim.toolId, suggestToolId: claim.otherToolId, count: 0 };
-      hint.count++;
-      hintCounts.set(k, hint);
-    }
-  }
-  return { items, counts, hints: [...hintCounts.values()] };
+  return { items, counts };
 }
 
 /** Every active requirement must appear exactly once. */

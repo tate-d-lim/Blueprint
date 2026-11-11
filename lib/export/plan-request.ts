@@ -6,7 +6,7 @@ import { buildPlan, type Plan, type PlanData } from '../plan/engine';
 import { selectPlanInput } from '../plan/select';
 import { parsePlanQuery } from '../plan/url-state';
 import { assessRisk, profileFor, type RiskAnswers } from '../risk/assess';
-import { toolsForMeta, type BuildPlanMeta } from './build-plan-md';
+import { toolsForMeta, type PlanMeta } from './plan-meta';
 
 export class BadPlanRequestError extends Error {}
 
@@ -18,7 +18,7 @@ export interface PlanRequest {
   /** The base profile the plan is for (the one the answers lead to). */
   profileId: string;
   project?: Project;
-  meta: BuildPlanMeta;
+  meta: PlanMeta;
 }
 
 /** Turns a download link's query string into the plan it describes. Shared by every export route. */

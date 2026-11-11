@@ -24,7 +24,7 @@ import {
   Vector3,
   WebGLRenderer,
 } from "three";
-import { LABEL_EDGE, LABEL_WIDTH } from "./labels";
+import { LABEL_RESERVE } from "./labels";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { PARTS, type Look, type PartId } from "@/lib/plan/hotel";
 import { ANCHORS, BUILDERS, FLOOR_MODEL, HOTEL_COLOURS, ROOF_MODEL, type Builder, type Kit } from "./models";
@@ -35,11 +35,23 @@ export interface ScenePart {
   solidPieces: number;
 }
 
+/**
+ * Where the camera looks. `left` and `right` are the pixels at each edge of the stage that the building must stay out
+ * of (the label columns, a card). With `focus`, the camera moves in on that part until it fills the free space.
+ */
+export interface SceneView {
+  left: number;
+  right: number;
+  focus: PartId | null;
+}
+
 export interface HotelScene {
   /** Sets how built each part is. With `animate`, changed pieces drop in and the light fades on. */
   setParts(parts: ScenePart[], animate: boolean): void;
   /** Shows one part on its own (the others and the floors fade), or the whole hotel again with null. */
   isolate(id: PartId | null): void;
+  /** Moves the camera to a new view. It eases there (at once with reduced motion) and resolves when it arrives. */
+  view(next: SceneView): Promise<void>;
   /** Where a part's anchor is, in pixels inside the stage. Null when the part is not in the hotel. */
   anchorOnScreen(id: PartId): { x: number; y: number } | null;
   partAt(clientX: number, clientY: number): PartId | null;
@@ -53,6 +65,21 @@ const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 const NO_DROP: PartId[] = ["walls", "frame"];
 const DROP = 0.35;
 const DIM = 0.12;
+/** How close the camera goes on each part, as a share of the whole-hotel view. 1 is the whole building. */
+const FOCUS: Record<PartId, number> = {
+  rules: 0.34,
+  cctv: 0.34,
+  rooms: 0.5,
+  walls: 1,
+  keycards: 0.34,
+  assistant: 0.3,
+  inspection: 0.32,
+  entrance: 0.36,
+  deliveries: 0.4,
+  safe: 0.32,
+  generator: 0.32,
+  frame: 1,
+};
 
 interface PieceRec {
   group: Group;
@@ -77,6 +104,7 @@ interface PartRec {
 const NOOP_SCENE: HotelScene = {
   setParts: () => {},
   isolate: () => {},
+  view: () => Promise.resolve(),
   anchorOnScreen: () => null,
   partAt: () => null,
   resize: () => {},
@@ -116,20 +144,68 @@ export function createHotelScene(
   // building clear of the two label columns; the ground block and the dock may run under them.
   const BUILDING_WIDTH = 11.5;
   const BUILDING_SHIFT = -1.2;
-  const LABEL_RESERVE = LABEL_EDGE + LABEL_WIDTH + 8;
+  /** How long the camera takes to move in on a part, or back out, in seconds. */
+  const MOVE = 0.9;
 
   let disposed = false;
   let dirty = true;
-  const fit = () => {
+  let built = false;
+  let view: SceneView = { left: LABEL_RESERVE, right: LABEL_RESERVE, focus: null };
+  // The camera is a centre and a half height, in camera space. A move goes from `from` to `to`.
+  type Cam = { cx: number; cy: number; z: number };
+  let cam: Cam = { cx: BUILDING_SHIFT, cy: 0, z: ZOOM };
+  let from: Cam = cam;
+  let to: Cam = cam;
+  let camT = 1;
+  let arrived: (() => void)[] = [];
+
+  const point = new Vector3();
+  /** The camera for the current view and stage size. */
+  const aim = (): Cam => {
     const W = stage.clientWidth || 1;
     const H = stage.clientHeight || 1;
-    renderer.setSize(W, H);
-    const a = W / H;
-    const free = Math.max(1, W - 2 * LABEL_RESERVE);
-    const z = Math.max(ZOOM, (BUILDING_WIDTH * H) / (2 * free));
-    Object.assign(camera, { left: -z * a + BUILDING_SHIFT, right: z * a + BUILDING_SHIFT, top: z, bottom: -z });
+    const free = Math.max(1, W - view.left - view.right);
+    // How far the middle of the free space is from the middle of the stage, in pixels.
+    const off = view.left + free / 2 - W / 2;
+    const rec = view.focus ? recs.get(view.focus) : undefined;
+    if (!rec || !built) {
+      const z = Math.max(ZOOM, (BUILDING_WIDTH * H) / (2 * free));
+      return { cx: BUILDING_SHIFT - (off * 2 * z) / H, cy: 0, z };
+    }
+    // Close in on the part's anchor (the point its label line goes to). A part that runs through the whole building
+    // gets the whole building, a little closer.
+    const share = FOCUS[rec.id];
+    if (share >= 1) {
+      const z = Math.max(ZOOM * 0.9, (BUILDING_WIDTH * H) / (2 * free));
+      return { cx: BUILDING_SHIFT - (off * 2 * z) / H, cy: 0, z };
+    }
+    camera.updateMatrixWorld();
+    point.set(...ANCHORS[rec.id]).applyMatrix4(camera.matrixWorldInverse);
+    const z = ZOOM * share;
+    return { cx: point.x - (off * 2 * z) / H, cy: point.y, z };
+  };
+
+  const place = (c: Cam) => {
+    const a = (stage.clientWidth || 1) / (stage.clientHeight || 1);
+    Object.assign(camera, { left: -c.z * a + c.cx, right: c.z * a + c.cx, top: c.z + c.cy, bottom: -c.z + c.cy });
     camera.updateProjectionMatrix();
     dirty = true;
+  };
+
+  const land = () => {
+    camT = 1;
+    cam = to;
+    place(cam);
+    const done = arrived;
+    arrived = [];
+    done.forEach(f => f());
+  };
+
+  const fit = () => {
+    renderer.setSize(stage.clientWidth || 1, stage.clientHeight || 1);
+    // A resize lands the camera at once, wherever it was going.
+    to = aim();
+    land();
   };
   fit();
   const observer = new ResizeObserver(fit);
@@ -221,6 +297,22 @@ export function createHotelScene(
   kit.box(8.2, 0.25, 0.2, "#55525e", 0, 0.12, 0, roof);
   kit.box(0.2, 0.25, 6.2, "#55525e", -4, 0.12, 3, roof);
   let roofT = opts.reducedMotion ? 1 : 0;
+  // Close in on a part, the roof fades away so it does not hide the top floor. 1 is the roof as drawn.
+  let roofShow = 1;
+  let roofTo = 1;
+  const showRoof = (v: number) => {
+    roofShow = v;
+    roof.visible = v > 0;
+    roof.traverse(o => {
+      const mesh = o as Mesh;
+      if (!mesh.isMesh) return;
+      const m = mesh.material as Material;
+      m.transparent = v < 1;
+      m.opacity = v;
+      m.depthWrite = v >= 1;
+    });
+    dirty = true;
+  };
   roof.rotation.x = -ease(roofT) * 1.02;
 
   // ---------- parts ----------
@@ -256,8 +348,9 @@ export function createHotelScene(
   };
 
   const applyDim = (rec: PartRec) => {
-    rec.ghost.opacity = rec.dim ? 0.1 : 0.55;
-    rec.edge.opacity = rec.dim ? 0.15 : 0.9;
+    const close = view.focus === rec.id;
+    rec.ghost.opacity = rec.dim ? 0.1 : close ? 0.8 : 0.55;
+    rec.edge.opacity = rec.dim ? 0.15 : close ? 1 : 0.9;
     for (const piece of rec.pieces)
       for (const m of piece.meshes) {
         const real = m.userData.real as Material;
@@ -286,7 +379,6 @@ export function createHotelScene(
     return piece;
   };
 
-  let built = false;
   let pending: { parts: ScenePart[]; animate: boolean } | null = null;
 
   const apply = (parts: ScenePart[], animate: boolean) => {
@@ -332,6 +424,11 @@ export function createHotelScene(
     () => {
       if (disposed) return;
       built = true;
+      // A part picked while the models loaded gets its close view now.
+      if (view.focus) {
+        to = aim();
+        land();
+      }
       if (pending) apply(pending.parts, pending.animate);
       pending = null;
       dirty = true;
@@ -350,6 +447,23 @@ export function createHotelScene(
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     let moving = false;
+    if (camT < 1) {
+      camT = Math.min(1, camT + dt / MOVE);
+      if (camT >= 1) land();
+      else {
+        // Ease out hard, and zoom on a log scale, so the move feels even from far out to close in.
+        const k = 1 - Math.pow(1 - camT, 4);
+        const z = Math.exp(Math.log(from.z) + (Math.log(to.z) - Math.log(from.z)) * k);
+        cam = { cx: from.cx + (to.cx - from.cx) * k, cy: from.cy + (to.cy - from.cy) * k, z };
+        place(cam);
+      }
+      moving = true;
+    }
+    if (roofShow !== roofTo) {
+      const step = dt / 0.35;
+      showRoof(roofTo > roofShow ? Math.min(roofTo, roofShow + step) : Math.max(roofTo, roofShow - step));
+      moving = true;
+    }
     if (roofT < 1) {
       roofT = Math.min(1, roofT + dt / 1.4);
       roof.rotation.x = -ease(roofT) * 1.02;
@@ -398,6 +512,20 @@ export function createHotelScene(
         m.needsUpdate = true;
       });
       dirty = true;
+    },
+    view(next) {
+      view = next;
+      roofTo = next.focus ? 0 : 1;
+      if (opts.reducedMotion) showRoof(roofTo);
+      for (const rec of recs.values()) applyDim(rec);
+      return new Promise<void>(resolve => {
+        arrived.push(resolve);
+        from = cam;
+        to = aim();
+        const near = Math.abs(to.cx - cam.cx) + Math.abs(to.cy - cam.cy) + Math.abs(to.z - cam.z) < 1e-3;
+        if (opts.reducedMotion || disposed || near) land();
+        else camT = 0;
+      });
     },
     anchorOnScreen(id) {
       if (!recs.has(id)) return null;

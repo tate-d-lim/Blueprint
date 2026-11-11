@@ -1,16 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { attempt } from "@/lib/data/attempt";
-import { withDb } from "@/lib/data/db";
-import { createProject, getProject, markToolsReviewed, setProjectTools, setQuestionAnswer, setTaskStatus, updateProjectAnswers } from "@/lib/data/repos/projects";
+import { DatabaseUnavailableError, withDb } from "@/lib/data/db";
+import { createProject, deleteProject, setProjectTools, setQuestionAnswer, setTaskStatus, updateProjectAnswers } from "@/lib/data/repos/projects";
 import type { FactAnswers, TaskStatus } from "@/lib/domain/types";
 import type { SaveOutcome } from "@/lib/plan/save";
 import { parseSaveInput, parseToolIds } from "@/lib/plan/validate";
-import { profileFor, type RiskAnswers } from "@/lib/risk/assess";
-import { loadPlanData } from "@/lib/data/repos/plan-data";
+import type { RiskAnswers } from "@/lib/risk/assess";
 
-/** Step 4's save: a new project with the answers, no tools yet, and the default owner. */
+/** Step 4's save: a new project with the answers, no tools yet, and the default owner. The tools come later, on the saved project. */
 export async function createProjectAction(input: {
   name: string;
   riskAnswers: RiskAnswers;
@@ -22,7 +22,7 @@ export async function createProjectAction(input: {
     revalidatePath("/projects");
     return { ok: true, id: project._id };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Could not save the project." };
+    return { ok: false, error: err instanceof Error ? err.message : "Your plan was not saved. Check the server is running, then try again." };
   }
 }
 
@@ -49,31 +49,36 @@ export async function setProjectToolsAction(projectId: string, toolIds: string[]
 }
 
 /**
- * Writes edited answers to the same project. When the answers give another app type, the builder goes back to the
- * tools step, because tool coverage is per profile.
+ * Deletes a project for good, then goes to the Projects list. A project that is already gone counts as deleted.
+ * Only a failure comes back to the caller; on success the redirect ends the call.
  */
+export async function deleteProjectAction(projectId: string): Promise<{ ok: false; error: string }> {
+  try {
+    await withDb(db => deleteProject(db, String(projectId)));
+  } catch (err) {
+    return { ok: false, error: err instanceof DatabaseUnavailableError ? err.message : "The project was not deleted. Check the server is running, then try again." };
+  }
+  revalidatePath("/projects");
+  redirect("/projects");
+}
+
+/** Writes edited answers to the same project. Tools and task statuses stay. */
 export async function saveProjectAnswersAction(
   projectId: string,
   input: { riskAnswers: RiskAnswers; facts: FactAnswers },
-): Promise<{ ok: true; profileChanged: boolean } | { ok: false; error: string }> {
+): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
     const checked = parseSaveInput(input);
-    const profileChanged = await withDb(async db => {
-      const [project, data] = await Promise.all([getProject(db, projectId), loadPlanData(db)]);
-      if (!project) throw new Error("This project no longer exists.");
-      const changed = profileFor(project.riskAnswers, data.profiles) !== profileFor(checked.riskAnswers, data.profiles);
-      await updateProjectAnswers(db, projectId, { riskAnswers: checked.riskAnswers, facts: checked.facts, clearToolsReviewed: changed });
-      return changed;
+    await withDb(async db => {
+      if (!(await updateProjectAnswers(db, projectId, { riskAnswers: checked.riskAnswers, facts: checked.facts }))) {
+        throw new Error("This project no longer exists.");
+      }
     });
     revalidatePath(`/projects/${projectId}`);
     revalidatePath("/projects");
-    return { ok: true, profileChanged };
+    return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error && err.message === "This project no longer exists." ? err.message : "Your changes weren't saved. Check the server is running, then try again." };
+    return { ok: false, error: err instanceof Error && err.message === "This project no longer exists." ? err.message : "Your changes were not saved. Check the server is running, then try again." };
   }
 }
 
-/** The builder leaves the tools step: from now on the project opens on the plan page. */
-export async function continueToPlanAction(projectId: string) {
-  return saved(projectId, () => withDb(db => markToolsReviewed(db, projectId)));
-}

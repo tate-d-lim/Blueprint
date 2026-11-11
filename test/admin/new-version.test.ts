@@ -10,11 +10,6 @@ test('a blank source is an error on the version', () => {
   });
 });
 
-test('"Handled by another tool" without a tool is an error on that row', () => {
-  const result = validateNewVersion([row('dp-1', { value: 'other-tool' })], 'slide 12');
-  expect(result).toEqual({ ok: false, errors: [{ key: key('dp-1'), message: 'Pick which tool handles this.' }] });
-});
-
 test('rows with no value are dropped and strings are trimmed', () => {
   const result = validateNewVersion(
     [
@@ -29,22 +24,8 @@ test('rows with no value are dropped and strings are trimmed', () => {
   });
 });
 
-test('a tool is kept only for "Handled by another tool" rows', () => {
-  const result = validateNewVersion(
-    [row('dp-1', { value: 'other-tool', otherToolId: 'dbaas' }), row('as-4', { value: 'provided', otherToolId: 'dbaas' })],
-    'slide 12',
-  );
-  expect(result).toEqual({
-    ok: true,
-    entries: [
-      { key: key('dp-1'), value: 'other-tool', otherToolId: 'dbaas' },
-      { key: key('as-4'), value: 'provided' },
-    ],
-  });
-});
-
 test('every problem is reported, not just the first', () => {
-  const result = validateNewVersion([row('dp-1', { value: 'other-tool' }), row('dp-2', { value: 'other-tool' })], '');
+  const result = validateNewVersion([row('dp-1', { value: '' }), row('dp-2', { value: '' })], '', { requireAll: true });
   expect(result.ok).toBe(false);
   if (!result.ok) expect(result.errors).toHaveLength(3);
 });
@@ -56,7 +37,7 @@ test('a version with no rows is allowed (a new tool)', () => {
 test('with requireAll, a blank row is an error on that row', () => {
   expect(validateNewVersion([row('as-1', { value: '' }), row('as-2')], 's', { requireAll: true })).toEqual({
     ok: false,
-    errors: [{ key: key('as-1'), message: 'Choose an answer for this requirement.' }],
+    errors: [{ key: key('as-1'), message: 'Choose an answer for this control.' }],
   });
 });
 

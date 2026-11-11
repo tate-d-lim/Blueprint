@@ -118,5 +118,5 @@ test('building entries with a pair left out of the mapping fails', async () => {
 test('building entries for a guide with unknown IDs fails', async () => {
   const profile = await lowRiskCloud();
   const guide = await parseGuide(file('FormSG-Component-Guide-DSS.xlsx'), 'f');
-  expect(() => buildImportEntries(guide, profile, {})).toThrow(/aren.t in/);
+  expect(() => buildImportEntries(guide, profile, {})).toThrow(/are not in/);
 });

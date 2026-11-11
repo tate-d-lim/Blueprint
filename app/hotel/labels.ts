@@ -24,3 +24,6 @@ export const LABEL_PLACES: Record<PartId, { side: "left" | "right"; y: number }>
 export const LABEL_WIDTH = 192;
 export const LABEL_HEIGHT = 46;
 export const LABEL_EDGE = 12;
+
+/** The room one label column takes from the edge of the stage, with a small gap before the building. */
+export const LABEL_RESERVE = LABEL_EDGE + LABEL_WIDTH + 8;

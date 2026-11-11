@@ -3,9 +3,8 @@ import { makeProfile, makeTool } from '../helpers/factories';
 
 const profile = makeProfile('low', [{ id: 'as-3', plain: { title: 'Lock it', task: 'Do X', why: 'Because', checkedFor: ['low'] } }, { id: 'ac-7' }]);
 const tool = makeTool('probe', { name: 'Probe' });
-const otherTools = [makeTool('dbaas', { name: 'DBaaS' })];
 const generatedAt = '2026-10-29T00:00:00.000Z';
-const md = renderCoverageBrief({ tool, profile, otherTools, generatedAt });
+const md = renderCoverageBrief({ tool, profile, generatedAt });
 
 type Row = { 'control-id': string; description: string; props: { name: string; value: string }[] };
 const rowsOf = (doc: Record<string, unknown>): Row[] =>
@@ -30,8 +29,10 @@ test('the template has an empty answer and evidence on every row', () => {
   }
 });
 
-test('the brief names all five answers and the other tool ids', () => {
-  for (const word of ['provided', 'shared', 'app-builder', 'not-applicable', 'other-tool', 'dbaas']) expect(md).toContain(`\`${word}\``);
+test('the brief names all four answers, and no answer points at another tool', () => {
+  for (const word of ['provided', 'shared', 'app-builder', 'not-applicable']) expect(md).toContain(`\`${word}\``);
+  expect(md).not.toContain('other-tool');
+  expect(md).not.toContain('handled-by');
 });
 
 test('the brief names the output file', () => {

@@ -5,7 +5,7 @@ import contacts from "@/data/seed/contacts.json";
 import { verdictFor } from "@/lib/plan/verdict";
 import { startQuery, parseStartQuery } from "@/lib/plan/url-state";
 import { OPTION_LABELS, RISK_SOURCE_URL, type RiskAnswers } from "@/lib/risk/assess";
-import { BackLink, StepHeading } from "../step-nav";
+import { StepBar, StepHeading } from "../step-nav";
 
 /** Step 2: the app type, from the answers. Missing or broken answers go back to step 1 with the rest filled in. */
 export default async function VerdictPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -17,7 +17,7 @@ export default async function VerdictPage({ searchParams }: { searchParams: Prom
     const verdict = verdictFor(complete, data.profiles, data.versions);
     return (
       <div className="flex max-w-form flex-col gap-8">
-        <BackLink href={`/start?${query}`}>Change answers</BackLink>
+        <StepBar step={2} back={`/start?${query}`} />
         <StepHeading title={verdict.heading}>{verdict.sentence}</StepHeading>
         {verdict.coverageLine && <p className="max-w-measure text-body text-ink">{verdict.coverageLine}</p>}
 

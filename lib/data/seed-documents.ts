@@ -42,7 +42,6 @@ export interface SeedVersionFile {
   groups: {
     ids: string[];
     value: CoverageValue;
-    otherToolId?: string;
     explanation?: string;
     builderPart?: string;
     checks?: CoverageCheck[];
@@ -61,16 +60,12 @@ export function expandSeedVersion(
   const seen = new Set<string>();
   const entries: CoverageEntry[] = [];
   for (const group of seed.groups) {
-    if (group.otherToolId !== undefined && !toolIds.has(group.otherToolId)) {
-      throw new Error(`Unknown tool ${group.otherToolId} in ${file}`);
-    }
     for (const id of group.ids) {
       const key = keyOf.get(id);
       if (!key) throw new UnknownRequirementError(id, file);
       if (seen.has(id)) throw new Error(`Requirement ${id} is listed twice in ${file}`);
       seen.add(id);
       const entry: CoverageEntry = { key, value: group.value };
-      if (group.otherToolId !== undefined) entry.otherToolId = group.otherToolId;
       if (group.explanation !== undefined) entry.explanation = group.explanation;
       if (group.builderPart !== undefined) entry.builderPart = group.builderPart;
       if (group.checks?.length) entry.checks = group.checks.map(c => ({ ...c }));
@@ -178,7 +173,6 @@ export function expandSeedProject(
     toolIds: seed.toolIds,
     taskStatus,
     questionAnswers,
-    toolsReviewedAt: now,
     createdAt: now,
     updatedAt: now,
   };

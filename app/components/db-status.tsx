@@ -7,7 +7,7 @@ export async function DbStatus() {
   if (status === "ok") return null;
   return (
     <div className="border-b border-rule px-10 py-4">
-      <Note tone="error" title={status === "unavailable" ? "The database isn't running." : "The database is running but empty."}>
+      <Note tone="error" title={status === "unavailable" ? "The database is not running." : "The database is running but empty."}>
         {status === "unavailable" ? (
           <>
             Start Docker, then run <code className="font-code text-small">docker-compose up -d</code> (or{" "}

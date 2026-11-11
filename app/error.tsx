@@ -8,7 +8,7 @@ export default function Error({ reset }: { error: Error & { digest?: string }; r
     <div className="max-w-message">
       <Note
         tone="error"
-        title="Something went wrong"
+        title="This page could not load"
         action={
           <Button size="sm" variant="secondary" onClick={reset}>
             Try again

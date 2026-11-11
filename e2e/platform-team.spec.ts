@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openTools } from "./helpers";
 
 const asRole = async (page: Page, role: "Admin" | "Verifier") => {
   await page.getByRole("combobox", { name: "Viewing as" }).selectOption({ label: role });
@@ -8,7 +9,7 @@ const asRole = async (page: Page, role: "Admin" | "Verifier") => {
 
 test("the platform cut-away: an admin edits one row, a verifier approves it, builders see it verified again", async ({ page, request }) => {
   await request.post("/api/reset");
-  const PLAN = "/projects/sample-two-weeks-in/tools";
+  const PLAN = "/projects/sample-two-weeks-in";
 
   // An admin changes one row of appCentral's coverage and saves it as a new version.
   await page.goto("/start");
@@ -24,6 +25,7 @@ test("the platform cut-away: an admin edits one row, a verifier approves it, bui
 
   // Builders now see that tool as not yet verified.
   await page.goto(PLAN);
+  await openTools(page);
   await expect(page.getByRole("checkbox", { name: /appCentral/ })).toBeChecked();
   await expect(page.getByText("Not yet verified", { exact: true }).first()).toBeVisible();
 
@@ -40,6 +42,7 @@ test("the platform cut-away: an admin edits one row, a verifier approves it, bui
 
   // And the badge flips back.
   await page.goto(PLAN);
+  await openTools(page);
   await expect(page.getByText("Verified", { exact: true }).first()).toBeVisible();
 });
 

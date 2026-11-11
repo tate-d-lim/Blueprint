@@ -32,7 +32,7 @@ async function profileOf(formData: FormData): Promise<Profile> {
   return profile;
 }
 
-const message = (err: unknown) => (err instanceof Error ? err.message : "Something went wrong.");
+const message = (err: unknown) => (err instanceof Error ? err.message : "The file could not be read. Check it is a Component Guide (.xlsx), then try again.");
 
 export async function previewImportAction(formData: FormData): Promise<PreviewResult> {
   try {
@@ -58,7 +58,7 @@ export async function createImportAction(formData: FormData): Promise<CreateResu
     const guide = await readUpload(formData);
     const profile = await profileOf(formData);
     const preview = previewImport(guide, profile);
-    if (preview.unknownIds.length) throw new Error(`This guide doesn't match ${profile.title}.`);
+    if (preview.unknownIds.length) throw new Error(`This guide does not match ${profile.title}.`);
     const mapping = JSON.parse(String(formData.get("mapping") ?? "{}")) as Record<string, CoverageValue>;
     const entries = buildImportEntries(guide, profile, mapping);
     const source = String(formData.get("source") ?? "").trim() || `Component Guide: ${guide.fileName}`;

@@ -2,9 +2,10 @@ import type { RiskAnswers } from '../risk/assess';
 
 export type RequirementKey = `${string}:${string}`;
 export type Level = 0 | 1 | 2;
-export type CoverageValue = 'provided' | 'shared' | 'app-builder' | 'not-applicable' | 'other-tool';
+export type CoverageValue = 'provided' | 'shared' | 'app-builder' | 'not-applicable';
 export type Section = 'cpf' | 'wog' | 'code';
-export type TaskStatus = 'todo' | 'in-progress' | 'done';
+/** A control is done or it is not. A project saved before this change may hold 'in-progress'; it reads as not done. */
+export type TaskStatus = 'todo' | 'done';
 /** Who vouches for a builder's status: the builder (`self-declared`) or a pipeline check (`machine-checked`). */
 export type EvidenceKind = 'self-declared' | 'machine-checked';
 export interface TaskState { status: TaskStatus; note?: string; evidence?: EvidenceKind }
@@ -132,7 +133,6 @@ export interface CoverageCheck {
 export interface CoverageEntry {
   key: RequirementKey;
   value: CoverageValue;
-  otherToolId?: string;
   explanation?: string;
   builderPart?: string;
   source?: string;
@@ -171,8 +171,6 @@ export interface Project {
   questionAnswers: Record<RequirementKey, { applies: boolean; reason: string }>;
   /** Answers about the app. Projects saved before these existed have none, and every requirement applies. */
   facts?: FactAnswers;
-  /** Set when the builder leaves the tools step. A project without it opens on the tools step. ISO date-time. */
-  toolsReviewedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

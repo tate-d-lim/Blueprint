@@ -3,40 +3,40 @@
     "id": "reach",
     "kind": "choice",
     "question": "Who is your app for?",
-    "hint": "If both staff and the public use it, choose the public.",
+    "hint": "If it is for both staff and the public, choose the public.",
     "options": [
       {
         "value": "public",
         "label": "Members of the public",
-        "reason": "Your app is open to the public."
+        "reason": "You said your app is for the public."
       },
       {
         "value": "staff",
         "label": "Government staff only",
-        "reason": "Your app is only for government staff, not the public."
+        "reason": "You said your app is only for government staff."
       }
     ]
   },
   {
     "id": "web",
     "kind": "tick",
-    "label": "People use it in a web browser",
-    "hint": "A website or web app. Leave it empty if people only reach it through another system.",
-    "noReason": "Your app isn't used in a web browser."
+    "label": "A website or web app",
+    "hint": "People open it in a web browser. Do not tick this if people reach your app only through another system.",
+    "noReason": "You said your app is not a website or a web app."
   },
   {
     "id": "signin",
     "kind": "tick",
-    "label": "People sign in to it",
-    "hint": "With a password, or with Singpass or a work account.",
-    "noReason": "Nobody signs in to your app."
+    "label": "Sign-in",
+    "hint": "With a password, Singpass or a work account.",
+    "noReason": "You said sign-in is not part of your app."
   },
   {
     "id": "sms",
     "kind": "tick",
-    "label": "It sends SMS text messages",
+    "label": "SMS text messages",
     "hint": "For example one-time passwords or reminders.",
-    "noReason": "Your app doesn't send SMS text messages to the public.",
+    "noReason": "You said SMS text messages to the public are not part of your app.",
     "showIf": {
       "fact": "reach",
       "is": "public"
@@ -45,22 +45,22 @@
   {
     "id": "domain",
     "kind": "tick",
-    "label": "It has its own web address",
+    "label": "Its own web address",
     "hint": "For example myapp.gov.sg.",
-    "noReason": "Your app has no web address of its own."
+    "noReason": "You said your app has no web address of its own."
   },
   {
     "id": "shortlinks",
     "kind": "tick",
-    "label": "It shows or sends shortened links",
-    "hint": "Links that redirect to a longer address.",
-    "noReason": "Your app doesn't use shortened links."
+    "label": "Shortened links",
+    "hint": "Links that your app shows or sends, which redirect to a longer address.",
+    "noReason": "You said shortened links are not part of your app."
   },
   {
     "id": "uses-genai",
     "kind": "choice",
     "always": true,
-    "question": "Does your app use generative AI, for example a chatbot or a text summary?",
+    "question": "Is generative AI part of your app, for example a chatbot or a text summary?",
     "options": [
       {
         "value": "yes",
@@ -69,7 +69,7 @@
       {
         "value": "no",
         "label": "No",
-        "reason": "Your app doesn't use generative AI."
+        "reason": "You said generative AI is not part of your app."
       }
     ]
   }

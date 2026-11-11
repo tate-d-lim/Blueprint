@@ -69,7 +69,7 @@ export function AppForm({
 
         {ticks.length > 0 && (
           <fieldset className={`flex flex-col gap-4 ${choices.length ? "pt-8" : ""}`}>
-            <legend className="mb-1 text-lead font-semibold text-ink">Tick everything that is true for your app</legend>
+            <legend className="mb-1 text-lead font-semibold text-ink">Tick each one that is part of your app</legend>
             {ticks.map(fact =>
               fact.kind === "tick" ? (
                 <Checkbox

@@ -139,8 +139,8 @@ export function ImportForm({ tools, profiles }: { tools: { id: string; name: str
       {checked && !checked.ok && <Note tone="error">{checked.error}</Note>}
 
       {checked?.ok && checked.preview.unknownIds.length > 0 && (
-        <Note tone="error" title={`This guide doesn't match ${checked.profileTitle}.`}>
-          {checked.preview.unknownIds.length} requirement IDs aren&apos;t in it (first five: {checked.preview.unknownIds.slice(0, 5).join(", ")}). It
+        <Note tone="error" title={`This guide does not match ${checked.profileTitle}.`}>
+          {checked.preview.unknownIds.length} control IDs are not in it (first five: {checked.preview.unknownIds.slice(0, 5).join(", ")}). It
           was probably written for a different standard.
         </Note>
       )}
@@ -149,12 +149,12 @@ export function ImportForm({ tools, profiles }: { tools: { id: string; name: str
         <Panel title="How to read it">
           <div className="flex flex-col gap-5">
             <p>
-              Read {checked.rowCount} requirements from sheet &ldquo;{checked.sheetName}&rdquo; of {checked.fileName}. Written against:{" "}
+              Read {checked.rowCount} controls from sheet &ldquo;{checked.sheetName}&rdquo; of {checked.fileName}. Written against:{" "}
               {checked.preview.writtenAgainst}
             </p>
             {checked.preview.missingKeys.length > 0 && (
               <Note tone="attention">
-                This guide predates {checked.preview.missingKeys.length} requirements, so it says nothing about them:{" "}
+                This guide predates {checked.preview.missingKeys.length} controls, so it says nothing about them:{" "}
                 {checked.preview.missingKeys.map(k => k.split(":")[1]).join(", ")}.
               </Note>
             )}

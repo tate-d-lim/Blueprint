@@ -20,12 +20,12 @@ const PROFILES = [
 const VERSIONS = [{ current: makeVersion('appcentral', 'low-risk-cloud', 1, []) }];
 
 test.each([
-  ['Low', LOW, 'plan', 'low-risk-cloud', 'Low-Risk Cloud', 'You can plan this app with Blueprint.'],
+  ['Low', LOW, 'plan', 'low-risk-cloud', 'Low-Risk Cloud', 'Blueprint can plan your app.'],
   ['Medium (Cloud Eligible)', { ...LOW, classification: 'confidential-cloud-eligible' }, 'plan', 'medium-risk-cloud', 'Medium-Risk Cloud', 'You can plan it. Involve your security team early.'],
   ['High and CII', { ...LOW, cii: true }, 'plan', 'high-risk-cloud-cii', 'High-Risk Cloud CII', 'You can plan it. Involve your security team from the start.'],
-  ['High, not CII', { ...LOW, impact: 'critical' }, 'not-yet', null, 'High-risk app on the cloud', "Blueprint can't plan this app yet."],
-  ['Confidential', { ...LOW, classification: 'confidential' }, 'not-cloud', null, 'Not for the cloud', "This data can't be hosted on the cloud, so Blueprint can't plan it with CPF's cloud tools."],
-  ['S-class', { ...LOW, classification: 's-class' }, 'not-cloud', null, 'Not for the cloud', "This data can't be hosted on the cloud, so Blueprint can't plan it with CPF's cloud tools."],
+  ['High, not CII', { ...LOW, impact: 'critical' }, 'not-yet', null, 'High-risk app on the cloud', "Blueprint cannot plan your app yet."],
+  ['Confidential', { ...LOW, classification: 'confidential' }, 'not-cloud', null, 'Not for the cloud', "This data cannot go on the cloud, so Blueprint cannot plan your app with CPF's cloud tools."],
+  ['S-class', { ...LOW, classification: 's-class' }, 'not-cloud', null, 'Not for the cloud', "This data cannot go on the cloud, so Blueprint cannot plan your app with CPF's cloud tools."],
 ] as const)('%s', (_, answers, kind, profileId, heading, sentence) => {
   const v = verdictFor(answers as RiskAnswers, PROFILES, VERSIONS);
   expect(v).toMatchObject({ kind, profileId, heading, sentence });

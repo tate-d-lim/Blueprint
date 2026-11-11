@@ -12,7 +12,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ tool
   const profile = data.profiles.find(p => p._id === profileId);
   if (!tool || !profile) return new Response("No such tool or profile.", { status: 404 });
 
-  const brief = renderCoverageBrief({ tool, profile, otherTools: data.tools.filter(t => t._id !== toolId), generatedAt: new Date().toISOString() });
+  const brief = renderCoverageBrief({ tool, profile, generatedAt: new Date().toISOString() });
   return new Response(brief, {
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",

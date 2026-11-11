@@ -6,9 +6,9 @@ const provided = (explanation?: string, over = {}) => {
   const claim = makeClaim({ explanation, ...over });
   return makeItem({ placement: 'provided', heading: 'platform', claims: [claim], decisive: [claim] });
 };
-const builderItem = (status: 'todo' | 'in-progress' | 'done', note?: string, claims = [] as ReturnType<typeof makeClaim>[], placement: 'app-builder' | 'default-builder' | 'answered-applies' = 'default-builder') =>
+const builderItem = (status: 'todo' | 'done', note?: string, claims = [] as ReturnType<typeof makeClaim>[], placement: 'app-builder' | 'default-builder' | 'answered-applies' = 'default-builder') =>
   makeItem({ placement, heading: 'you', claims, decisive: claims, status: { status, note } });
-const sharedItem = (status: 'todo' | 'in-progress' | 'done', note?: string) => {
+const sharedItem = (status: 'todo' | 'done', note?: string) => {
   const claim = makeClaim({ toolId: 'zod', toolName: 'Zod', value: 'shared', explanation: 'Zod checks data against a schema.', builderPart: 'Define a schema for every input.', source: 'Sample' });
   return makeItem({ placement: 'shared', heading: 'you', claims: [claim], decisive: [claim], status: { status, note } });
 };
@@ -34,8 +34,7 @@ test('not applicable: N/A, naming the tool and why', () => {
 });
 
 test.each([
-  ['todo', 'Partial', 'To do'],
-  ['in-progress', 'Partial', 'In progress'],
+  ['todo', 'Partial', 'Not done'],
   ['done', 'Y', 'Done'],
 ] as const)('shared item at %s exports %s', (status, implemented, label) => {
   expect(sspValues(sharedItem(status))).toEqual({
@@ -45,14 +44,13 @@ test.each([
 });
 
 test('a shared item’s note goes before the source', () => {
-  expect(sspValues(sharedItem('in-progress', 'Half done')).explanation).toBe(
-    'Shared. Zod: Zod checks data against a schema. App builder: Define a schema for every input. Status: In progress (self-declared). Half done. Source: Sample.',
+  expect(sspValues(sharedItem('todo', 'Half done')).explanation).toBe(
+    'Shared. Zod: Zod checks data against a schema. App builder: Define a schema for every input. Status: Not done (self-declared). Half done. Source: Sample.',
   );
 });
 
 test.each([
   ['todo', 'N'],
-  ['in-progress', 'Partial'],
   ['done', 'Y'],
 ] as const)('builder item at %s exports %s', (status, implemented) => {
   expect(sspValues(builderItem(status))).toEqual({
@@ -70,7 +68,7 @@ test('a builder item carries the tool’s tip and the builder’s note', () => {
 });
 
 test('an answered "applies" question exports like any builder task', () => {
-  expect(sspValues(builderItem('in-progress', undefined, [], 'answered-applies')).implemented).toBe('Partial');
+  expect(sspValues(builderItem('todo', undefined, [], 'answered-applies')).implemented).toBe('N');
 });
 
 test('a "doesn’t apply" answer exports N/A with the builder’s reason', () => {
@@ -80,7 +78,7 @@ test('a "doesn’t apply" answer exports N/A with the builder’s reason', () =>
   expect(sspValues(dotted).explanation).toBe('Does not apply (self-declared): Not used.');
 });
 
-test.each(['open', 'redirect', 'conflict'] as const)('%s items are left blank for the reviewer', placement => {
+test.each(['open', 'conflict'] as const)('%s items are left blank for the reviewer', placement => {
   expect(sspValues(makeItem({ placement, heading: 'questions' }))).toEqual({ implemented: '', explanation: '' });
 });
 

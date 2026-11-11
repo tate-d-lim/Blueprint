@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import type ExcelJS from 'exceljs';
 import { cellText } from '@/lib/data/xlsx';
 import { buildAboutInfo } from '@/lib/export/about';
-import { renderBuildPlan, toolsForMeta, type BuildPlanMeta } from '@/lib/export/build-plan-md';
-import { sspFileName } from '@/lib/export/filename';
+import { toolsForMeta, type PlanMeta } from '@/lib/export/plan-meta';
+import { oscalFileName, sspFileName } from '@/lib/export/filename';
 import { buildSsp } from '@/lib/export/oscal';
 import { buildSspWorkbook } from '@/lib/export/ssp-xlsx';
 import { buildPlan } from '@/lib/plan/engine';
@@ -19,7 +19,7 @@ async function mediumSetup() {
   const data = await demoData();
   const input = selectPlanInput(data, { profileId: 'medium-risk-cloud', toolIds: [], facts: { 'uses-genai': 'no' } });
   const profile = data.profiles.find(p => p._id === 'medium-risk-cloud')!;
-  const meta: BuildPlanMeta = {
+  const meta: PlanMeta = {
     title: 'Payments',
     appType: 'Medium-risk app on the cloud',
     profileTitle: profile.title,
@@ -35,9 +35,8 @@ const sheetText = (sheet: ExcelJS.Worksheet) => {
   return out.join('\n');
 };
 
-test('a Medium plan exports a build plan, schema-valid OSCAL and a spreadsheet', async () => {
+test('a Medium plan exports schema-valid OSCAL and a spreadsheet', async () => {
   const { plan, profile, meta } = await mediumSetup();
-  expect(renderBuildPlan(plan, meta)).toContain('App type: Medium-risk app on the cloud');
   const ssp = buildSsp({ plan, profiles: [profile], tools: [], answers: MEDIUM_ANSWERS, generatedAt: GENERATED });
   expect(oscalValidator('ssp')(ssp).errors).toEqual([]);
   const wb = await buildSspWorkbook(plan, profile, { about: buildAboutInfo(meta, profile, 'Payments') });
@@ -70,6 +69,10 @@ test('file names follow the profile', () => {
   expect(sspFileName('low-risk-cloud')).toBe('low-risk-cloud-ssp.xlsx');
   expect(sspFileName('low-risk-cloud', "Member's app")).toBe('low-risk-cloud-ssp-member-s-app.xlsx');
   expect(sspFileName('low-risk-cloud', '!!!')).toBe('low-risk-cloud-ssp.xlsx');
+  expect(oscalFileName('ssp', 'Sample project (two weeks in)')).toBe('sample-project-two-weeks-in-ssp.json');
+  expect(oscalFileName('component-definition', 'Payments')).toBe('payments-component-definition.json');
+  expect(oscalFileName('ssp')).toBe('ssp.json');
+  expect(oscalFileName('ssp', '!!!')).toBe('ssp.json');
 });
 
 test('the verify page opens on the first profile a tool has a version for, else the Low profile', async () => {
@@ -80,6 +83,6 @@ test('the verify page opens on the first profile a tool has a version for, else 
 });
 
 test('no fixed profile id is left in the builder code', () => {
-  for (const f of ['app/plan/plan-view.tsx', 'app/api/export/oscal/route.ts', 'lib/export/ssp-xlsx.ts', 'lib/risk/assess.ts', 'app/verify/[toolId]/page.tsx'])
+  for (const f of ['app/plan/project-context.tsx', 'app/api/export/oscal/route.ts', 'lib/export/ssp-xlsx.ts', 'lib/risk/assess.ts', 'app/verify/[toolId]/page.tsx'])
     expect(readFileSync(f, 'utf8'), f).not.toContain('low-risk-cloud');
 });

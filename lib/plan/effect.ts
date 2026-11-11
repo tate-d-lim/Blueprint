@@ -71,7 +71,7 @@ export function toolEffects(data: PlanData, state: Omit<PlanState, 'toolIds'>, t
 
 const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
-/** One line that states both sides, for example "Removes 6 tasks, answers 2 questions (4 not yet verified)". */
+/** One line that states both sides, for example "Does 6 controls, answers 2 questions (4 not yet verified)". */
 export function effectText(e: ToolEffect, profileTitle: string): string {
   if (e.noCoverage) return `No ${profileTitle} coverage yet`;
   const addedTotal = e.added.tasks + e.added.questions;
@@ -79,14 +79,14 @@ export function effectText(e: ToolEffect, profileTitle: string): string {
   if (e.net <= 0 && addedTotal === 0) return 'Nothing for your app';
 
   const removed: string[] = [];
-  if (e.removed.tasks) removed.push(`removes ${count(e.removed.tasks, 'task', 'tasks')}`);
+  if (e.removed.tasks) removed.push(`does ${count(e.removed.tasks, 'control', 'controls')}`);
   if (e.removed.questions) removed.push(`answers ${count(e.removed.questions, 'question', 'questions')}`);
   let text = removed.join(', ');
   if (text && e.unverified > 0) text += ` (${e.unverified} not yet verified)`;
 
   if (addedTotal) {
     const added: string[] = [];
-    if (e.added.tasks) added.push(count(e.added.tasks, 'task', 'tasks'));
+    if (e.added.tasks) added.push(count(e.added.tasks, 'control', 'controls'));
     if (e.added.questions) added.push(count(e.added.questions, 'question', 'questions'));
     text += `${removedTotal ? ' · ' : ''}adds ${added.join(', ')}`;
   }

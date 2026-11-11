@@ -114,8 +114,10 @@ test('each tool becomes one component, with a prop for how verified its claims a
   expect(components.map(c => c.title)).toEqual(['appCentral', 'DBaaS', 'IGA']);
   const dbaas = components[1]['control-implementations'][0]['implemented-requirements'].find((r: Json) => r['control-id'] === 'dp-1');
   expect(dbaas.props.find((p: Json) => p.name === 'verification').value).toBe('not-yet-verified');
-  const appcentral = components[0]['control-implementations'][0]['implemented-requirements'].find((r: Json) => r['control-id'] === 'dp-1');
-  expect(appcentral.props.find((p: Json) => p.name === 'handled-by').value).toBe('dbaas');
+  // appCentral says only what it handles: it has no row for the data controls, and no row points at another tool.
+  const appcentral = components[0]['control-implementations'][0]['implemented-requirements'] as Json[];
+  expect(appcentral.find(r => r['control-id'] === 'dp-1')).toBeUndefined();
+  expect(JSON.stringify(appcentral)).not.toContain('handled-by');
 });
 
 const cdComponents = (doc: Json) => (doc['component-definition'].components as Json[]);
@@ -127,7 +129,6 @@ test('component definition: rows carry provider/customer roles by value', async 
   const { component } = await build(['appcentral', 'zod']);
   expect(rolesOf(cdRow(component, 'appCentral', 'as-4'))).toEqual(['provider']);
   expect(rolesOf(cdRow(component, 'Zod', 'as-1'))).toEqual(['provider', 'customer']);
-  expect(rolesOf(cdRow(component, 'appCentral', 'dp-1'))).toBeUndefined();
 });
 
 test('component definition: metadata declares the provider and customer roles', async () => {
@@ -246,7 +247,7 @@ test('ssp: a shared item has provided + responsibility on the tool and inherited
   expect(mine.satisfied[0]['responsibility-uuid']).toBe(r.uuid);
   expect(propValues(mine.satisfied[0], 'Rule_Id')).toEqual(['zod-schema-on-every-route']);
   expect(propValues(mine.satisfied[0], 'evidence-kind')).toEqual(['self-declared']);
-  expect(mine.satisfied[0].description).toMatch(/^To do \(self-declared\)\./);
+  expect(mine.satisfied[0].description).toMatch(/^Not done \(self-declared\)\./);
   expect(mine['implementation-status'].state).toBe('planned');
   expect(r.description).toMatch(/Define a Zod schema/);
 });

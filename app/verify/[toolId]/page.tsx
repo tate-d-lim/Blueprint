@@ -36,9 +36,8 @@ async function Review({ params, searchParams }: Props) {
   const titleOf = (key: string) => profile.entries.find(e => e.key === key)?.title ?? key;
   const idOf = (key: string) => key.split(":")[1];
   const describe = (e: CoverageEntry) => {
-    const other = e.otherToolId ? data.tools.find(t => t._id === e.otherToolId)?.name : undefined;
     const checks = e.checks?.length ? `Checks: ${e.checks.map(c => `${c.id} (${c.kind})`).join(", ")}` : undefined;
-    return [VALUE_LABEL(e.value, tool.name, other), e.explanation, e.builderPart && `App Builder's part: ${e.builderPart}`, checks].filter(Boolean).join(". ");
+    return [VALUE_LABEL(e.value, tool.name), e.explanation, e.builderPart && `App Builder's part: ${e.builderPart}`, checks].filter(Boolean).join(". ");
   };
   const diff = diffVersions(current, lastApproved);
 
@@ -64,7 +63,7 @@ async function Review({ params, searchParams }: Props) {
             {diff.added.length} added, {diff.changed.length} changed, {diff.removed.length} removed.
           </p>
 
-          <Table head={["Requirement", "Before", "Now"]}>
+          <Table head={["Control", "Before", "Now"]}>
             {diff.added.map(e => (
               <Row key={e.key} id={idOf(e.key)} title={titleOf(e.key)} kind="Added" before="Nothing" after={describe(e)} />
             ))}

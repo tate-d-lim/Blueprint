@@ -129,7 +129,7 @@ export function areaOf(family: string): string {
   return `${part.name} (${familyName(family)})`;
 }
 
-/** One name for each family of requirements on every screen. Builder screens never say "control". */
+/** One name for each family of requirements on every screen. Every screen calls the items "controls". */
 export const FAMILY_NAMES: Record<string, string> = {
   as: 'App security',
   sc: 'Supply chain',
@@ -169,6 +169,7 @@ export function countsAs(item: PlanItem): Counted | null {
 }
 
 export type Look = 'drawing' | 'partly' | 'solid' | 'lit';
+/** 'needs': nothing built yet. 'tools': the tools' part is built. 'progress': the tools' part and the builder's finished controls. */
 export type HotelMode = 'needs' | 'tools' | 'progress';
 
 export interface PartState {
@@ -178,7 +179,7 @@ export interface PartState {
   solidPieces: number;
   question: boolean;
   nothingForApp: boolean;
-  counts: { you: number; platform: number; questions: number; unverified: number; done: number; inProgress: number };
+  counts: { you: number; platform: number; questions: number; unverified: number; done: number };
   toolNames: string[];
   families: string[];
   line1: string;
@@ -214,20 +215,27 @@ export function partState(part: HotelPart, plan: Plan, mode: HotelMode): PartSta
   const questions = of('question');
   const unverified = platform.filter(i => itemVerification(i) === 'not-yet-verified').length;
   const done = you.filter(i => taskStatusOf(i) === 'done').length;
-  const inProgress = you.filter(i => taskStatusOf(i) === 'in-progress').length;
   const total = you.length + platform.length + questions.length;
   const nothingForApp = total === 0;
 
-  const share = mode === 'needs' || total === 0 ? 0 : (platform.length + (mode === 'progress' ? done : 0)) / total;
+  // What is finished: what the tools do, and in 'progress' mode what the builder has done as well.
+  const finished = platform.length + (mode === 'progress' ? done : 0);
+  const share = mode === 'needs' || total === 0 ? 0 : finished / total;
 
   const toolNames: string[] = [];
   for (const item of platform) for (const claim of item.decisive) if (!toolNames.includes(claim.toolName)) toolNames.push(claim.toolName);
 
   const open = you.length + questions.length;
+  const toolsVerified = platform.every(i => i.decisive.every(c => c.verification !== 'not-yet-verified'));
   let look: Look = 'drawing';
-  if (mode !== 'needs' && platform.length > 0) {
+  if (mode === 'tools' && platform.length > 0) {
     if (open > 0) look = 'partly';
-    else look = platform.every(i => i.decisive.every(c => c.verification !== 'not-yet-verified')) ? 'lit' : 'solid';
+    else look = toolsVerified ? 'lit' : 'solid';
+  }
+  if (mode === 'progress' && total > 0 && finished > 0) {
+    if (finished < total) look = 'partly';
+    // The warm light is for a part the tools did completely, with every claim verified. The builder's own work is self-declared.
+    else look = done === 0 && toolsVerified ? 'lit' : 'solid';
   }
 
   const withItems = part.families.filter(f => counting.some(c => c.item.family === f));
@@ -236,8 +244,13 @@ export function partState(part: HotelPart, plan: Plan, mode: HotelMode): PartSta
 
   let line2: string;
   if (nothingForApp) line2 = 'Nothing for your app';
-  else if (mode === 'needs') {
-    line2 = plural(open, 'requirement', 'requirements');
+  else if (mode === 'progress') {
+    const segments = [`${finished} of ${total} done`];
+    if (questions.length) segments.push(plural(questions.length, 'question', 'questions'));
+    if (finished === total && unverified > 0) segments.push('not yet verified');
+    line2 = segments.join(' · ');
+  } else if (mode === 'needs') {
+    line2 = plural(open, 'control', 'controls');
     if (questions.length) line2 += ` · ${plural(questions.length, 'question', 'questions')}`;
   } else {
     const segments: string[] = [];
@@ -257,7 +270,7 @@ export function partState(part: HotelPart, plan: Plan, mode: HotelMode): PartSta
     solidPieces: solidPieces(share, part.pieces.length),
     question: questions.length > 0,
     nothingForApp,
-    counts: { you: you.length, platform: platform.length, questions: questions.length, unverified, done, inProgress },
+    counts: { you: you.length, platform: platform.length, questions: questions.length, unverified, done },
     toolNames,
     families,
     line1: `${part.name} · ${families.join(', ')}`,
@@ -266,15 +279,30 @@ export function partState(part: HotelPart, plan: Plan, mode: HotelMode): PartSta
   };
 }
 
-export function planTotals(plan: Plan): { you: number; platform: number; unverified: number; questions: number; parts: number } {
+export function planTotals(plan: Plan): {
+  you: number;
+  platform: number;
+  unverified: number;
+  questions: number;
+  parts: number;
+  /** Every control the app needs: the builder's, the tools' and the open questions. */
+  total: number;
+  /** What is finished: everything the tools do, plus the builder's controls marked done. */
+  done: number;
+} {
   const states = visibleParts(plan).map(p => partState(p, plan, 'tools'));
-  const sum = (k: 'you' | 'platform' | 'questions' | 'unverified') => states.reduce((n, s) => n + s.counts[k], 0);
+  const sum = (k: 'you' | 'platform' | 'questions' | 'unverified' | 'done') => states.reduce((n, s) => n + s.counts[k], 0);
+  const you = sum('you');
+  const platform = sum('platform');
+  const questions = sum('questions');
   return {
-    you: sum('you'),
-    platform: sum('platform'),
+    you,
+    platform,
     unverified: sum('unverified'),
-    questions: sum('questions'),
+    questions,
     parts: states.filter(s => !s.nothingForApp).length,
+    total: you + platform + questions,
+    done: platform + sum('done'),
   };
 }
 
@@ -285,6 +313,8 @@ export function runningLine(t: Totals): string {
   return `${t.you} are yours · ${t.platform} your tools do${unverified} · ${plural(t.questions, 'question', 'questions')}`;
 }
 
-export function needsLine(t: Totals): string {
-  return `This is everything your app needs: ${t.you + t.questions} requirements in ${t.parts} parts. Next, you choose the tools that meet part of it.`;
+/** The line on the needs screen. A saved project has its tools already, so only a new plan is told to pick them. */
+export function needsLine(t: Totals, saved = false): string {
+  const base = `Your app needs ${t.you + t.questions} controls, in ${t.parts} parts.`;
+  return saved ? base : `${base} After you save, pick the tools that do some of them for you.`;
 }

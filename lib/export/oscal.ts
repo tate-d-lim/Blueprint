@@ -99,8 +99,6 @@ function requirementDescription(entry: CoverageEntry, toolName: string): string 
       return entry.builderPart ?? entry.explanation ?? 'The App Builder handles this.';
     case 'not-applicable':
       return entry.explanation ?? 'Not applicable';
-    case 'other-tool':
-      return entry.explanation ?? `Handled by another tool (${entry.otherToolId})`;
   }
 }
 
@@ -148,7 +146,6 @@ export function buildComponentDefinition(input: { tools: ToolWithVersions[]; pro
               prop('source', entry.source ?? version.source),
               ...ruleIdProps(entry.checks),
             ];
-            if (entry.otherToolId) reqProps.push(prop('handled-by', entry.otherToolId));
             const requirement: Json = {
               uuid: uuid(`requirement|${tool._id}|v${version.version}|${entry.key}`),
               'control-id': entry.key.split(':')[1],
@@ -177,7 +174,7 @@ export function buildComponentDefinition(input: { tools: ToolWithVersions[]; pro
   };
 }
 
-const STATE_BY_STATUS: Record<TaskState['status'], string> = { todo: 'planned', 'in-progress': 'partial', done: 'implemented' };
+const STATE_BY_STATUS: Record<TaskState['status'], string> = { todo: 'planned', done: 'implemented' };
 
 function taskStatus(item: PlanItem): TaskState {
   return item.status && 'status' in item.status ? item.status : { status: 'todo' };
@@ -277,6 +274,14 @@ export function buildSsp(input: {
       const own = (stateName: string, extra: Json = {}) =>
         by.push(byComponent(item.key, thisSystem, stateName, sspValues(item).explanation, extra));
 
+      // The SSP is the plan an agent works from, so a control that is the builder's carries what to do and why.
+      if (['shared', 'app-builder', 'default-builder', 'answered-applies'].includes(item.placement)) {
+        const flat = (text: string) => text.replace(/\s+/g, ' ').trim();
+        const task = item.decisive.map(c => c.builderPart).find(Boolean) ?? item.plain?.task ?? item.recommendations;
+        const why = item.plain?.why ?? item.rationale;
+        requirement.remarks = [`${flat(item.plain?.title ?? item.title)}.`, task && `What to do: ${flat(task)}`, why && `Why it matters: ${flat(why)}`].filter(Boolean).join(' ');
+      }
+
       switch (item.placement) {
         case 'provided':
           for (const c of claims) {
@@ -318,7 +323,6 @@ export function buildSsp(input: {
           own('not-applicable');
           break;
         case 'open':
-        case 'redirect':
         case 'conflict':
           requirement.remarks = `Needs assessment: ${item.reason}`;
           break;
@@ -375,7 +379,7 @@ export function buildSsp(input: {
         ],
       },
       'control-implementation': {
-        description: `How ${name} meets the ${profileTitles} requirements, from the tools it uses and the builder's own work. Builder statuses are self-declared.`,
+        description: `How ${name} meets the ${profileTitles} controls, from the tools it uses and the builder's own work. Builder statuses are self-declared.`,
         'implemented-requirements': requirements,
       },
       'back-matter': { resources: [resource] },

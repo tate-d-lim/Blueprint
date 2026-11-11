@@ -16,9 +16,9 @@ npm run build && npm start    # steadier than the dev server
 
 1. **Tell us about your app.** Restricted, Sensitive Normal, Slight, None or minimal. **Work out my app type** → verdict **Low-Risk Cloud**.
 2. **Next: about your app.** Public, web, sign-in, SMS ticked; GenAI No. **Next: what your app needs.**
-3. **What your app needs (step 4).** "84 requirements in 11 parts". Open CCTV, **Show all 10 requirements**. Left out: 2. **Save this plan.**
-4. **Your tools (step 5).** Tick appCentral: "18 are yours · 51 your tools do · 15 questions". DBaaS and IGA: "18 are yours · 66 your tools do (15 not yet verified) · 0 questions". Parts light only when every claim is Verified. **Continue to your plan.**
-5. **The go (step 6).** "Your plan is ready. 18 are yours, and your tools do 51." (appCentral only). **Give your agent the build plan** downloads `BUILD-PLAN.md`, grouped by hotel part.
-6. **Projects → Sample project (two weeks in):** "9 of 17 tasks done". Export → security review spreadsheet.
+3. **What your app needs (step 4).** "84 controls in 11 parts". Open CCTV, **Show all 10 controls**. Left out: 2. **Save this plan.**
+4. **The saved plan.** It opens on the **Plan** tab: the hotel beside the checklist, "0 of 84 done". **Add tools** → tick appCentral: "51 of 84 done". DBaaS and IGA: "66 of 84 done". A part lights only when every claim is Verified. A click on a part opens the **Hotel** tab close up.
+5. **Prompt your agent.** The security plan (SSP) is the plan: download it and copy the short prompt for the agent. Planned controls say what to do and why.
+6. **Projects → Sample project (two weeks in):** "75 of 83 done · 66 by your tools · 8 left". Tick a control in the checklist. Export → security review spreadsheet.
 
-Steps 1–5 never offer the build plan. After a rehearsal, **Reset demo data**.
+There is no build plan: the SSP is the plan. After a rehearsal, **Reset demo data**.

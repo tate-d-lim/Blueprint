@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { stepFor } from "@/lib/plan/steps";
 import type { Role } from "@/lib/role";
 import { ResetButton } from "./reset-button";
 import { RoleSwitcher } from "./role-switcher";
@@ -15,10 +14,9 @@ const ROLE_SHEETS: Partial<Record<Role, { href: string; label: string; paths: st
   verifier: { href: "/verify", label: "Verify", paths: ["/verify"] },
 };
 
-/** The simple header: product name, the sheets, the step the builder is on, who is looking, and the demo reset. */
+/** The simple header: product name, the sheets, who is looking, and the demo reset. The step pages show their own step. */
 export function SiteHeader({ role }: { role: Role }) {
   const pathname = usePathname();
-  const step = stepFor(pathname);
   const roleSheet = ROLE_SHEETS[role];
   const sheets = roleSheet ? [...SHEETS, roleSheet] : SHEETS;
   const isCurrent = (paths: string[]) => paths.some(p => pathname === p || pathname.startsWith(`${p}/`));
@@ -48,8 +46,7 @@ export function SiteHeader({ role }: { role: Role }) {
         </ul>
       </nav>
 
-      {step !== null && <p className="tnum flex-1 text-center text-small text-ink-soft">Step {step} of 5</p>}
-      {step === null && <span className="flex-1" />}
+      <span className="flex-1" />
 
       <div className="flex items-center gap-3">
         <RoleSwitcher role={role} />

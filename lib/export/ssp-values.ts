@@ -66,7 +66,7 @@ export function sspValues(item: PlanItem): { implemented: Implemented; explanati
       const text =
         `${prefix}App builder's responsibility.${tips.map(t => ` ${end(t)}`).join('')} ` +
         `Status: ${STATUS_LABEL[status]} (self-declared).${withNote(note)}`;
-      return { implemented: status === 'done' ? 'Y' : status === 'in-progress' ? 'Partial' : 'N', explanation: text };
+      return { implemented: status === 'done' ? 'Y' : 'N', explanation: text };
     }
 
     case 'answered-not-applicable': {
@@ -78,7 +78,6 @@ export function sspValues(item: PlanItem): { implemented: Implemented; explanati
       return { implemented: 'N/A', explanation: `Does not apply to this app: ${end(item.reason)}` };
 
     case 'open':
-    case 'redirect':
     case 'conflict':
       return { ...BLANK };
   }

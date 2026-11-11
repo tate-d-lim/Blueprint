@@ -49,7 +49,7 @@ export function buildImportEntries(
 ): CoverageEntry[] {
   const keyOf = new Map(profile.entries.map(e => [e.id, e.key]));
   const unknown = guide.rows.filter(r => !keyOf.has(r.id)).map(r => r.id);
-  if (unknown.length) throw new Error(`${unknown.length} requirement IDs aren't in ${profile.title}: ${unknown.slice(0, 5).join(', ')}`);
+  if (unknown.length) throw new Error(`${unknown.length} control IDs are not in ${profile.title}: ${unknown.slice(0, 5).join(', ')}`);
 
   return guide.rows.map(row => {
     const value = mapping[pairKeyOf(row.owner, row.agencyInputs)];

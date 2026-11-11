@@ -41,11 +41,11 @@
         "status": "done"
       },
       "as-9": {
-        "status": "in-progress",
+        "status": "todo",
         "note": "CSP is set; tightening script-src."
       },
       "st-4": {
-        "status": "in-progress",
+        "status": "todo",
         "note": "Penetration test booked for next month."
       },
       "pm-3": {

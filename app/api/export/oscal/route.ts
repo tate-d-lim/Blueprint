@@ -1,4 +1,5 @@
 import { buildComponentDefinition, buildSsp } from "@/lib/export/oscal";
+import { oscalFileName } from "@/lib/export/filename";
 import { errorResponse, resolvePlanRequest } from "@/lib/export/plan-request";
 
 import { GENAI_PROFILE_ID } from "@/lib/plan/select";
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
     return new Response(JSON.stringify(document, null, 2), {
       headers: {
         "Content-Type": "application/json",
-        "Content-Disposition": `attachment; filename="${kind}.json"`,
+        "Content-Disposition": `attachment; filename="${oscalFileName(kind, project?.name)}"`,
       },
     });
   } catch (err) {

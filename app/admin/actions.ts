@@ -60,8 +60,7 @@ export async function readAgentFileAction(toolId: string, profileId: string, for
   const data = await withDb(loadPlanData);
   const profile = data.profiles.find(p => p._id === profileId);
   if (!profile) return { ok: false, error: "No such profile." };
-  const otherIds = data.tools.map(t => t._id).filter(id => id !== toolId);
-  return { ...parseAgentOscal(await file.text(), profile, toolId, otherIds), fileName: file.name };
+  return { ...parseAgentOscal(await file.text(), profile), fileName: file.name };
 }
 
 export async function createToolAction(_previous: { error: string } | null, formData: FormData): Promise<{ error: string } | null> {

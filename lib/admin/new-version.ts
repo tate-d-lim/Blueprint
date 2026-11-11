@@ -5,7 +5,6 @@ import { sameCoverage } from '../plan/verification';
 export interface DraftRow {
   key: RequirementKey;
   value: CoverageValue | '';
-  otherToolId?: string;
   explanation?: string;
   builderPart?: string;
   source?: string;
@@ -35,7 +34,6 @@ export function carrySources(rows: DraftRow[], previous?: ToolVersion): DraftRow
     const unchanged = sameCoverage(old, {
       key: row.key,
       value: row.value,
-      otherToolId: clean(row.otherToolId),
       explanation: clean(row.explanation),
       builderPart: clean(row.builderPart),
     });
@@ -62,16 +60,10 @@ export function validateNewVersion(rows: DraftRow[], versionSource: string, opts
   const entries: CoverageEntry[] = [];
   for (const row of rows) {
     if (!row.value) {
-      if (opts.requireAll) errors.push({ key: row.key, message: 'Choose an answer for this requirement.' });
-      continue;
-    }
-    const otherToolId = row.value === 'other-tool' ? clean(row.otherToolId) : undefined;
-    if (row.value === 'other-tool' && !otherToolId) {
-      errors.push({ key: row.key, message: 'Pick which tool handles this.' });
+      if (opts.requireAll) errors.push({ key: row.key, message: 'Choose an answer for this control.' });
       continue;
     }
     const entry: CoverageEntry = { key: row.key, value: row.value };
-    if (otherToolId) entry.otherToolId = otherToolId;
     for (const field of ['explanation', 'builderPart', 'source'] as const) {
       const value = clean(row[field]);
       if (value) entry[field] = value;

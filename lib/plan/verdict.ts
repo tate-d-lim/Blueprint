@@ -11,10 +11,10 @@ export interface Verdict {
   reasons: string[];
 }
 
-const NOT_CLOUD = "This data can't be hosted on the cloud, so Blueprint can't plan it with CPF's cloud tools.";
-const NOT_YET = "Blueprint can't plan this app yet.";
+const NOT_CLOUD = "This data cannot go on the cloud, so Blueprint cannot plan your app with CPF's cloud tools.";
+const NOT_YET = "Blueprint cannot plan your app yet.";
 const PLAN_SENTENCE = {
-  low: 'You can plan this app with Blueprint.',
+  low: 'Blueprint can plan your app.',
   medium: 'You can plan it. Involve your security team early.',
   high: 'You can plan it. Involve your security team from the start.',
 } as const;

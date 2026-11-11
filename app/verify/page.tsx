@@ -22,7 +22,7 @@ async function Awaiting() {
   }));
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title="Waiting for approval">Check what changed, then approve. Builders see the stamp change straight away.</PageHeader>
+      <PageHeader title="Waiting for approval">Check what changed, then approve. Builders see the new stamp at once.</PageHeader>
       {awaiting.length === 0 ? (
         <Note title="Nothing is waiting for approval.">New versions appear here when an admin saves or imports one.</Note>
       ) : (

@@ -22,7 +22,7 @@ interface Requirement {
   level: Level;
 }
 
-const VALUES: CoverageValue[] = ["provided", "shared", "app-builder", "not-applicable", "other-tool"];
+const VALUES: CoverageValue[] = ["provided", "shared", "app-builder", "not-applicable"];
 
 export function CoverageEditor({
   toolId,
@@ -30,7 +30,6 @@ export function CoverageEditor({
   profileId,
   requirements,
   initialRows,
-  otherTools,
   defaultSource,
 }: {
   toolId: string;
@@ -38,7 +37,6 @@ export function CoverageEditor({
   profileId: string;
   requirements: Requirement[];
   initialRows: DraftRow[];
-  otherTools: { id: string; name: string }[];
   defaultSource: string;
 }) {
   const router = useRouter();
@@ -81,7 +79,6 @@ export function CoverageEditor({
   const covered = [...rows.values()].filter(r => r.value).length;
   const errorFor = (key: RequirementKey) => errors.find(e => e.key === key)?.message;
   const changed = (key: RequirementKey) => JSON.stringify(strip(rows.get(key)!)) !== JSON.stringify(strip(initial.get(key) ?? { key, value: "" }));
-  const toolNameOf = (id?: string) => otherTools.find(t => t.id === id)?.name;
 
   const save = () =>
     startTransition(async () => {
@@ -177,7 +174,7 @@ export function CoverageEditor({
                   {changed(req.key) && <Stamp tone="pending">Changed</Stamp>}
                   {needsAnswer && <Stamp tone="pending">Needs an answer</Stamp>}
                   {error && !needsAnswer && <Stamp tone="pending">Fix this row</Stamp>}
-                  <Tag>{row.value ? VALUE_LABEL(row.value, toolName, toolNameOf(row.otherToolId)) : "No statement"}</Tag>
+                  <Tag>{row.value ? VALUE_LABEL(row.value, toolName) : "No statement"}</Tag>
                 </span>
               }
             >
@@ -196,26 +193,12 @@ export function CoverageEditor({
                         <option value="">No statement</option>
                         {VALUES.map(v => (
                           <option key={v} value={v}>
-                            {v === "other-tool" ? "Handled by another tool…" : VALUE_LABEL(v, toolName)}
+                            {VALUE_LABEL(v, toolName)}
                           </option>
                         ))}
                       </select>
                     )}
                   </Field>
-                  {row.value === "other-tool" && (
-                    <Field label="Which tool handles it">
-                      {props => (
-                        <select {...props} value={row.otherToolId ?? ""} onChange={e => update(req.key, { otherToolId: e.target.value })} className={selectClass}>
-                          <option value="">Pick a tool</option>
-                          {otherTools.map(t => (
-                            <option key={t.id} value={t.id}>
-                              {t.name}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </Field>
-                  )}
                 </div>
                 <Field label="Explanation">
                   {props => (
@@ -223,7 +206,7 @@ export function CoverageEditor({
                       {...props}
                       rows={2}
                       value={row.explanation ?? ""}
-                      placeholder="What the tool does for this requirement"
+                      placeholder="What the tool does for this control"
                       onChange={e => update(req.key, { explanation: e.target.value })}
                       className={textareaClass}
                     />
@@ -316,7 +299,6 @@ function strip(row: DraftRow) {
   return {
     key: row.key,
     value: row.value,
-    otherToolId: row.otherToolId || undefined,
     explanation: row.explanation || undefined,
     builderPart: row.builderPart || undefined,
     source: row.source || undefined,

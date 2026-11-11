@@ -61,7 +61,7 @@ test('Not applicable plus Provided is a conflict, with both statements decisive'
   const i = item(plan, 'as-1');
   expect([i.heading, i.placement]).toEqual(['questions', 'conflict']);
   expect(i.decisive.map(c => c.toolId).sort()).toEqual(['a', 'b']);
-  expect(i.reason).toBe("Your tools disagree: a says this doesn't apply, but b covers it.");
+  expect(i.reason).toBe("Your tools disagree: a says this does not apply, but b covers it.");
 });
 
 test('Not applicable plus App Builder is also a conflict', () => {
@@ -77,47 +77,25 @@ test('Not applicable alone sits under what your platform already does', () => {
   expect([item(plan, 'as-1').heading, item(plan, 'as-1').placement]).toEqual(['platform', 'not-applicable']);
 });
 
-const dp = makeProfile('p', [{ id: 'dp-1' }]);
-const redirectToDbaas = makeEntry('dp-1', { value: 'other-tool', otherToolId: 'dbaas' });
-
-test('a redirect to a picked tool is decided by that tool', () => {
-  const plan = planOf(dp, [
-    { id: 'appcentral', entries: [redirectToDbaas] },
-    { id: 'dbaas', entries: [makeEntry('dp-1', { value: 'provided' })] },
-  ]);
-  const i = item(plan, 'dp-1');
-  expect([i.heading, i.placement]).toEqual(['platform', 'provided']);
-  expect(i.decisive.map(c => c.toolId)).toEqual(['dbaas']);
-  expect(i.claims).toHaveLength(2);
-});
-
-test('a redirect to an unpicked tool becomes a question and a hint', () => {
-  const plan = planOf(
-    dp,
-    [
-      { id: 'appcentral', entries: [redirectToDbaas] },
-      { id: 'dbaas', entries: [makeEntry('dp-1', { value: 'provided' })] },
-    ],
-    { picked: ['appcentral'] },
-  );
-  const i = item(plan, 'dp-1');
-  expect([i.heading, i.placement]).toEqual(['questions', 'redirect']);
-  expect(i.reason).toBe('appcentral expects dbaas to handle this. Are you using dbaas, or handling it yourself?');
-  expect(plan.hints).toEqual([{ fromToolId: 'appcentral', suggestToolId: 'dbaas', count: 1 }]);
-});
-
-test('a redirect to a picked tool that has no row falls through to the default', () => {
+test('a tool says only what it handles: a picked tool with no row for a requirement leaves it to the default', () => {
+  const dp = makeProfile('p', [{ id: 'dp-1' }]);
   const asks = planOf(dp, [
-    { id: 'appcentral', entries: [redirectToDbaas] },
-    { id: 'dbaas', entries: [] },
-  ]);
+    { id: 'appcentral', entries: [] },
+    { id: 'dbaas', entries: [makeEntry('dp-1', { value: 'provided' })] },
+  ], { picked: ['appcentral'] });
   expect(item(asks, 'dp-1').placement).toBe('open');
   const builderDefault = makeProfile('p', [{ id: 'dp-1', ifUncovered: 'app-builder' }]);
   const defaults = planOf(builderDefault, [
-    { id: 'appcentral', entries: [redirectToDbaas] },
-    { id: 'dbaas', entries: [] },
-  ]);
+    { id: 'appcentral', entries: [] },
+    { id: 'dbaas', entries: [makeEntry('dp-1', { value: 'provided' })] },
+  ], { picked: ['appcentral'] });
   expect(item(defaults, 'dp-1').placement).toBe('default-builder');
+  // Picking the tool that does handle it settles it.
+  const both = planOf(dp, [
+    { id: 'appcentral', entries: [] },
+    { id: 'dbaas', entries: [makeEntry('dp-1', { value: 'provided' })] },
+  ]);
+  expect([item(both, 'dp-1').heading, item(both, 'dp-1').placement]).toEqual(['platform', 'provided']);
 });
 
 test('no claims with an app-builder default is the builder’s job', () => {
@@ -144,12 +122,12 @@ test('a Level 2 item goes under good-to-have and keeps its placement', () => {
 
 test('a project "Applies" answer turns a question into a task with its status', () => {
   const project: ProjectOverlay = {
-    taskStatus: { [key('as-1')]: { status: 'in-progress', note: 'half way' } },
+    taskStatus: { [key('as-1')]: { status: 'done', note: 'finished' } },
     questionAnswers: { [key('as-1')]: { applies: true, reason: '' } },
   };
   const i = item(planOf(oneReq, [], { project }), 'as-1');
   expect([i.heading, i.placement]).toEqual(['you', 'answered-applies']);
-  expect(i.status).toEqual({ status: 'in-progress', note: 'half way' });
+  expect(i.status).toEqual({ status: 'done', note: 'finished' });
   const fresh: ProjectOverlay = { taskStatus: {}, questionAnswers: { [key('as-1')]: { applies: true, reason: '' } } };
   expect(item(planOf(oneReq, [], { project: fresh }), 'as-1').status).toEqual({ status: 'todo' });
 });
@@ -162,7 +140,7 @@ test('a project "Doesn’t apply" answer keeps the item under questions, answere
   const i = item(planOf(oneReq, [], { project }), 'as-1');
   expect([i.heading, i.placement]).toEqual(['questions', 'answered-not-applicable']);
   expect(i.status).toEqual({ applies: false, reason: 'No SMS in this app' });
-  expect(i.reason).toBe("You said this doesn't apply: No SMS in this app");
+  expect(i.reason).toBe("You said this does not apply: No SMS in this app");
 });
 
 test('a status on a platform item is not attached', () => {
@@ -294,4 +272,12 @@ test('claims carry the row’s checks', () => {
   const checks = [{ id: 'c', kind: 'code-rule' as const, description: 'd' }];
   const plan = planOf(oneReq, [{ id: 'a', entries: [makeEntry('as-1', { value: 'shared', checks })] }]);
   expect(item(plan, 'as-1').claims[0].checks).toEqual(checks);
+});
+
+test('a project saved before "done or not done" may hold in-progress, and it reads as not done', () => {
+  const project = {
+    taskStatus: { [key('as-1')]: { status: 'in-progress', note: 'half way' } },
+    questionAnswers: { [key('as-1')]: { applies: true, reason: '' } },
+  } as unknown as ProjectOverlay;
+  expect(item(planOf(oneReq, [], { project }), 'as-1').status).toEqual({ status: 'todo', note: 'half way' });
 });

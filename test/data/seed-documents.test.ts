@@ -34,15 +34,10 @@ async function lowRiskCloud() {
 
 test('appCentral v1 follows slide 12', async () => {
   const v = (await loadSeed()).toolVersions.find(v => v._id === 'appcentral:low-risk-cloud:v1')!;
-  const count = (value: string, other?: string) =>
-    v.entries.filter(e => e.value === value && e.otherToolId === other).length;
-  expect([
-    count('provided'),
-    count('not-applicable'),
-    count('app-builder'),
-    count('other-tool', 'dbaas'),
-    count('other-tool', 'iga'),
-  ]).toEqual([42, 9, 11, 4, 11]);
+  const count = (value: string) => v.entries.filter(e => e.value === value).length;
+  // appCentral says only what it handles: no row points at another tool.
+  expect([count('provided'), count('not-applicable'), count('app-builder')]).toEqual([42, 9, 11]);
+  expect(v.entries).toHaveLength(62);
   expect(v.approval?.kind).toBe('verifier');
   expect(v.source).toBe('AEO TPC slide 12 (28 Oct 2026)');
 });
@@ -111,12 +106,6 @@ test('unknown requirement ID fails with file and ID', async () => {
   expect(() => expandSeedVersion('bad.json', seed, profile, new Set(['appcentral']), SEED_NOW)).toThrow(/zz-9.*bad\.json/);
 });
 
-test('other-tool pointing at an unknown tool fails', async () => {
-  const profile = await lowRiskCloud();
-  const seed: SeedVersionFile = { ...minimal, groups: [{ ids: ['dp-1'], value: 'other-tool', otherToolId: 'nope' }] };
-  expect(() => expandSeedVersion('bad.json', seed, profile, new Set(['appcentral']), SEED_NOW)).toThrow(/nope/);
-});
-
 test('a requirement listed twice in one version fails', async () => {
   const profile = await lowRiskCloud();
   const seed: SeedVersionFile = {
@@ -151,19 +140,19 @@ describe('the "two weeks in" sample project', () => {
     });
   });
 
-  test('9 of its 17 tasks are done, 2 are in progress and 6 are to do', async () => {
+  test('9 of its 17 tasks are done and 8 are not', async () => {
     const { plan } = await samplePlan();
     const tasks = plan.items.filter(i => i.heading === 'you');
     const count = (s: string) => tasks.filter(i => (i.status as { status: string }).status === s).length;
-    expect([tasks.length, count('done'), count('in-progress'), count('todo')]).toEqual([17, 9, 2, 6]);
-    expect(statusOf(plan, 'as-9')).toBe('in-progress');
+    expect([tasks.length, count('done'), count('todo')]).toEqual([17, 9, 8]);
+    expect(statusOf(plan, 'as-9')).toBe('todo');
     expect(statusOf(plan, 'cs-3')).toBe('todo');
   });
 
   test('exports as Y / Partial / N / N/A on the cells the demo shows', async () => {
     const { plan } = await samplePlan();
     const cell = (id: string) => sspValues(plan.items.find(i => i.id === id)!).implemented;
-    expect([cell('as-1'), cell('as-9'), cell('cs-3'), cell('is-14'), cell('pm-3')]).toEqual(['Y', 'Partial', 'N', 'N/A', 'Y']);
+    expect([cell('as-1'), cell('as-9'), cell('cs-3'), cell('is-14'), cell('pm-3')]).toEqual(['Y', 'N', 'N', 'N/A', 'Y']);
   });
 
   test('a project that names an unknown requirement fails the seed with the file and ID', async () => {
