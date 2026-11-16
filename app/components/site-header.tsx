@@ -3,23 +3,28 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Role } from "@/lib/role";
-import { ResetButton } from "./reset-button";
 import { RoleSwitcher } from "./role-switcher";
 
 // Projects is the main page; a new plan starts from there.
-const SHEETS = [{ href: "/projects", label: "Projects", paths: ["/projects"] }];
+const SHEETS: Sheet[] = [{ href: "/projects", label: "Projects", paths: ["/projects", "/start"] }];
 
-const ROLE_SHEETS: Partial<Record<Role, { href: string; label: string; paths: string[] }>> = {
-  "tool-owner": { href: "/tool-owner", label: "Tool Owner", paths: ["/tool-owner"] },
-  admin: { href: "/admin", label: "Admin", paths: ["/admin"] },
+type Sheet = { href: string; label: string; paths: string[]; not?: string[] };
+
+// The sheets each role gets beside Projects. The Catalog sheet lives under /admin, so Approvals leaves it out.
+const ROLE_SHEETS: Partial<Record<Role, Sheet[]>> = {
+  "tool-owner": [{ href: "/tool-owner", label: "Tools", paths: ["/tool-owner"] }],
+  admin: [
+    { href: "/admin", label: "Approvals", paths: ["/admin"], not: ["/admin/catalog"] },
+    { href: "/admin/catalog", label: "Catalog", paths: ["/admin/catalog"] },
+  ],
 };
 
-/** The simple header: product name, the sheets, who is looking, and the demo reset. The step pages show their own step. */
+/** The simple header: product name, the sheets of the role, and who is looking. The step pages show their own step. */
 export function SiteHeader({ role }: { role: Role }) {
   const pathname = usePathname();
-  const roleSheet = ROLE_SHEETS[role];
-  const sheets = roleSheet ? [...SHEETS, roleSheet] : SHEETS;
-  const isCurrent = (paths: string[]) => paths.some(p => pathname === p || pathname.startsWith(`${p}/`));
+  const sheets = [...SHEETS, ...(ROLE_SHEETS[role] ?? [])];
+  const under = (paths: string[] = []) => paths.some(p => pathname === p || pathname.startsWith(`${p}/`));
+  const isCurrent = (sheet: Sheet) => under(sheet.paths) && !under(sheet.not);
 
   return (
     <header style={{ height: "var(--header-h)" }} className="flex items-center gap-8 border-b border-rule bg-paper px-8">
@@ -30,7 +35,7 @@ export function SiteHeader({ role }: { role: Role }) {
       <nav aria-label="Sheets">
         <ul className="flex gap-6">
           {sheets.map(sheet => {
-            const current = isCurrent(sheet.paths);
+            const current = isCurrent(sheet);
             return (
               <li key={sheet.href}>
                 <Link
@@ -48,10 +53,7 @@ export function SiteHeader({ role }: { role: Role }) {
 
       <span className="flex-1" />
 
-      <div className="flex items-center gap-3">
-        <RoleSwitcher role={role} />
-        <ResetButton />
-      </div>
+      <RoleSwitcher role={role} />
     </header>
   );
 }

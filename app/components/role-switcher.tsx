@@ -3,11 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { setRole } from "@/app/actions/role";
-import { ROLES, type Role } from "@/lib/role";
+import { ROLES, ROLE_HOME, type Role } from "@/lib/role";
 
 const LABELS: Record<Role, string> = { builder: "Builder", "tool-owner": "Tool Owner", admin: "Admin" };
 
-/** Stands in for sign-in during the demo: pick whose view of the app to see. */
+/** Stands in for sign-in: pick whose view of the app to see. The role's first page opens. */
 export function RoleSwitcher({ role }: { role: Role }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -20,6 +20,8 @@ export function RoleSwitcher({ role }: { role: Role }) {
         const next = e.target.value as Role;
         start(async () => {
           await setRole(next);
+          // Each role has its own first page, and a page of another role would only say "switch".
+          router.push(ROLE_HOME[next]);
           router.refresh();
         });
       }}
