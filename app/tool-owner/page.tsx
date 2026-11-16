@@ -9,6 +9,7 @@ import { listNewestVersions } from "@/lib/data/repos/tool-versions";
 import { coverageToCheck } from "@/lib/catalog/news";
 import { coverageStatus } from "@/lib/tool-owner/status";
 import { AddTool } from "./new-tool-form";
+import { dayOf } from "@/lib/dates";
 
 const SECTION_TITLE = { cpf: "CPF tool", wog: "Whole-of-government tool", code: "Code component" } as const;
 
@@ -67,7 +68,7 @@ async function ToolOwnerTools() {
                         </span>
                         <StatusMark status={status} />
                         {(status.kind === "verified" || status.kind === "govtech-published") && (
-                          <span className="tnum text-small text-ink-soft">{status.at.slice(0, 10)}</span>
+                          <span className="tnum text-small text-ink-soft">{dayOf(status.at)}</span>
                         )}
                       </li>
                     );

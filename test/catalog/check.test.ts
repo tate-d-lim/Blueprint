@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { runCheck, checkIsDue, AUTO_CHECK_AFTER_MS, type CheckStore } from '@/lib/catalog/check';
+import { runCheck, storeBaseline, checkIsDue, AUTO_CHECK_AFTER_MS, type CheckStore } from '@/lib/catalog/check';
 import { SITE_HOST, SITE_PAGES, govtechSite, readSitemap } from '@/lib/catalog/govtech/site';
 import { SourceUnreachableError } from '@/lib/catalog/govtech/source';
 import type { CatalogBaseline, CatalogCheck, PendingRelease } from '@/lib/catalog/types';
@@ -83,6 +83,20 @@ test('a newer page with a real change stores a pending release and leaves the ba
   expect(result.pendingId).toBe(s.pending[0]._id);
   expect(s.pending[0].incoming.profiles.map(p => p.profileId)).toEqual(SITE_PAGES.map(p => p.profileId));
   expect(s.baselines.get('govtech-site')?.pages).toEqual(stamps('2026-10-01T00:00:00.000Z'));
+});
+
+test('a discarded release does not come back at the next check, and a full check finds it again', async () => {
+  const s = await store();
+  s.baselines.set('govtech-site', { _id: 'govtech-site', at: 'x', pages: stamps('2026-10-01T00:00:00.000Z') });
+  const site = () => govtechSite(fakeFetch({ lastmod: '2026-11-10T08:00:00.000Z' }).fn);
+  await runCheck(s, site());
+  // The admin discards it: the baseline moves to the pages that were read, and the release goes.
+  await storeBaseline(s, s.pending[0]);
+  s.pending.length = 0;
+  expect((await runCheck(s, site())).outcome).toBe('no-change');
+  expect(s.pending).toHaveLength(0);
+  expect((await runCheck(s, site(), 'Admin', undefined, { full: true })).outcome).toBe('changed');
+  expect(s.pending).toHaveLength(1);
 });
 
 test('every request is a GET to the fixed host with the generic User-Agent and a time limit', async () => {

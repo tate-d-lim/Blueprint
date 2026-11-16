@@ -1,5 +1,6 @@
 import type { Profile, Tool } from "@/lib/domain/types";
 import { versionVerification, type VersionPair } from "@/lib/plan/verification";
+import { dayOf } from "@/lib/dates";
 
 /** "IM8 profile" lines (one for each profile in the plan) and one line for each picked tool, to show where the content comes from. */
 export interface SourceLines {
@@ -19,8 +20,9 @@ export function sourceLines(input: { profiles: Profile[]; tools: Tool[]; version
       const pair = versions.find(v => v.current.toolId === tool._id && v.current.profileId === profileId);
       if (!pair) return `${tool.name}: no coverage yet`;
       const state = versionVerification(pair);
+      const approvedAt = pair.current.approval?.at;
       const what =
-        state === "verified" ? `verified by an admin on ${pair.current.approval?.at.slice(0, 10)}` : state === "govtech-published" ? "published by GovTech" : "not yet verified";
+        state === "verified" ? `verified by an admin${approvedAt ? ` on ${dayOf(approvedAt)}` : ""}` : state === "govtech-published" ? "published by GovTech" : "not yet verified";
       return `${tool.name}: coverage version ${pair.current.version}, ${what}`;
     }),
   };

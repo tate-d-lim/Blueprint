@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Button, ButtonLink } from "@/app/ui/button";
 import { Checkbox, Field, inputClass, selectClass, textareaClass } from "@/app/ui/field";
 import { Note } from "@/app/ui/note";
@@ -10,7 +10,7 @@ import { Segmented } from "@/app/ui/segmented";
 import { Stamp, Tag } from "@/app/ui/stamp";
 import type { CoverageValue, Level, RequirementKey } from "@/lib/domain/types";
 import { familyName } from "@/lib/plan/hotel";
-import { VALUE_LABEL } from "@/lib/plan/labels";
+import { LEVEL_LABEL, VALUE_LABEL } from "@/lib/plan/labels";
 import { answerLine, changedLine, groupByPart, rowChanged, saveBlocker } from "@/lib/tool-owner/groups";
 import type { DraftRow } from "@/lib/tool-owner/new-version";
 import { saveVersionAction } from "../../actions";
@@ -92,13 +92,14 @@ function Editor({
   // Every group starts closed, so the page opens as a short list of the hotel parts with their counts.
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [openRows, setOpenRows] = useState<Set<RequirementKey>>(new Set());
-  const [jumpTo, setJumpTo] = useState<RequirementKey | null>(null);
+  // The row to scroll to after the next render, when its group and the row are open.
+  const jumpTo = useRef<RequirementKey | null>(null);
 
   useEffect(() => {
-    if (!jumpTo) return;
-    document.getElementById(`row-${jumpTo}`)?.scrollIntoView({ block: "center" });
-    setJumpTo(null);
-  }, [jumpTo]);
+    if (!jumpTo.current) return;
+    document.getElementById(`row-${jumpTo.current}`)?.scrollIntoView({ block: "center" });
+    jumpTo.current = null;
+  });
 
   const families = [...new Set(requirements.map(r => r.family))];
   const update = (key: RequirementKey, patch: Partial<DraftRow>) => {
@@ -158,7 +159,7 @@ function Editor({
     setBlankShown(null);
     setOpenGroups(prev => new Set(prev).add(groupByPart([req])[0].part.id));
     setOpenRows(prev => new Set(prev).add(key));
-    setJumpTo(key);
+    jumpTo.current = key;
   };
 
   const save = () =>
@@ -242,9 +243,11 @@ function Editor({
           {props => (
             <select {...props} value={level} onChange={e => setLevel(e.target.value)} className={selectClass}>
               <option value="">All levels</option>
-              <option value="0">Level 0</option>
-              <option value="1">Level 1</option>
-              <option value="2">Level 2</option>
+              {([0, 1, 2] as const).map(n => (
+                <option key={n} value={n}>
+                  {LEVEL_LABEL[n]}
+                </option>
+              ))}
             </select>
           )}
         </Field>
@@ -315,7 +318,7 @@ function Editor({
                         <span className="flex flex-col">
                           <span className="text-body font-semibold">{req.title}</span>
                           <span className="tnum text-small text-ink-soft">
-                            {req.id}, level {req.level}
+                            {req.id} · {LEVEL_LABEL[req.level]}
                           </span>
                         </span>
                       }

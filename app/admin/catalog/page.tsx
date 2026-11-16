@@ -15,6 +15,9 @@ import { CatalogBrowser, type Row } from "./catalog-browser";
 import { GovtechCheck } from "./govtech-check";
 import { ProfileSwitch } from "./profile-switch";
 
+/** The last check found changes, and the admin has applied or discarded them since. */
+const HANDLED = "GovTech had changes. You applied or discarded them.";
+
 type Props = { searchParams: Promise<{ profile?: string; applied?: string }> };
 
 export default function CatalogPage(props: Props) {
@@ -88,7 +91,15 @@ async function Catalog({ searchParams }: Props) {
           <dt className="font-semibold">Applied</dt>
           <dd className="tnum">{lastRelease ? stampOf(lastRelease.appliedAt) : "Unknown"}</dd>
           <dt className="font-semibold">Last check of GovTech</dt>
-          <dd>{last ? <><span className="tnum">{stampOf(last.at)}</span>. {describeCheck(last, lastGood)}</> : "Not checked yet."}</dd>
+          <dd>
+            {last ? (
+              <>
+                <span className="tnum">{stampOf(last.at)}</span>. {last.outcome === "changed" && !data.waiting ? HANDLED : describeCheck(last, lastGood)}
+              </>
+            ) : (
+              "Not checked yet."
+            )}
+          </dd>
         </dl>
         <div className="flex flex-wrap items-start gap-3 md:justify-end">
           <GovtechCheck due={due} />

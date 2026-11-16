@@ -61,13 +61,14 @@ function HandoffBody() {
         </div>
       </section>
       <section className="flex flex-col gap-3">
-        <h3 className="text-lead font-semibold">2. Give your agent this prompt, with the file</h3>
-        <pre className="rounded-sm border border-rule bg-ground p-4 font-code text-small leading-relaxed whitespace-pre-wrap">{prompt}</pre>
-        <div>
-          <Button variant="secondary" onClick={copy}>
+        {/* The copy button is beside the heading, so it shows with no scroll. */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-lead font-semibold">2. Give your agent this prompt, with the file</h3>
+          <Button variant="secondary" size="sm" onClick={copy}>
             {copied ? "Copied" : "Copy the prompt"}
           </Button>
         </div>
+        <pre className="rounded-sm border border-rule bg-ground p-4 font-code text-small leading-relaxed whitespace-pre-wrap">{prompt}</pre>
       </section>
     </div>
   );

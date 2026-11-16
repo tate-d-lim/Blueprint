@@ -249,7 +249,7 @@ A small box with a second outline rule at the small step. Pending ("Not yet veri
 - **Dialog:** native dialog, ink border, paper ground. Centred up to 560px, or a full-height side panel from the right up to 720px. Title strip and footer are ruled off. The close button is a 32px ruled square with a drawn cross.
 
 ### Header
-A simple 56px paper band with a 1px bottom rule. The product name "Blueprint" in wide lead, the sheet links (current one is 600 and underlined 2px, the rest soft ink), "Step n of 5" centred in small soft ink on step pages, then the role switcher and the demo reset on the right.
+A simple 56px paper band with a 1px bottom rule. The product name "Blueprint" in wide lead, the sheet links (current one is 600 and underlined 2px, the rest soft ink), "Step n of 5" centred in small soft ink on step pages, then the role switcher on the right. "Reset data" is not in the header: it is at the foot of the admin Catalog sheet.
 
 ### The hotel (signature component)
 An isometric cutaway drawn with Three.js on an orthographic camera, using Kenney kits, filling the left 60%. Twelve parts, each with a fixed label place on the left or right edge so no two labels overlap at 1280 by 800 or 1440 by 900.

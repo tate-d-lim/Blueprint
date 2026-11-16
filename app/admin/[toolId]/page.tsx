@@ -12,6 +12,7 @@ import type { CoverageEntry } from "@/lib/domain/types";
 import { VALUE_LABEL } from "@/lib/plan/labels";
 import { defaultVerifyProfile } from "@/lib/plan/verification";
 import { Decision } from "./decision";
+import { dayOf } from "@/lib/dates";
 
 type Props = { params: Promise<{ toolId: string }>; searchParams: Promise<{ profile?: string }> };
 
@@ -59,7 +60,7 @@ async function Review({ params, searchParams }: Props) {
         <Fact label="Version">
           {current.version}, written against {current.writtenAgainst}
         </Fact>
-        <Fact label="Saved">{current.createdAt.slice(0, 10)}</Fact>
+        <Fact label="Saved">{dayOf(current.createdAt)}</Fact>
         <Fact label="Source">
           <span className="flex flex-wrap items-center gap-2">
             {current.source}
@@ -75,12 +76,12 @@ async function Review({ params, searchParams }: Props) {
 
       {current.approval && (
         <Note tone="success" title="This version is approved.">
-          Approved by {current.approval.by} on {current.approval.at.slice(0, 10)}.
+          Approved by {current.approval.by} on {dayOf(current.approval.at)}.
         </Note>
       )}
       {current.sentBack && (
         <Note tone="attention" title="This version was sent back.">
-          {current.sentBack.by} sent it back on {current.sentBack.at.slice(0, 10)}: &ldquo;{current.sentBack.note}&rdquo;
+          {current.sentBack.by} sent it back on {dayOf(current.sentBack.at)}: &ldquo;{current.sentBack.note}&rdquo;
         </Note>
       )}
 

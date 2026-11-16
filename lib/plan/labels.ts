@@ -1,6 +1,9 @@
-import type { CoverageValue, TaskStatus } from '../domain/types';
+import type { CoverageValue, Level, TaskStatus } from '../domain/types';
 import type { Heading, Placement } from './engine';
 import type { Verification } from './verification';
+
+/** The words for a level on every screen. Level 2 controls are the ones an app can leave for later. */
+export const LEVEL_LABEL: Record<Level, string> = { 0: 'Essential', 1: 'Recommended', 2: 'Good to have' };
 
 export const HEADING_TITLES: Record<Heading, string> = {
   you: 'What you need to do',

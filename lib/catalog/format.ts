@@ -1,4 +1,5 @@
 import type { CatalogRelease, ProfileChanges } from '../domain/types';
+import { stampOf } from '../dates';
 import type { CatalogCheck } from './types';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -9,10 +10,7 @@ export function longDate(iso: string): string {
   return m ? `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]} ${m[1]}` : iso;
 }
 
-/** "2026-11-16T09:05:00.000Z" gives "2026-11-16 09:05 UTC". */
-export function stampOf(iso: string): string {
-  return `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
-}
+export { stampOf };
 
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
@@ -31,15 +29,17 @@ export function describeCheck(check: CatalogCheck | undefined, lastGood?: Catalo
   }
 }
 
+export type ChangeNumbers = { added: number; removed: number; reworded: number; levelChanged: number };
+
+/** "2 added, 1 removed" from four numbers. */
+export function countsLine(n: ChangeNumbers): string {
+  const parts = [n.added && `${n.added} added`, n.removed && `${n.removed} removed`, n.reworded && `${n.reworded} reworded`, n.levelChanged && `${n.levelChanged} with a new level`].filter(Boolean);
+  return parts.length ? parts.join(', ') : 'No change';
+}
+
 /** "2 added, 1 removed" for one profile. */
 export function changeCounts(c: ProfileChanges): string {
-  const parts = [
-    c.added.length && `${c.added.length} added`,
-    c.removed.length && `${c.removed.length} removed`,
-    c.reworded.length && `${c.reworded.length} reworded`,
-    c.levelChanged.length && `${c.levelChanged.length} with a new level`,
-  ].filter(Boolean);
-  return parts.length ? parts.join(', ') : 'No change';
+  return countsLine({ added: c.added.length, removed: c.removed.length, reworded: c.reworded.length, levelChanged: c.levelChanged.length });
 }
 
 /** What a source is called on the history table. */

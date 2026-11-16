@@ -3,6 +3,7 @@ import { Cell, Table } from "@/app/ui/table";
 import { withDb } from "@/lib/data/db";
 import { listProjects } from "@/lib/data/repos/projects";
 import { DeleteProjectButton } from "./delete-project";
+import { dayOf } from "@/lib/dates";
 
 const STEPS = [
   { title: "Answer questions about your app", text: "Questions about risk, then about what your app does. It takes a few minutes." },
@@ -53,7 +54,7 @@ export default async function ProjectsPage() {
                 </Cell>
                 <Cell>{p.ownerName}</Cell>
                 <Cell nowrap className="tnum">
-                  {p.updatedAt.slice(0, 10)}
+                  {dayOf(p.updatedAt)}
                 </Cell>
                 <Cell nowrap className="text-right">
                   <DeleteProjectButton projectId={p._id} projectName={p.name} look="row" />

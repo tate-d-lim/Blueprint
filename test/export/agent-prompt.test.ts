@@ -1,6 +1,7 @@
 import { agentPromptInput, buildAgentPrompt, type AgentPromptInput } from '@/lib/export/agent-prompt';
 import { buildSsp } from '@/lib/export/oscal';
 import { buildPlan, type PlanData } from '@/lib/plan/engine';
+import { planTotals } from '@/lib/plan/hotel';
 import { pairVersions, selectPlanInput } from '@/lib/plan/select';
 import type { RiskAnswers } from '@/lib/risk/assess';
 import { loadSeed } from '../helpers/seed';
@@ -71,6 +72,12 @@ describe('agentPromptInput', () => {
     expect(counted.planned).toBeGreaterThan(0);
     expect(counted.tools).toHaveLength(1);
     expect(counted.tools[0].controls).toBeGreaterThan(0);
+  });
+
+  it('gives a tool the number that the project page shows as "by your tools"', async () => {
+    const { built, input } = await plan(['appcentral']);
+    const counted = agentPromptInput({ appName: 'A', profiles: ['x'], plan: built, tools: input.pickedTools.map(t => ({ id: t._id, name: t.name })) });
+    expect(counted.tools[0].controls).toBe(planTotals(built).platform);
   });
 
   it('has no tool lines for an app with no tools', async () => {

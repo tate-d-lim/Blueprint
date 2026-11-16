@@ -70,9 +70,12 @@ export function NextStrip() {
       </ol>
       <div className="flex shrink-0 items-center gap-1">
         {!done[0] && (
-          <Button variant="quiet" size="sm" onClick={() => setNoTools(true)}>
-            Your app uses no tools
-          </Button>
+          <>
+            <Button variant="quiet" size="sm" onClick={() => setNoTools(true)}>
+              Your app uses no tools
+            </Button>
+            <span aria-hidden="true" className="h-4 w-px bg-rule-strong" />
+          </>
         )}
         <Button variant="quiet" size="sm" onClick={hideNext}>
           Hide

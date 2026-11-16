@@ -1,4 +1,5 @@
 import type { Plan } from '../plan/engine';
+import { countsAs } from '../plan/hotel';
 import { taskStatusOf } from '../plan/progress';
 
 /** What the prompt says about one project. */
@@ -16,12 +17,13 @@ export interface AgentPromptInput {
 
 /** The placements the SSP writes as "planned" or "implemented" for the builder's own part (see `buildSsp`). */
 const BUILDER_PLACEMENTS = ['shared', 'app-builder', 'default-builder', 'answered-applies'];
-/** The placements where a picked tool does the control, or its part of it. */
-const TOOL_PLACEMENTS = ['provided', 'shared'];
 
 const controls = (n: number) => `${n} ${n === 1 ? 'control' : 'controls'}`;
 
-/** The numbers of the prompt, counted the way the SSP states them. */
+/**
+ * The numbers of the prompt. The planned controls are counted the way the SSP states them. The controls of a tool are
+ * counted the way the project page counts "by your tools", so the prompt and the page give the same number.
+ */
 export function agentPromptInput(input: { appName: string; profiles: string[]; plan: Plan; tools: { id: string; name: string }[] }): AgentPromptInput {
   const { plan } = input;
   const planned = plan.items.filter(i => BUILDER_PLACEMENTS.includes(i.placement) && taskStatusOf(i) === 'todo').length;
@@ -30,7 +32,7 @@ export function agentPromptInput(input: { appName: string; profiles: string[]; p
     profiles: input.profiles,
     tools: input.tools.map(t => ({
       name: t.name,
-      controls: plan.items.filter(i => TOOL_PLACEMENTS.includes(i.placement) && i.decisive.some(c => c.toolId === t.id)).length,
+      controls: plan.items.filter(i => countsAs(i) === 'platform' && i.decisive.some(c => c.toolId === t.id)).length,
     })),
     planned,
     needsAssessment: plan.items.filter(i => i.placement === 'open').length,

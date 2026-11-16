@@ -8,6 +8,7 @@ import { diffSummary, diffVersions } from "@/lib/admin/diff";
 import { withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
 import { listAwaitingApproval, listDecisions } from "@/lib/data/repos/tool-versions";
+import { dayOf } from "@/lib/dates";
 
 type Props = { searchParams: Promise<{ done?: string; tool?: string; version?: string }> };
 
@@ -57,7 +58,7 @@ async function Approvals({ searchParams }: Props) {
                     {profileTitle(current.profileId)}, version {current.version}
                   </Cell>
                   <Cell nowrap className="tnum">
-                    {current.createdAt.slice(0, 10)}
+                    {dayOf(current.createdAt)}
                   </Cell>
                   <Cell className="max-w-72">{current.changeNote ? `“${current.changeNote}”` : <span className="text-ink-soft">No note</span>}</Cell>
                   <Cell>
@@ -98,7 +99,7 @@ async function Approvals({ searchParams }: Props) {
                 </Cell>
                 <Cell nowrap>{decision.by}</Cell>
                 <Cell nowrap className="tnum">
-                  {decision.at.slice(0, 10)}
+                  {dayOf(decision.at)}
                 </Cell>
                 <Cell className="max-w-96">{decision.note ? `“${decision.note}”` : <span className="text-ink-soft">No note</span>}</Cell>
               </tr>

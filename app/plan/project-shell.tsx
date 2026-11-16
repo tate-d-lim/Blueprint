@@ -14,6 +14,7 @@ import { ProjectProvider, useProject } from "./project-context";
 import { NextStrip } from "./next-strip";
 import { HandoffButton, HandoffDialog } from "./prompt-dialog";
 import { ToolsDrawer } from "./tools-panel";
+import { dayOf } from "@/lib/dates";
 
 /**
  * A saved project: one header that stays on every tab (the name, how far it has got, and the two actions), the tabs,
@@ -72,7 +73,7 @@ function Header() {
             </Link>
             <span className="tnum">
               {" "}
-              · Owner {project.ownerName} · Revised {project.updatedAt.slice(0, 10)}
+              · Owner {project.ownerName} · Revised {dayOf(project.updatedAt)}
             </span>
           </nav>
           <h1 className="wide truncate text-heading font-semibold">{project.name}</h1>
@@ -164,7 +165,7 @@ function CatalogNotice({ news, onDismiss }: { news: ProjectNews; onDismiss: () =
     <section aria-label="Catalog change" className="flex items-start justify-between gap-6 rounded-sm border border-rule-strong bg-ground px-4 py-3">
       <div className="flex min-w-0 flex-col gap-1">
         <p className="text-body font-semibold">
-          The IM8 catalog changed on {news.latestAt.slice(0, 10)}: {newsSentence(news)}
+          The IM8 catalog changed on {dayOf(news.latestAt)}: {newsSentence(news)}
         </p>
         <p className="text-small text-ink-soft">Your plan already uses the new catalog. Your ticks and notes stay as they are.</p>
         <dl className="mt-1 flex flex-col gap-0.5 text-small">

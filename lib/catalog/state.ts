@@ -1,9 +1,9 @@
-import type { CatalogRelease, Level, ProfileEntry, Tool, ToolVersion } from '../domain/types';
+import type { CatalogRelease, ProfileEntry, Tool, ToolVersion } from '../domain/types';
+import { LEVEL_LABEL } from '../plan/labels';
 
 export type PlainState = 'written' | 'missing' | 'recheck';
 
-/** The words for a level on every screen. Level 2 controls are the ones an app can leave for later. */
-export const LEVEL_LABEL: Record<Level, string> = { 0: 'Essential', 1: 'Recommended', 2: 'Good to have' };
+export { LEVEL_LABEL };
 
 export const PLAIN_LABEL: Record<PlainState, string> = { written: 'Plain text', missing: 'No plain text', recheck: 'Check the plain text' };
 

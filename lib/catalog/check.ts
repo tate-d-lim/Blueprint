@@ -62,7 +62,14 @@ export async function checkIsDue(store: CheckStore, sourceId: string, now = new 
  * Asks the source what changed. With no change, stores the baseline and says so. With a change, stores the release as a
  * pending release to review. Never applies anything. The result is stored, so the page can show it.
  */
-export async function runCheck(store: CheckStore, source: CatalogSource, by = 'Blueprint', now = new Date().toISOString()): Promise<CatalogCheck> {
+export async function runCheck(
+  store: CheckStore,
+  source: CatalogSource,
+  by = 'Blueprint',
+  now = new Date().toISOString(),
+  /** `full` reads the pages again even when the source shows no newer date. The admin's own check does this. */
+  { full = false }: { full?: boolean } = {},
+): Promise<CatalogCheck> {
   const record = async (partial: Omit<CatalogCheck, '_id' | 'at' | 'sourceId'>): Promise<CatalogCheck> => {
     const doc: CatalogCheck = { _id: randomUUID(), at: now, sourceId: source.id, ...partial };
     await store.addCheck(doc);
@@ -71,7 +78,7 @@ export async function runCheck(store: CheckStore, source: CatalogSource, by = 'B
   try {
     const stamp = await source.check();
     const baseline = await store.baseline(source.id);
-    const unchanged = baseline && Object.entries(stamp.pages).every(([page, at]) => baseline.pages[page] !== undefined && at <= baseline.pages[page]);
+    const unchanged = !full && baseline && Object.entries(stamp.pages).every(([page, at]) => baseline.pages[page] !== undefined && at <= baseline.pages[page]);
     if (unchanged) return await record({ outcome: 'no-change', ...(baseline.sourceDate ? { sourceDate: baseline.sourceDate } : {}) });
 
     const incoming = await source.fetchRelease(stamp);
@@ -92,7 +99,10 @@ export async function runCheck(store: CheckStore, source: CatalogSource, by = 'B
   }
 }
 
-/** Stores the baseline of a fetched release that the admin applied, so the next check starts from it. */
+/**
+ * Stores the baseline of a fetched release that the admin applied or discarded, so the next automatic check starts from
+ * it. A discarded release does not come back until the source changes its pages, or the admin runs a full check.
+ */
 export async function storeBaseline(store: CheckStore, waiting: PendingRelease, now = new Date().toISOString()): Promise<void> {
   if (!waiting.sourceId || !waiting.stamp) return;
   await store.setBaseline(waiting.sourceId, waiting.stamp.pages, now, waiting.incoming.source.sourceDate);

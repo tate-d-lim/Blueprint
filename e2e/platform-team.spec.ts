@@ -4,15 +4,17 @@ import { openTools } from "./helpers";
 const asRole = async (page: Page, role: "Tool Owner" | "Admin") => {
   await page.getByRole("combobox", { name: "Viewing as" }).selectOption({ label: role });
   // Each role adds its own sheet to the title block once the switch has landed.
-  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: role === "Tool Owner" ? "Tool Owner" : "Admin" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: role === "Tool Owner" ? "Tools" : "Approvals" })).toBeVisible();
 };
 
 const waiting = (page: Page) => page.getByRole("region", { name: "Waiting for approval" });
 const reviewAppCentral = (page: Page) =>
   waiting(page).getByRole("row").filter({ has: page.getByText("appCentral", { exact: true }) }).getByRole("link", { name: "Review" });
 
-/** On appCentral's tool page: open the rate-limiting row, change its words, and save a version from the save bar. */
+/** On appCentral's tool page: open the groups and the rate-limiting row, change its words, and save a version from the save bar. */
 async function saveAppCentralVersion(page: Page, explanation: string, source: string) {
+  // The groups start closed.
+  await page.getByRole("button", { name: "Open all" }).click();
   await page.getByText("Authentication Mechanism Rate-Limiting").click();
   await page.getByRole("textbox", { name: "Explanation" }).first().fill(explanation);
   await expect(page.getByText("Changed", { exact: true })).toBeVisible();
@@ -43,7 +45,9 @@ test("the platform cut-away: a tool owner edits one row, an Admin sends it back,
   await page.goto(PLAN);
   await openTools(page);
   await expect(page.getByRole("checkbox", { name: /appCentral/ })).toBeChecked();
-  await expect(page.getByText("Not yet verified", { exact: true }).first()).toBeVisible();
+  const appCentralTool = page.getByRole("dialog", { name: "Your tools" }).getByRole("listitem").filter({ has: page.getByRole("checkbox", { name: /appCentral/ }) });
+  await expect(appCentralTool.getByText("Not yet verified", { exact: true })).toBeVisible();
+  await expect(appCentralTool).toContainText("1 not yet verified");
 
   // An Admin sees the one changed row, with the size of the change in the queue, and sends the version back with a note.
   await asRole(page, "Admin");
@@ -56,7 +60,7 @@ test("the platform cut-away: a tool owner edits one row, an Admin sends it back,
   await page.getByRole("button", { name: "Send this version back" }).click();
   await expect(page.getByText("appCentral, version 2, is sent back.")).toBeVisible();
   await expect(waiting(page).getByRole("row").filter({ has: page.getByText("appCentral", { exact: true }) })).toHaveCount(0);
-  await expect(page.getByRole("region", { name: "Decided" }).getByRole("row").filter({ has: page.getByText("appCentral", { exact: true }) })).toContainText("Sent back");
+  await expect(page.getByRole("region", { name: "Decided" }).getByRole("row").filter({ has: page.getByText("appCentral", { exact: true }) }).first()).toContainText("Sent back"); // the newest decision is first
 
   // Builders never see a version that was sent back: the older approved version still stands.
   await page.goto(PLAN);

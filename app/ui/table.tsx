@@ -8,7 +8,7 @@ export function Table({ head, children }: { head: React.ReactNode[]; children: R
         <thead>
           <tr className="border-b border-ink">
             {head.map((h, i) => (
-              <th key={i} scope="col" className="px-4 py-2.5 align-bottom text-small font-semibold text-ink">
+              <th key={i} scope="col" className="px-4 py-2.5 align-bottom text-small font-semibold whitespace-nowrap text-ink">
                 {h}
               </th>
             ))}

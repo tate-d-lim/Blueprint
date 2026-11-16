@@ -9,6 +9,8 @@ export interface DetailRow {
   id: string;
   /** The plain task (or question), or the official wording when there is no plain text. */
   text: string;
+  /** The official title. It is the short form of a control that has no plain text. */
+  title: string;
   /** The official statement with its parameters filled in. */
   official: string;
   question: boolean;
@@ -32,7 +34,7 @@ export function needsDetails(plan: Plan, profiles: Profile[]): Record<PartId, De
     const official = resolveParameters(statements.get(item.key) ?? item.rationale);
     const question = as === 'question';
     const plain = question ? (item.plain?.question ?? item.plain?.task) : item.plain?.task;
-    out[partOf(item.family)].push({ key: item.key, id: item.id, text: plain ?? official, official, question, level: item.level, plainChecked: plain !== undefined });
+    out[partOf(item.family)].push({ key: item.key, id: item.id, text: plain ?? official, title: item.title, official, question, level: item.level, plainChecked: plain !== undefined });
   }
   for (const rows of Object.values(out)) rows.sort((a, b) => natural(a.id, b.id));
   return out;

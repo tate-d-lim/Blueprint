@@ -12,6 +12,7 @@ import { coverageToCheck } from "@/lib/catalog/news";
 import { coverageStatus } from "@/lib/tool-owner/status";
 import type { DraftRow } from "@/lib/tool-owner/new-version";
 import { CoverageEditor } from "./coverage-editor";
+import { dayOf } from "@/lib/dates";
 
 type Props = {
   params: Promise<{ toolId: string }>;
@@ -63,7 +64,7 @@ async function ToolEditor({ params, searchParams }: Props) {
         <p className="flex flex-wrap items-center gap-3">
           <span className="text-small font-semibold text-ink">Version {current ? current.version : "none"}</span>
           <StatusMark status={status} />
-          {current && <span className="tnum text-small text-ink-soft">Saved {current.createdAt.slice(0, 10)}</span>}
+          {current && <span className="tnum text-small text-ink-soft">Saved {dayOf(current.createdAt)}</span>}
         </p>
         {new Set(withVersions).size > 1 && (
           <p className="flex gap-4">
@@ -85,7 +86,7 @@ async function ToolEditor({ params, searchParams }: Props) {
       </div>
 
       {current?.sentBack && (
-        <Note tone="attention" title={`Version ${current.version} was sent back on ${current.sentBack.at.slice(0, 10)}.`}>
+        <Note tone="attention" title={`Version ${current.version} was sent back on ${dayOf(current.sentBack.at)}.`}>
           <div className="flex flex-col gap-2">
             <p>
               {current.sentBack.by} wrote: &ldquo;{current.sentBack.note}&rdquo;
@@ -96,7 +97,7 @@ async function ToolEditor({ params, searchParams }: Props) {
       )}
 
       {checkCount > 0 && toCheck.since && (
-        <Note tone="attention" title={`The IM8 catalog changed on ${toCheck.since.slice(0, 10)}.`}>
+        <Note tone="attention" title={`The IM8 catalog changed on ${dayOf(toCheck.since)}.`}>
           <div className="flex flex-col gap-2">
             <p>
               {[

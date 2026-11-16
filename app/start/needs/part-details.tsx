@@ -1,8 +1,8 @@
 import { Disclosure } from "@/app/ui/disclosure";
 import type { HotelPart, PartState } from "@/lib/plan/hotel";
+import { LEVEL_LABEL } from "@/lib/plan/labels";
 import type { DetailRow } from "@/lib/plan/needs";
 
-const LEVEL = { 0: "Essential", 1: "Recommended", 2: "Good to have" } as const;
 /** How many requirements the card shows before "Show all". */
 const EXAMPLES = 3;
 const count = (n: number) => (n === 1 ? "1 control" : `${n} controls`);
@@ -22,7 +22,8 @@ export function PartDetails({
   rows: DetailRow[];
   headingRef?: React.Ref<HTMLHeadingElement>;
 }) {
-  const examples = rows.slice(0, EXAMPLES);
+  // The examples are short: controls with plain text first, and the official title for a control that has none.
+  const examples = [...rows.filter(r => r.plainChecked), ...rows.filter(r => !r.plainChecked)].slice(0, EXAMPLES);
   const questions = state.counts.questions;
   const open = state.counts.you + questions;
   return (
@@ -52,7 +53,7 @@ export function PartDetails({
             {examples.map(row => (
               <li key={row.key} className="flex gap-2 text-body">
                 <span aria-hidden="true" className={`mt-2 size-1.5 shrink-0 rounded-full ${row.question ? "bg-redline" : "bg-ink"}`} />
-                <span {...(row.plainChecked ? {} : { "data-official": true })}>{row.text}</span>
+                <span {...(row.plainChecked ? {} : { "data-official": true })}>{row.plainChecked ? row.text : row.title}</span>
               </li>
             ))}
           </ul>
@@ -65,7 +66,7 @@ export function PartDetails({
             <ul className="flex flex-col gap-4 pt-1">
               {rows.map(row => (
                 <li key={row.key} className="flex flex-col gap-1.5 border-b border-rule pb-4 last:border-b-0">
-                  <p className="text-small font-medium text-ink-soft">{LEVEL[row.level]}</p>
+                  <p className="text-small font-medium text-ink-soft">{LEVEL_LABEL[row.level]}</p>
                   <p {...(row.plainChecked ? {} : { "data-official": true })} className="max-w-measure text-body">
                     {row.question && <span aria-hidden="true" className="mr-2 inline-block size-2 rounded-full bg-redline align-middle" />}
                     {row.text}

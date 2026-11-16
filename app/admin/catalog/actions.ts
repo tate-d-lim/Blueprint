@@ -18,12 +18,12 @@ async function requireAdmin(): Promise<string | undefined> {
 /** Every page that reads the catalog: builders, tool owners and admins. */
 const refreshEverywhere = () => revalidatePath("/", "layout");
 
-/** The button "Check GovTech now". It always runs. */
+/** The button "Check GovTech now". It always runs, and it reads the pages again even when their dates did not change. */
 export async function checkNowAction(): Promise<Result> {
   const denied = await requireAdmin();
   if (denied) return { ok: false, error: denied };
   const source = SOURCES[0];
-  const check = await withDb(db => runExclusive(() => runCheck(mongoStore(db), source, "Admin")));
+  const check = await withDb(db => runExclusive(() => runCheck(mongoStore(db), source, "Admin", undefined, { full: true })));
   revalidatePath("/admin/catalog");
   return { ok: true, message: describeCheck(check), id: check.pendingId };
 }
@@ -81,7 +81,12 @@ export async function applyReleaseAction(pendingId: string): Promise<Result> {
 export async function discardReleaseAction(pendingId: string): Promise<Result> {
   const denied = await requireAdmin();
   if (denied) return { ok: false, error: denied };
-  await withDb(db => deletePending(db, pendingId));
+  await withDb(async db => {
+    // A discarded GovTech release must not come back at each automatic check.
+    const waiting = await getPending(db, pendingId);
+    if (waiting) await storeBaseline(mongoStore(db), waiting);
+    await deletePending(db, pendingId);
+  });
   revalidatePath("/admin/catalog");
   return { ok: true };
 }

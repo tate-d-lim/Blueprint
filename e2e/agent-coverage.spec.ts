@@ -8,7 +8,7 @@ test("a tool owner fills a new tool from a coding agent file and submits it for 
   await request.post("/api/reset");
   await page.goto("/start");
   await asRole(page, "Tool Owner");
-  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: "Tool Owner" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: "Tools" })).toBeVisible();
   await page.goto("/tool-owner");
   await page.getByRole("button", { name: "Add a tool" }).click();
   const dialog = page.getByRole("dialog", { name: "Add a tool" });
@@ -60,7 +60,7 @@ test("a tool owner fills a new tool from a coding agent file and submits it for 
 
   // The admin sees where the version came from.
   await asRole(page, "Admin");
-  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: "Admin" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: "Approvals" })).toBeVisible();
   await page.goto("/admin");
   await page
     .getByRole("region", { name: "Waiting for approval" })
@@ -72,6 +72,6 @@ test("a tool owner fills a new tool from a coding agent file and submits it for 
 
   // Only a tool owner can download the brief.
   await asRole(page, "Builder");
-  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: "Admin" })).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: "Approvals" })).toHaveCount(0);
   expect((await page.request.get(briefUrl)).status()).toBe(403);
 });

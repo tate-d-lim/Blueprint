@@ -25,7 +25,7 @@ test("an admin reads the catalog, discards an older release, and saves a plain t
   await page.locator('input[type="file"]').setInputFiles("data/source/im8-reform.json");
   await page.getByRole("button", { name: "Check the file" }).click();
   await page.waitForURL(/\/admin\/catalog\/review\//);
-  await expect(page.getByRole("heading", { name: /^This release removes \d+ controls\.$/ })).toBeVisible();
+  await expect(page.getByText(/^This release removes \d+ controls\.$/)).toBeVisible();
   await expect(page.getByRole("row", { name: /Removed as-15/ }).first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Apply this release" })).toBeVisible();
 

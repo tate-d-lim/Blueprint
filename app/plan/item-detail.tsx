@@ -9,6 +9,7 @@ import { areaOf } from "@/lib/plan/hotel";
 import { resolveParameters } from "@/lib/plan/format";
 import { VALUE_LABEL } from "@/lib/plan/labels";
 import { rewordedSince } from "@/lib/catalog/news";
+import { dayOf } from "@/lib/dates";
 import { Badge } from "./badge";
 import { useProject } from "./project-context";
 
@@ -44,6 +45,16 @@ export function ItemDetail({
     >
       <div className="flex flex-col gap-8">
         <p className="max-w-measure text-ink-soft">{item.reason}</p>
+
+        {item.plain && (
+          <section className="flex flex-col gap-3">
+            <h3 className="text-lead font-semibold">In plain words</h3>
+            <dl className="flex flex-col border-t border-rule">
+              <Field label="What it asks for" text={item.plain.task} />
+              <Field label="Why it matters" text={item.plain.why} />
+            </dl>
+          </section>
+        )}
 
         {note && <NoteField key={item.key} value={note.value} onSave={note.onSave} />}
 
@@ -85,7 +96,7 @@ export function ItemDetail({
                     <p className="text-small text-ink-soft">Source: {c.source}</p>
                     {changedAfter(c.toolId) && (
                       <p className="text-small text-ink-soft">
-                        The official wording changed on {changedAfter(c.toolId)!.slice(0, 10)}. {c.toolName} has not checked this answer again yet.
+                        The official wording changed on {dayOf(changedAfter(c.toolId)!)}. {c.toolName} has not checked this answer again yet.
                       </p>
                     )}
                   </div>
