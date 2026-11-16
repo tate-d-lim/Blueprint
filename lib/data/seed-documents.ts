@@ -5,6 +5,7 @@ import type { RiskAnswers } from '../risk/assess';
 import type {
   Approval,
   Catalog,
+  CatalogRelease,
   CoverageCheck,
   CoverageEntry,
   CoverageValue,
@@ -29,6 +30,8 @@ export interface SeedDocuments {
   tools: Tool[];
   toolVersions: ToolVersion[];
   projects: Project[];
+  /** The first release of the catalog: the seed itself, with no changes. */
+  catalogReleases: CatalogRelease[];
 }
 
 /** Hand-entered coverage, grouped by value so the JSON stays short. */
@@ -249,7 +252,13 @@ export async function buildSeedDocuments(
 
   toolVersions.push(...guides.map(g => g.version));
 
+  const sourceFiles = [...new Set(profiles.map(p => p.sourceFile))];
+  const catalogReleases: CatalogRelease[] = [
+    { _id: 'release-seed', appliedAt: now, by: 'Seed', source: { kind: 'seed', label: sourceFiles.join(', ') }, changes: [] },
+  ];
+
   return {
+    catalogReleases,
     catalogs: [im8.catalog, genai.catalog],
     requirements: [...im8.requirements, ...genai.requirements],
     profiles,

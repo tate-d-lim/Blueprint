@@ -1,6 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
-const PORT = 3100;
+// Another app on this machine may use 3100. E2E_PORT picks a different port for one run.
+const PORT = Number(process.env.E2E_PORT) || 3100;
 
 export default defineConfig({
   testDir: "e2e",
@@ -15,6 +16,6 @@ export default defineConfig({
     url: `http://127.0.0.1:${PORT}/start`,
     timeout: 240_000,
     reuseExistingServer: false,
-    env: { MONGODB_DB: "buildplan_e2e" },
+    env: { MONGODB_DB: "buildplan_e2e", CATALOG_AUTO_CHECK: "off" },
   },
 });

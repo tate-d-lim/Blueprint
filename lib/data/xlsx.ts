@@ -17,10 +17,25 @@ function valueText(v: ExcelJS.CellValue): string {
   return '';
 }
 
-export async function readSheet(file: string, sheetName: string): Promise<ExcelJS.Worksheet> {
+/** Raised when a workbook has no sheet of the wanted name. */
+export class MissingSheetError extends Error {
+  constructor(readonly sheetName: string, where: string) {
+    super(`No sheet "${sheetName}" in ${where}`);
+    this.name = 'MissingSheetError';
+  }
+}
+
+/** Opens a workbook from a path or from the bytes of an uploaded file. */
+export async function openWorkbook(source: string | Buffer): Promise<ExcelJS.Workbook> {
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.readFile(file);
-  const sheet = workbook.getWorksheet(sheetName);
-  if (!sheet) throw new Error(`No sheet "${sheetName}" in ${file}`);
+  if (typeof source === 'string') await workbook.xlsx.readFile(source);
+  else await workbook.xlsx.load(source as unknown as Parameters<typeof workbook.xlsx.load>[0]);
+  return workbook;
+}
+
+/** One sheet of a workbook, read from a path or from bytes. `where` names the file in the error. */
+export async function readSheet(source: string | Buffer, sheetName: string, where = typeof source === 'string' ? source : 'the file'): Promise<ExcelJS.Worksheet> {
+  const sheet = (await openWorkbook(source)).getWorksheet(sheetName);
+  if (!sheet) throw new MissingSheetError(sheetName, where);
   return sheet;
 }

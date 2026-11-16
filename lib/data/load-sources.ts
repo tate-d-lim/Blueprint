@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Catalog, Level, PlainText, Profile, ProfileEntry, Requirement, RequirementKey } from '../domain/types';
+import type ExcelJS from 'exceljs';
 import { cellText, readSheet } from './xlsx';
 
 export class UnknownRequirementError extends Error {
@@ -15,7 +16,7 @@ const IM8_FILE = 'im8-lite-catalog.xlsx';
 const SSP_FILE = 'low-risk-cloud-ssp.xlsx';
 const GENAI_FILE = 'gen-ai-catalog.xlsx';
 
-interface CatalogRow {
+export interface CatalogRow {
   id: string;
   title: string;
   statement: string;
@@ -27,8 +28,7 @@ interface CatalogRow {
 }
 
 /** Rows of a catalog-layout sheet: A ID, B Title, C Statement, D Recommendations, E Rationale, F References, G level, H Last Modified. */
-async function readCatalogRows(file: string): Promise<CatalogRow[]> {
-  const sheet = await readSheet(file, 'catalog');
+export function catalogRowsOf(sheet: ExcelJS.Worksheet): CatalogRow[] {
   const rows: CatalogRow[] = [];
   sheet.eachRow((row, n) => {
     if (n === 1) return;
@@ -48,7 +48,41 @@ async function readCatalogRows(file: string): Promise<CatalogRow[]> {
   return rows;
 }
 
-const familyOf = (id: string) => id.split('-')[0];
+async function readCatalogRows(file: string): Promise<CatalogRow[]> {
+  return catalogRowsOf(await readSheet(file, 'catalog'));
+}
+
+/** A row of an `ssp`-layout sheet: A ID, B Title, C Statement, D Recommendations, E Rationale, F Level, G References. */
+export interface SspRow {
+  id: string;
+  title: string;
+  statement: string;
+  recommendations: string;
+  rationale: string;
+  level: Level;
+  references: string;
+}
+
+export function sspRowsOf(sheet: ExcelJS.Worksheet): SspRow[] {
+  const rows: SspRow[] = [];
+  sheet.eachRow((row, n) => {
+    if (n === 1) return;
+    const id = cellText(row.getCell(1));
+    if (!id) return;
+    rows.push({
+      id,
+      title: cellText(row.getCell(2)),
+      statement: cellText(row.getCell(3)),
+      recommendations: cellText(row.getCell(4)),
+      rationale: cellText(row.getCell(5)),
+      level: Number(cellText(row.getCell(6))) as Level,
+      references: cellText(row.getCell(7)),
+    });
+  });
+  return rows;
+}
+
+export const familyOf = (id: string) => id.split('-')[0];
 
 /** True when the statement has a placeholder for a value the organisation sets (`[x: default = …]` or `[ insert: … ]`). */
 export const hasParameter = (statement: string): boolean => /\[[^\]]*(default\s*=|insert:)[^\]]*\]/.test(statement);
@@ -95,28 +129,25 @@ export async function loadLowRiskCloudProfile(
   dataDir: string,
   catalogReqs: Map<RequirementKey, Requirement>,
 ): Promise<Profile> {
-  const sheet = await readSheet(path.join(dataDir, 'source', SSP_FILE), 'ssp');
+  const rows = sspRowsOf(await readSheet(path.join(dataDir, 'source', SSP_FILE), 'ssp'));
   const entries: ProfileEntry[] = [];
-  sheet.eachRow((row, n) => {
-    if (n === 1) return;
-    const id = cellText(row.getCell(1));
-    if (!id) return;
-    const key: RequirementKey = `im8-reform:${id}`;
-    if (!catalogReqs.has(key)) throw new UnknownRequirementError(id, SSP_FILE);
+  for (const r of rows) {
+    const key: RequirementKey = `im8-reform:${r.id}`;
+    if (!catalogReqs.has(key)) throw new UnknownRequirementError(r.id, SSP_FILE);
     entries.push({
       key,
-      id,
-      family: familyOf(id),
-      title: cellText(row.getCell(2)),
-      level: Number(cellText(row.getCell(6))) as Level,
-      statement: cellText(row.getCell(3)),
-      recommendations: cellText(row.getCell(4)),
-      rationale: cellText(row.getCell(5)),
-      references: cellText(row.getCell(7)),
+      id: r.id,
+      family: familyOf(r.id),
+      title: r.title,
+      level: r.level,
+      statement: r.statement,
+      recommendations: r.recommendations,
+      rationale: r.rationale,
+      references: r.references,
       ifUncovered: 'ask',
-      wording: wordingOf(cellText(row.getCell(3))),
+      wording: wordingOf(r.statement),
     });
-  });
+  }
   return {
     _id: 'low-risk-cloud',
     title: 'Low-Risk Cloud',

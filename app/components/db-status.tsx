@@ -15,7 +15,7 @@ export async function DbStatus() {
           </>
         ) : (
           <>
-            Run <code className="font-code text-small">npm run seed</code>, or press &ldquo;Reset demo data&rdquo; above, then reload.
+            Run <code className="font-code text-small">npm run seed</code>, or switch to Admin, open the Catalog sheet and press &ldquo;Reset data&rdquo; at the foot, then reload.
           </>
         )}
       </Note>

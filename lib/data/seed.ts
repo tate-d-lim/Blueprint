@@ -1,13 +1,22 @@
 import type { Db } from 'mongodb';
 import { buildSeedDocuments } from './seed-documents';
 
-const COLLECTIONS = ['catalogs', 'requirements', 'profiles', 'tools', 'toolVersions', 'projects'] as const;
+const COLLECTIONS = ['catalogs', 'requirements', 'profiles', 'tools', 'toolVersions', 'projects', 'catalogReleases'] as const;
+/** Collections that a reseed empties and that the seed does not fill: a release waiting for review, the checks of the GovTech site and their baseline. */
+const EMPTIED = ['catalogPending', 'catalogChecks', 'catalogBaselines'] as const;
 const NAMESPACE_NOT_FOUND = 26;
 
 /** Drops and reloads every collection from the source files. Returns the document count per collection. */
 export async function seedDatabase(db: Db, dataDir = 'data'): Promise<Record<string, number>> {
   const docs = await buildSeedDocuments(dataDir);
   const counts: Record<string, number> = {};
+  for (const name of EMPTIED) {
+    try {
+      await db.collection(name).drop();
+    } catch (err) {
+      if ((err as { code?: number }).code !== NAMESPACE_NOT_FOUND) throw err;
+    }
+  }
   for (const name of COLLECTIONS) {
     try {
       await db.collection(name).drop();
