@@ -5,7 +5,7 @@ import { useTransition } from "react";
 import { setRole } from "@/app/actions/role";
 import { ROLES, type Role } from "@/lib/role";
 
-const LABELS: Record<Role, string> = { builder: "Builder", admin: "Admin", verifier: "Verifier" };
+const LABELS: Record<Role, string> = { builder: "Builder", "tool-owner": "Tool Owner", admin: "Admin" };
 
 /** Stands in for sign-in during the demo: pick whose view of the app to see. */
 export function RoleSwitcher({ role }: { role: Role }) {

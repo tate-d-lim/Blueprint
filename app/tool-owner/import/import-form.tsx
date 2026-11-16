@@ -202,7 +202,7 @@ export function ImportForm({ tools, profiles }: { tools: { id: string; name: str
       {created?.ok === false && <Note tone="error">{created.error}</Note>}
       {created?.ok && (
         <Note tone="success" title={`Created version ${created.version}. It is not yet verified.`}>
-          <TextLink href={`/admin/tools/${created.toolId}`}>Open it in the editor</TextLink> or <TextLink href="/verify">go to the verifier</TextLink>.
+          <TextLink href={`/tool-owner/tools/${created.toolId}`}>Open it in the editor</TextLink> or <TextLink href="/admin">go to the admin</TextLink>.
         </Note>
       )}
     </div>

@@ -1,6 +1,6 @@
 import { closeDb, getDb } from '@/lib/data/db';
 import { createTool } from '@/lib/data/repos/tools';
-import { carrySources, validateNewVersion, type DraftRow } from '@/lib/admin/new-version';
+import { carrySources, validateNewVersion, type DraftRow } from '@/lib/tool-owner/new-version';
 import { loadPlanData } from '@/lib/data/repos/plan-data';
 import { createToolVersion, getCurrentVersion } from '@/lib/data/repos/tool-versions';
 import { seedDatabase } from '@/lib/data/seed';

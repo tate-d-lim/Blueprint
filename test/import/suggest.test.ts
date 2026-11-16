@@ -18,7 +18,7 @@ test.each([
   expect(suggestValue(owner, inputs)).toBe(expected);
 });
 
-test('a blank owner has no suggestion, so the admin has to choose', () => {
+test('a blank owner has no suggestion, so the tool owner has to choose', () => {
   expect(suggestValue('', undefined)).toBeNull();
   expect(suggestValue('   ', 'Not applicable')).toBeNull();
 });

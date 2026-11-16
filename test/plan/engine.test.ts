@@ -53,23 +53,26 @@ test('Provided beats Shared beats App Builder, and every claim is kept', () => {
   expect(item(sharedWins, 'as-1').decisive.map(c => c.toolId)).toEqual(['b']);
 });
 
-test('Not applicable plus Provided is a conflict, with both statements decisive', () => {
+test('a tool that provides a control outranks a tool that says it does not apply, so the builder is not asked', () => {
   const plan = planOf(oneReq, [
     { id: 'a', entries: [makeEntry('as-1', { value: 'not-applicable' })] },
     { id: 'b', entries: [makeEntry('as-1', { value: 'provided' })] },
   ]);
   const i = item(plan, 'as-1');
-  expect([i.heading, i.placement]).toEqual(['questions', 'conflict']);
-  expect(i.decisive.map(c => c.toolId).sort()).toEqual(['a', 'b']);
-  expect(i.reason).toBe("Your tools disagree: a says this does not apply, but b covers it.");
+  expect([i.heading, i.placement]).toEqual(['platform', 'provided']);
+  expect(i.decisive.map(c => c.toolId)).toEqual(['b']);
+  expect(i.claims.map(c => c.toolId).sort()).toEqual(['a', 'b']);
+  expect(i.reason).toBe('Handled by b.');
 });
 
-test('Not applicable plus App Builder is also a conflict', () => {
-  const plan = planOf(oneReq, [
-    { id: 'a', entries: [makeEntry('as-1', { value: 'not-applicable' })] },
-    { id: 'b', entries: [makeEntry('as-1', { value: 'app-builder' })] },
-  ]);
-  expect(item(plan, 'as-1').placement).toBe('conflict');
+test('a tool that leaves a part to the builder outranks a tool that says it does not apply', () => {
+  for (const value of ['app-builder', 'shared'] as const) {
+    const plan = planOf(oneReq, [
+      { id: 'a', entries: [makeEntry('as-1', { value: 'not-applicable' })] },
+      { id: 'b', entries: [makeEntry('as-1', { value })] },
+    ]);
+    expect([item(plan, 'as-1').heading, item(plan, 'as-1').placement]).toEqual(['you', value]);
+  }
 });
 
 test('Not applicable alone sits under what your platform already does', () => {

@@ -41,7 +41,7 @@ export function previewImport(guide: ParsedGuide, profile: Profile): ImportPrevi
   };
 }
 
-/** The guide as coverage rows, using the admin's choice for each distinct owner text. */
+/** The guide as coverage rows, using the tool owner's choice for each distinct owner text. */
 export function buildImportEntries(
   guide: ParsedGuide,
   profile: Profile,

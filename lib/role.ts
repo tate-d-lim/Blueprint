@@ -1,4 +1,4 @@
-export const ROLES = ['builder', 'admin', 'verifier'] as const;
+export const ROLES = ['builder', 'tool-owner', 'admin'] as const;
 export type Role = (typeof ROLES)[number];
 export const ROLE_COOKIE = 'role';
 

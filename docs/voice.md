@@ -5,8 +5,8 @@ How Blueprint writes headings, buttons, descriptions and messages. Use it for ev
 ## Who reads it
 
 - **App Builders.** Developers and tech leads at CPFB. They are good at code and new to security paperwork. On day 0 they want to know what is theirs. Two weeks later they want to tick things off fast. Many will hand the plan to a coding agent, so the words must be exact enough for a machine too.
-- **Platform admins.** They know their tool well. They want to record what it covers without retyping a spreadsheet.
-- **Verifiers.** They decide whether a claim is true. They want to see what changed and who said so.
+- **Platform tool owners.** They know their tool well. They want to record what it covers without retyping a spreadsheet.
+- **Admins.** They decide whether a claim is true. They want to see what changed and who said so.
 
 None of them came to Blueprint for fun. They came to finish a task with no surprises. The voice serves that.
 

@@ -5,7 +5,7 @@ import { Button, TextLink } from "@/app/ui/button";
 import { Field } from "@/app/ui/field";
 import { Note } from "@/app/ui/note";
 import { Panel } from "@/app/ui/panel";
-import type { DraftRow } from "@/lib/admin/new-version";
+import type { DraftRow } from "@/lib/tool-owner/new-version";
 import type { RequirementKey } from "@/lib/domain/types";
 import { readAgentFileAction } from "../../actions";
 
@@ -16,7 +16,7 @@ export interface AgentFilled {
   blank: RequirementKey[];
 }
 
-/** Brief out, agent's file in. The file only fills the editor below; nothing is saved until the admin saves. */
+/** Brief out, agent's file in. The file only fills the editor below; nothing is saved until the tool owner saves. */
 export function AgentFill({ toolId, profileId, onFilled }: { toolId: string; profileId: string; onFilled: (result: AgentFilled) => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState("");
@@ -37,7 +37,7 @@ export function AgentFill({ toolId, profileId, onFilled }: { toolId: string; pro
       <div className="flex flex-col gap-5">
         <p className="max-w-measure">
           Give the brief to a coding agent that can read this tool&apos;s code and docs. Upload the file it writes to fill in every row below.{" "}
-          <TextLink href={`/api/admin/tools/${toolId}/agent-brief?profile=${encodeURIComponent(profileId)}`}>Download the brief</TextLink>
+          <TextLink href={`/api/tool-owner/tools/${toolId}/agent-brief?profile=${encodeURIComponent(profileId)}`}>Download the brief</TextLink>
         </p>
         <div className="flex items-end gap-5">
           <Field label="The agent's file (.json)">

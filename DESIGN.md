@@ -140,7 +140,7 @@ The app is a hotel that is first a drawing and then gets built. The officer sees
 
 The page around the hotel is quiet on purpose: drafting-white ground, navy ink, 1px rules, 3px corners, no shadows. The hotel is the only colour on the page. There is no grid paper, no title block, no legend. State is never colour alone: each hotel label carries words and a count.
 
-One token set serves every screen, including the admin and verifier screens, which took the tokens but keep their older layout until their own redesign. The app is desktop only (1280 by 800 and up).
+One token set serves every screen, including the tool owner and admin screens, which took the tokens but keep their older layout until their own redesign. The app is desktop only (1280 by 800 and up).
 
 **Key Characteristics:**
 - Drafting-white ground, navy ink, 1px rules, 3px corners, no shadows.

@@ -1,78 +1,54 @@
 import { RoleGate } from "@/app/components/role-gate";
-import { Badge, SampleTag } from "@/app/plan/badge";
-import { ButtonLink, TextLink } from "@/app/ui/button";
+import { ButtonLink } from "@/app/ui/button";
+import { Note } from "@/app/ui/note";
 import { PageHeader } from "@/app/ui/panel";
 import { Cell, Table } from "@/app/ui/table";
 import { withDb } from "@/lib/data/db";
-import { loadPlanData } from "@/lib/data/repos/plan-data";
-import { versionVerification } from "@/lib/plan/verification";
-import { NewToolForm } from "./new-tool-form";
+import { listAwaitingApproval } from "@/lib/data/repos/tool-versions";
+import type { Profile } from "@/lib/domain/types";
 
-const SECTION_TITLE = { cpf: "CPF tool", wog: "Whole-of-government tool", code: "Code component" } as const;
-
-export default function AdminPage() {
+export default function VerifyPage() {
   return (
     <RoleGate need="admin">
-      <AdminTools />
+      <Awaiting />
     </RoleGate>
   );
 }
 
-async function AdminTools() {
-  const data = await withDb(loadPlanData);
+async function Awaiting() {
+  const { awaiting, profiles } = await withDb(async db => ({
+    awaiting: await listAwaitingApproval(db),
+    profiles: (await db.collection("profiles").find().toArray()) as unknown as Profile[],
+  }));
   return (
-    <div className="flex flex-col gap-10">
-      <PageHeader title="Tools and what they cover" actions={<ButtonLink href="/admin/import" variant="secondary">Import a Component Guide</ButtonLink>}>
-        Edit what each tool covers. Every save creates a new version that a verifier has to approve.
-      </PageHeader>
-
-      <Table head={["Tool", "Kind", "Coverage versions", <span key="a" className="sr-only">Action</span>]}>
-        {data.tools.map(tool => {
-          const pairs = data.versions.filter(v => v.current.toolId === tool._id);
-          return (
-            <tr key={tool._id}>
+    <div className="flex flex-col gap-8">
+      <PageHeader title="Waiting for approval">Check what changed, then approve. Builders see the new stamp at once.</PageHeader>
+      {awaiting.length === 0 ? (
+        <Note title="Nothing is waiting for approval.">New versions appear here when a tool owner saves or imports one.</Note>
+      ) : (
+        <Table head={["Tool", "Version", "Saved", "What changed", "Source", <span key="a" className="sr-only">Action</span>]}>
+          {awaiting.map(({ tool, current }) => (
+            <tr key={current._id}>
               <Cell>
-                <div className="flex flex-col gap-1">
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className="text-lead font-semibold">{tool.name}</span>
-                    {tool.isSample && <SampleTag />}
-                  </span>
-                  <span className="text-small text-ink-soft">{tool.description}</span>
-                </div>
+                <span className="text-lead font-semibold">{tool.name}</span>
               </Cell>
-              <Cell nowrap>{SECTION_TITLE[tool.section]}</Cell>
-              <Cell>
-                {pairs.length === 0 && <span className="text-ink-soft">None yet</span>}
-                <ul className="flex flex-col gap-2">
-                  {pairs.map(p => (
-                    <li key={p.current._id} className="flex flex-col gap-1">
-                      <span className="whitespace-nowrap">
-                        {data.profiles.find(pr => pr._id === p.current.profileId)?.title}, version {p.current.version}
-                      </span>
-                      <span className="flex items-center gap-2 whitespace-nowrap">
-                        <Badge verification={versionVerification(p)} />
-                        <span className="tnum text-small text-ink-soft">{p.current.createdAt.slice(0, 10)}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+              <Cell nowrap>
+                {profiles.find(p => p._id === current.profileId)?.title}, version {current.version}
               </Cell>
+              <Cell nowrap className="tnum">
+                {current.createdAt.slice(0, 10)}
+              </Cell>
+              <Cell>{current.changeNote ? `“${current.changeNote}”` : <span className="text-ink-soft">No note</span>}</Cell>
+              <Cell>{current.source}</Cell>
               <Cell nowrap className="text-right">
-                <ButtonLink href={`/admin/tools/${tool._id}`} variant="secondary" size="sm">
-                  Edit coverage
+                <ButtonLink href={`/admin/${tool._id}?profile=${current.profileId}`} variant="secondary" size="sm">
+                  Review
                 </ButtonLink>
               </Cell>
             </tr>
-          );
-        })}
-      </Table>
-
-      <p className="text-ink-soft">
-        A product team publishes its own coverage? <TextLink href="/admin/import">Import its Component Guide</TextLink> to create a version from
-        the spreadsheet.
-      </p>
-
-      <NewToolForm />
+          ))}
+        </Table>
+      )}
     </div>
   );
 }

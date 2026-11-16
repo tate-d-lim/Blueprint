@@ -7,7 +7,7 @@ import { Disclosure } from "@/app/ui/disclosure";
 import { Checkbox, Field, inputClass, selectClass, textareaClass } from "@/app/ui/field";
 import { Note } from "@/app/ui/note";
 import { Stamp, Tag } from "@/app/ui/stamp";
-import type { DraftRow } from "@/lib/admin/new-version";
+import type { DraftRow } from "@/lib/tool-owner/new-version";
 import type { CoverageValue, Level, RequirementKey } from "@/lib/domain/types";
 import { familyName } from "@/lib/plan/hotel";
 import { VALUE_LABEL } from "@/lib/plan/labels";
@@ -54,7 +54,7 @@ export function CoverageEditor({
   const [savedVersion, setSavedVersion] = useState<number | null>(null);
   // Set once a coding agent's file has filled the editor. From then on every row needs an answer before save.
   const [agent, setAgent] = useState<{ fileName: string; filled: number } | null>(null);
-  // The rows that were blank when the filter went on. Fixed, so a row stays open while the admin answers it.
+  // The rows that were blank when the filter went on. Fixed, so a row stays open while the tool owner answers it.
   const [blankShown, setBlankShown] = useState<Set<RequirementKey> | null>(null);
 
   const families = [...new Set(requirements.map(r => r.family))];
@@ -149,7 +149,7 @@ export function CoverageEditor({
 
       {savedVersion !== null && (
         <Note tone="success" role="status">
-          Saved version {savedVersion}. It is not yet verified: a verifier needs to approve it before builders see it as verified.
+          Saved version {savedVersion}. It is not yet verified: an Admin needs to approve it before builders see it as verified.
         </Note>
       )}
 

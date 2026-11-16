@@ -221,8 +221,9 @@ export async function buildSeedDocuments(
     if (existsSync(plainFile)) attachPlain([...targets], await readJson<Record<string, PlainText>>(plainFile), home);
   }
   for (const p of profiles) {
-    // One facts file for every cloud profile. Its rules act only where a plain entry's `checkedFor` allows.
-    const factsFile = path.join(dataDir, 'facts', p.hosting === 'cloud' ? 'cloud.json' : `${p._id}.json`);
+    // One facts file for every cloud profile, and for the GenAI profile, whose rules read the same answers. Its rules act
+    // only where a plain entry's `checkedFor` allows.
+    const factsFile = path.join(dataDir, 'facts', p.hosting === 'cloud' || p === genai.profile ? 'cloud.json' : `${p._id}.json`);
     if (existsSync(factsFile)) p.facts = await readJson<Fact[]>(factsFile);
   }
 

@@ -1,9 +1,27 @@
-import type { ToolVersion } from '../domain/types';
+import type { Profile, ToolVersion } from '../domain/types';
+import { factsToAsk, type FactProfile } from './facts';
 import type { PlanData, PlanInput, PlanState, ProjectOverlay } from './engine';
 import type { VersionPair } from './verification';
 
 export const GENAI_FACT = 'uses-genai';
 export const GENAI_PROFILE_ID = 'generative-ai';
+
+/**
+ * What step 3 reads to decide which questions to ask: the profile's facts, and the rules of its requirements and of the
+ * GenAI requirements (those questions show once the person says generative AI is part of the app).
+ */
+export function factScreen(profiles: Profile[], profileId: string): FactProfile | undefined {
+  const main = profiles.find(p => p._id === profileId);
+  if (!main) return undefined;
+  const genai = profiles.find(p => p._id === GENAI_PROFILE_ID);
+  return { facts: main.facts, entries: [...main.entries, ...(genai?.entries ?? [])] };
+}
+
+/** The questions of step 3 that the answers so far leave open, for a saved project that was answered before they existed. */
+export const unansweredFacts = (profiles: Profile[], profileId: string, answers: Record<string, string>) => {
+  const screen = factScreen(profiles, profileId);
+  return screen ? factsToAsk(screen, answers).filter(f => answers[f.id] === undefined) : [];
+};
 
 /** One pair per (tool, profile): the highest version, and the highest approved one. */
 export function pairVersions(toolVersions: ToolVersion[]): VersionPair[] {

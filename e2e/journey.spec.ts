@@ -120,6 +120,49 @@ test("step 3 asks about GenAI and keeps the answers on the way back", async ({ p
   await expect(page.getByRole("checkbox", { name: "SMS text messages" })).toBeChecked();
 });
 
+test("step 3 asks about the AI features, and the saved plan has no question left about them", async ({ page }) => {
+  await page.goto(`/start/app?${LOW_QUERY}`);
+  await expectStep(page, 3);
+  const genai = page.getByRole("group", { name: "Is generative AI part of your app, for example a chatbot or a text summary?" });
+  const service = page.getByRole("checkbox", { name: "It calls an AI service that another company runs" });
+  const overseas = page.getByRole("checkbox", { name: "That AI service runs overseas" });
+  const host = page.getByRole("checkbox", { name: "You host an AI model yourself" });
+  const openWeights = page.getByRole("checkbox", { name: "That model is an open-weights model" });
+  const uploads = page.getByRole("checkbox", { name: "Users can upload files to the AI feature" });
+
+  // The AI questions come with a "Yes", and some hang on another answer.
+  await expect(service).toHaveCount(0);
+  await genai.getByRole("radio", { name: "Yes" }).check();
+  await expect(service).toBeVisible();
+  await expect(host).toBeVisible();
+  await expect(uploads).toBeVisible();
+  await expect(overseas).toHaveCount(0);
+  await expect(openWeights).toHaveCount(0);
+  await service.check();
+  await expect(overseas).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: "That AI service runs in Singapore" })).toBeVisible();
+  await host.check();
+  await expect(openWeights).toBeVisible();
+  await genai.getByRole("radio", { name: "No" }).check();
+  await expect(service).toHaveCount(0);
+  await genai.getByRole("radio", { name: "Yes" }).check();
+
+  await page.getByRole("radio", { name: "Members of the public" }).check();
+  await page.getByRole("checkbox", { name: "A website or web app" }).check();
+  await service.check();
+  await overseas.check();
+  await uploads.check();
+  await page.getByRole("button", { name: "Next: what your app needs" }).click();
+  await page.getByRole("button", { name: "Save this plan" }).click();
+  await page.waitForURL(/\/projects\/[^/]+$/);
+
+  // Nothing is left to decide. What the answers rule out is listed, with the reason.
+  await expect(page.getByRole("region", { name: "Decide first" })).toHaveCount(0);
+  await expect(page.getByText("Protect file uploads in AI features")).toBeVisible();
+  await page.locator("summary", { hasText: "Does not apply to your app" }).click();
+  await expect(page.getByText("Limit data sent to Singapore-hosted AI services")).toBeVisible();
+});
+
 test("step 4: the tour, a part close up, and the save opens the plan page", async ({ page }) => {
   await page.goto(`/start/needs?${DEMO_QUERY}`);
   await expectStep(page, 4);

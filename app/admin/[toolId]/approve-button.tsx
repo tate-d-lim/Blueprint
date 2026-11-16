@@ -20,7 +20,7 @@ export function ApproveButton({ versionId }: { versionId: string }) {
             start(async () => {
               const result = await approveAction(versionId);
               if (result.error) setError(result.error);
-              else router.push("/verify");
+              else router.push("/admin");
             })
           }
         >

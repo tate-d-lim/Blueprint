@@ -78,7 +78,6 @@ export function sspValues(item: PlanItem): { implemented: Implemented; explanati
       return { implemented: 'N/A', explanation: `Does not apply to this app: ${end(item.reason)}` };
 
     case 'open':
-    case 'conflict':
       return { ...BLANK };
   }
 }

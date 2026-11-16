@@ -10,8 +10,8 @@ import { RoleSwitcher } from "./role-switcher";
 const SHEETS = [{ href: "/projects", label: "Projects", paths: ["/projects"] }];
 
 const ROLE_SHEETS: Partial<Record<Role, { href: string; label: string; paths: string[] }>> = {
+  "tool-owner": { href: "/tool-owner", label: "Tool Owner", paths: ["/tool-owner"] },
   admin: { href: "/admin", label: "Admin", paths: ["/admin"] },
-  verifier: { href: "/verify", label: "Verify", paths: ["/verify"] },
 };
 
 /** The simple header: product name, the sheets, who is looking, and the demo reset. The step pages show their own step. */

@@ -15,7 +15,7 @@ npm run build && npm start    # steadier than the dev server
 ## The path
 
 1. **Tell us about your app.** Restricted, Sensitive Normal, Slight, None or minimal. **Work out my app type** → verdict **Low-Risk Cloud**.
-2. **Next: about your app.** Public, web, sign-in, SMS ticked; GenAI No. **Next: what your app needs.**
+2. **Next: about your app.** Public, web, sign-in, SMS ticked; GenAI No. **Next: what your app needs.** (With GenAI Yes, three more questions appear: an AI service run by another company, an AI model you host, file uploads. A Yes on the first two asks one more each. The saved plan then has no "Decide first" box.)
 3. **What your app needs (step 4).** "84 controls in 11 parts". Open CCTV, **Show all 10 controls**. Left out: 2. **Save this plan.**
 4. **The saved plan.** It opens on the **Plan** tab: the hotel beside the checklist, "0 of 84 done". **Add tools** → tick appCentral: "51 of 84 done". DBaaS and IGA: "66 of 84 done". A part lights only when every claim is Verified. A click on a part opens the **Hotel** tab close up.
 5. **Prompt your agent.** The security plan (SSP) is the plan: download it and copy the short prompt for the agent. Planned controls say what to do and why.

@@ -1,4 +1,4 @@
-import { carryChecks, carrySources, type DraftRow } from '@/lib/admin/new-version';
+import { carryChecks, carrySources, type DraftRow } from '@/lib/tool-owner/new-version';
 import { key, makeEntry, makeVersion } from '../helpers/factories';
 
 const previous = {
@@ -20,7 +20,7 @@ test('a row whose text changed takes the new version’s source, not the old one
   expect(sourceOf(carried, 'as-5')).toBeUndefined();
 });
 
-test('a source the admin typed on a row is always kept', () => {
+test('a source the tool owner typed on a row is always kept', () => {
   const carried = carrySources([row('as-4', { explanation: 'New text', source: 'Team note' }), row('dp-1', { explanation: 'Old text', source: 'Another note' })], previous);
   expect(sourceOf(carried, 'as-4')).toBe('Team note');
   expect(sourceOf(carried, 'dp-1')).toBe('Another note');

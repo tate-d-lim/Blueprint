@@ -5,7 +5,7 @@ import { PageHeader } from "@/app/ui/panel";
 import { Breadcrumb } from "@/app/ui/table";
 import { withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
-import type { DraftRow } from "@/lib/admin/new-version";
+import type { DraftRow } from "@/lib/tool-owner/new-version";
 import { CoverageEditor } from "./coverage-editor";
 
 export default function ToolPage(props: {
@@ -13,7 +13,7 @@ export default function ToolPage(props: {
   searchParams: Promise<{ profile?: string }>;
 }) {
   return (
-    <RoleGate need="admin">
+    <RoleGate need="tool-owner">
       <ToolEditor {...props} />
     </RoleGate>
   );
@@ -49,7 +49,7 @@ async function ToolEditor({
 
   return (
     <div className="flex flex-col gap-8">
-      <Breadcrumb items={[{ label: "All tools", href: "/admin" }, { label: tool.name }]} />
+      <Breadcrumb items={[{ label: "All tools", href: "/tool-owner" }, { label: tool.name }]} />
       <div className="flex flex-col gap-3">
         <PageHeader title={`${tool.name}: what it covers`}>
           {profile.title}, {current ? `editing from version ${current.version}` : "no coverage recorded yet"}.
@@ -64,7 +64,7 @@ async function ToolEditor({
                     {p.title}
                   </span>
                 ) : (
-                  <TextLink key={p._id} href={`/admin/tools/${toolId}?profile=${p._id}`}>
+                  <TextLink key={p._id} href={`/tool-owner/tools/${toolId}?profile=${p._id}`}>
                     {p.title}
                   </TextLink>
                 ),

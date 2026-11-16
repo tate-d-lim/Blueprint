@@ -1,6 +1,6 @@
 /**
  * A drawing stamp: a small double-ruled box. Blueprint blue means approved, redline means it still needs a
- * verifier, ink means published by someone else, and dotted means a sample nobody has confirmed.
+ * admin, ink means published by someone else, and dotted means a sample nobody has confirmed.
  */
 type Tone = "approved" | "pending" | "published" | "sample";
 

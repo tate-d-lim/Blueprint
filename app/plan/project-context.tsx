@@ -6,7 +6,7 @@ import type { ProfileEntry, Project, RequirementKey, TaskStatus } from "@/lib/do
 import { buildPlan, type Plan, type PlanData, type ProjectOverlay } from "@/lib/plan/engine";
 import { partState, planTotals, visibleParts, type PartState } from "@/lib/plan/hotel";
 import { runSave, type SaveOutcome } from "@/lib/plan/save";
-import { selectPlanInput } from "@/lib/plan/select";
+import { selectPlanInput, unansweredFacts } from "@/lib/plan/select";
 
 export interface ProjectValue {
   data: PlanData;
@@ -22,6 +22,8 @@ export interface ProjectValue {
   /** The hotel's parts with progress: what the tools do and what the builder has done. */
   parts: PartState[];
   totals: ReturnType<typeof planTotals>;
+  /** How many questions of step 3 this project has no answer for yet. */
+  unansweredFacts: number;
   /** "Saved" for a moment after every save, so a tick is never silent. */
   saved: boolean;
   error: string | null;
@@ -74,6 +76,7 @@ export function ProjectProvider({
     const active = new Set(plan.items.map(i => i.profileId));
     return new Map(data.profiles.filter(p => active.has(p._id)).flatMap(p => p.entries.map(e => [e.key, e] as const)));
   }, [data, plan]);
+  const unanswered = useMemo(() => unansweredFacts(data.profiles, profileId, facts).length, [data, profileId, facts]);
   const parts = useMemo(() => visibleParts(plan).map(p => partState(p, plan, "progress")), [plan]);
   const totals = useMemo(() => planTotals(plan), [plan]);
   const toolNames = useMemo(() => data.tools.filter(t => toolIds.includes(t._id)).map(t => t.name), [data, toolIds]);
@@ -113,6 +116,7 @@ export function ProjectProvider({
     entries,
     parts,
     totals,
+    unansweredFacts: unanswered,
     saved,
     error,
     dismissError: () => setError(null),

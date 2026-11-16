@@ -23,7 +23,6 @@ export type Placement =
   | 'app-builder'
   | 'default-builder'
   | 'answered-applies'
-  | 'conflict'
   | 'open'
   | 'answered-not-applicable'
   /** The person's answers about the app rule it out. */
@@ -93,7 +92,7 @@ export interface PlanState {
 }
 
 const YOU_PLACEMENTS: Placement[] = ['shared', 'app-builder', 'default-builder', 'answered-applies'];
-const QUESTION_PLACEMENTS: Placement[] = ['conflict', 'open'];
+const QUESTION_PLACEMENTS: Placement[] = ['open'];
 
 function headingOf(placement: Placement, level: Level): Heading {
   if (level === 2) return 'good-to-have';
@@ -109,7 +108,11 @@ interface Verdict {
   reason: string;
 }
 
-/** The sorting rules, top to bottom; the first that matches wins. */
+/**
+ * The sorting rules, top to bottom; the first that matches wins. "Does not apply" counts only when every picked tool that
+ * speaks of the requirement says so: a tool that does the work, or leaves a part to the builder, outranks one that says it
+ * does not apply to it. The builder is never left to settle a disagreement between tools.
+ */
 function classify(entry: ProfileEntry, claims: Claim[]): Verdict {
   const of = (value: CoverageValue) => claims.filter(c => c.value === value);
   const names = (cs: Claim[]) => cs.map(c => c.toolName);
@@ -118,16 +121,12 @@ function classify(entry: ProfileEntry, claims: Claim[]): Verdict {
   const shared = of('shared');
   const builder = of('app-builder');
 
-  if (notApplicable.length && (provided.length || shared.length || builder.length)) {
-    const others = claims.filter(c => c.value !== 'not-applicable');
-    return { placement: 'conflict', decisive: claims, reason: REASON.conflict(names(notApplicable), names(others)) };
-  }
   if (provided.length) return { placement: 'provided', decisive: provided, reason: REASON.provided(names(provided)) };
+  if (shared.length) return { placement: 'shared', decisive: shared, reason: REASON.shared(names(shared)) };
+  if (builder.length) return { placement: 'app-builder', decisive: builder, reason: REASON['app-builder'](names(builder)) };
   if (notApplicable.length) {
     return { placement: 'not-applicable', decisive: notApplicable, reason: REASON['not-applicable'](names(notApplicable)) };
   }
-  if (shared.length) return { placement: 'shared', decisive: shared, reason: REASON.shared(names(shared)) };
-  if (builder.length) return { placement: 'app-builder', decisive: builder, reason: REASON['app-builder'](names(builder)) };
   if (entry.ifUncovered === 'app-builder') return { placement: 'default-builder', decisive: [], reason: REASON['default-builder']() };
   return { placement: 'open', decisive: [], reason: REASON.open() };
 }

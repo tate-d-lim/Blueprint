@@ -15,8 +15,8 @@ export type PreviewResult =
 
 export type CreateResult = { ok: true; toolId: string; version: number } | { ok: false; error: string };
 
-async function requireAdmin() {
-  if ((await getRole()) !== "admin") throw new Error("Switch to admin to do this.");
+async function requireToolOwner() {
+  if ((await getRole()) !== "tool-owner") throw new Error("Switch to tool owner to do this.");
 }
 
 async function readUpload(formData: FormData) {
@@ -36,7 +36,7 @@ const message = (err: unknown) => (err instanceof Error ? err.message : "The fil
 
 export async function previewImportAction(formData: FormData): Promise<PreviewResult> {
   try {
-    await requireAdmin();
+    await requireToolOwner();
     const guide = await readUpload(formData);
     const profile = await profileOf(formData);
     return {
@@ -54,7 +54,7 @@ export async function previewImportAction(formData: FormData): Promise<PreviewRe
 
 export async function createImportAction(formData: FormData): Promise<CreateResult> {
   try {
-    await requireAdmin();
+    await requireToolOwner();
     const guide = await readUpload(formData);
     const profile = await profileOf(formData);
     const preview = previewImport(guide, profile);
@@ -89,8 +89,8 @@ export async function createImportAction(formData: FormData): Promise<CreateResu
         importedFrom: { fileName: guide.fileName, missingKeys: preview.missingKeys },
       });
     });
+    revalidatePath("/tool-owner");
     revalidatePath("/admin");
-    revalidatePath("/verify");
     return { ok: true, toolId: saved.toolId, version: saved.version };
   } catch (err) {
     return { ok: false, error: message(err) };

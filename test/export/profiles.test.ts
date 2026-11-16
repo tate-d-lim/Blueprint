@@ -83,6 +83,6 @@ test('the verify page opens on the first profile a tool has a version for, else 
 });
 
 test('no fixed profile id is left in the builder code', () => {
-  for (const f of ['app/plan/project-context.tsx', 'app/api/export/oscal/route.ts', 'lib/export/ssp-xlsx.ts', 'lib/risk/assess.ts', 'app/verify/[toolId]/page.tsx'])
+  for (const f of ['app/plan/project-context.tsx', 'app/api/export/oscal/route.ts', 'lib/export/ssp-xlsx.ts', 'lib/risk/assess.ts', 'app/admin/[toolId]/page.tsx'])
     expect(readFileSync(f, 'utf8'), f).not.toContain('low-risk-cloud');
 });

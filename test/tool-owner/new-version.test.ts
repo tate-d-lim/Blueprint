@@ -1,4 +1,4 @@
-import { validateNewVersion, type DraftRow } from '@/lib/admin/new-version';
+import { validateNewVersion, type DraftRow } from '@/lib/tool-owner/new-version';
 import { key } from '../helpers/factories';
 
 const row = (id: string, over: Partial<DraftRow> = {}): DraftRow => ({ key: key(id), value: 'provided', ...over });

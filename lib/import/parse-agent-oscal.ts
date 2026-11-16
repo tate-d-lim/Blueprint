@@ -1,4 +1,4 @@
-import type { DraftRow } from '../admin/new-version';
+import type { DraftRow } from '../tool-owner/new-version';
 import type { CoverageValue, Profile, RequirementKey } from '../domain/types';
 import { ANSWERS } from '../export/coverage-brief-md';
 
@@ -23,7 +23,7 @@ function unwrap(raw: string): string {
 
 /**
  * Reads the component definition a coding agent wrote from the coverage brief, as one editor row per
- * requirement in profile order. A missing or empty answer is a blank row, never a refusal: the admin fills it.
+ * requirement in profile order. A missing or empty answer is a blank row, never a refusal: the tool owner fills it.
  */
 export function parseAgentOscal(raw: string, profile: Profile): AgentParseResult {
   let doc: unknown;

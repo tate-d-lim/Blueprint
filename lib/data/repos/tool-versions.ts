@@ -20,7 +20,7 @@ export async function getCurrentVersion(db: Db, toolId: string, profileId: strin
   return db.collection<ToolVersion>('toolVersions').find({ toolId, profileId }).sort({ version: -1 }).limit(1).next();
 }
 
-/** Saves the next version of a tool's coverage. It is never approved: the verifier does that. */
+/** Saves the next version of a tool's coverage. It is never approved: the admin does that. */
 export async function createToolVersion(db: Db, input: NewToolVersion): Promise<ToolVersion> {
   const profile = await db.collection<Profile>('profiles').findOne({ _id: input.profileId });
   if (!profile) throw new Error(`Unknown profile ${input.profileId}`);

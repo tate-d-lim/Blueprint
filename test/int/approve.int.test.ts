@@ -23,15 +23,15 @@ test('a new appCentral version joins the list, and approving the old one is refu
   const v2 = await newAppcentralVersion();
   const waiting = await listAwaitingApproval(await getDb());
   expect(waiting.find(w => w.tool._id === 'appcentral')?.current.version).toBe(2);
-  await expect(approveCurrentVersion(await getDb(), 'appcentral:low-risk-cloud:v1', 'Verifier')).rejects.toBeInstanceOf(StaleVersionError);
-  await expect(approveCurrentVersion(await getDb(), 'appcentral:low-risk-cloud:v1', 'Verifier')).rejects.toThrow('A newer version exists');
+  await expect(approveCurrentVersion(await getDb(), 'appcentral:low-risk-cloud:v1', 'Admin')).rejects.toBeInstanceOf(StaleVersionError);
+  await expect(approveCurrentVersion(await getDb(), 'appcentral:low-risk-cloud:v1', 'Admin')).rejects.toThrow('A newer version exists');
   expect(v2.version).toBe(2);
 });
 
 test('approving the current version records who and when, and builders see it as last approved', async () => {
   await newAppcentralVersion();
-  const approved = await approveCurrentVersion(await getDb(), 'appcentral:low-risk-cloud:v2', 'Verifier');
-  expect(approved.approval).toMatchObject({ by: 'Verifier', kind: 'verifier' });
+  const approved = await approveCurrentVersion(await getDb(), 'appcentral:low-risk-cloud:v2', 'Admin');
+  expect(approved.approval).toMatchObject({ by: 'Admin', kind: 'verifier' });
   const pair = (await loadPlanData(await getDb())).versions.find(v => v.current.toolId === 'appcentral')!;
   expect(pair.lastApproved?.version).toBe(2);
   expect((await listAwaitingApproval(await getDb())).map(w => w.tool._id)).not.toContain('appcentral');
@@ -44,5 +44,5 @@ test('approving twice keeps the first approval', async () => {
 });
 
 test('approving a version that does not exist is an error', async () => {
-  await expect(approveCurrentVersion(await getDb(), 'nope:p:v9', 'Verifier')).rejects.toThrow(/nope:p:v9/);
+  await expect(approveCurrentVersion(await getDb(), 'nope:p:v9', 'Admin')).rejects.toThrow(/nope:p:v9/);
 });

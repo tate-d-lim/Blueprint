@@ -1,9 +1,16 @@
 import { redirect } from "next/navigation";
 import { withPlanData } from "@/app/plan/plan-data";
+import { factScreen } from "@/lib/plan/select";
 import { parseStartQuery, startQuery } from "@/lib/plan/url-state";
 import { profileFor } from "@/lib/risk/assess";
 import { StepBar, StepHeading } from "../step-nav";
 import { AppForm } from "./app-form";
+
+/** Only the rules reach the browser, not the whole entries. */
+const slim = (screen: NonNullable<ReturnType<typeof factScreen>>) => ({
+  facts: screen.facts,
+  entries: screen.entries.map(e => ({ plain: e.plain?.appliesWhen ? { appliesWhen: e.plain.appliesWhen } : undefined })),
+});
 
 /** Step 3: what is true about the app. No profile for the answers (or broken answers) goes back to step 1. */
 export default async function AppFactsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -24,7 +31,7 @@ export default async function AppFactsPage({ searchParams }: { searchParams: Pro
           initial={facts}
           projectId={projectId}
           dirty={!!project && JSON.stringify(project.facts ?? {}) !== JSON.stringify(facts)}
-          profile={{ facts: profile.facts, entries: profile.entries.map(e => ({ plain: e.plain?.appliesWhen ? { appliesWhen: e.plain.appliesWhen } : undefined })) }}
+          profile={slim(factScreen(data.profiles, profile._id)!)}
         />
       </div>
     );

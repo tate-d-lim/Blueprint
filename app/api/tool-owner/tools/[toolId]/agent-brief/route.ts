@@ -4,7 +4,7 @@ import { renderCoverageBrief } from "@/lib/export/coverage-brief-md";
 import { getRole } from "@/lib/role";
 
 export async function GET(request: Request, { params }: { params: Promise<{ toolId: string }> }) {
-  if ((await getRole()) !== "admin") return new Response("Switch to admin to download this.", { status: 403 });
+  if ((await getRole()) !== "tool-owner") return new Response("Switch to tool owner to download this.", { status: 403 });
   const { toolId } = await params;
   const profileId = new URL(request.url).searchParams.get("profile");
   const data = await withDb(loadPlanData);

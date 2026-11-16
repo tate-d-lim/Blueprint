@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Checkbox } from "@/app/ui/field";
 import { Disclosure } from "@/app/ui/disclosure";
@@ -7,6 +8,7 @@ import { Tag } from "@/app/ui/stamp";
 import type { PlanItem } from "@/lib/plan/engine";
 import { PARTS, partOf, visibleParts } from "@/lib/plan/hotel";
 import { taskStatusOf } from "@/lib/plan/progress";
+import { startQuery } from "@/lib/plan/url-state";
 import { QuestionControls } from "./item-controls";
 import { ItemDetail } from "./item-detail";
 import { PlanItemRow } from "./plan-item";
@@ -18,7 +20,7 @@ import { useProject } from "./project-context";
  * closed.
  */
 export function Checklist() {
-  const { plan, entries, overlay, setDone, setNote, answer } = useProject();
+  const { plan, entries, overlay, setDone, setNote, answer, project, unansweredFacts } = useProject();
   const [detailKey, setDetailKey] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const open = (item: PlanItem) => {
@@ -53,7 +55,19 @@ export function Checklist() {
       {questions.length > 0 && (
         <section aria-label="Decide first" className="flex flex-col gap-2">
           <h2 className="text-body font-semibold">Decide first</h2>
-          <p className="text-small text-ink-soft">Your tools do not answer these. Check if each one applies to your app.</p>
+          {unansweredFacts > 0 ? (
+            <p className="text-small text-ink-soft">
+              These depend on your app, and you have not told us all about it yet. Answer {unansweredFacts} more {unansweredFacts === 1 ? "question" : "questions"} and your plan settles them.{" "}
+              <Link
+                href={`/start/app?${startQuery(project.riskAnswers, project.facts ?? {}, project._id)}`}
+                className="font-medium text-ink underline decoration-1 underline-offset-4 hover:decoration-2"
+              >
+                Answer them
+              </Link>
+            </p>
+          ) : (
+            <p className="text-small text-ink-soft">Your tools do not answer these. Check if each one applies to your app.</p>
+          )}
           <ul className="flex flex-col divide-y divide-rule rounded-sm border border-rule">
             {questions.map(item => (
               <li key={item.key} className="flex flex-col gap-3 px-4 py-3">

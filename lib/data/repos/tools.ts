@@ -2,7 +2,7 @@ import type { Db } from 'mongodb';
 import type { Tool } from '../../domain/types';
 import { slugify } from '../../export/filename';
 
-/** `partOfAppWhen` is optional here: an admin who adds a tool gets a plain default, and edits it with the platform workspace. */
+/** `partOfAppWhen` is optional here: a tool owner who adds a tool gets a plain default, and edits it with the platform workspace. */
 export async function createTool(db: Db, input: Omit<Tool, '_id' | 'partOfAppWhen'> & { partOfAppWhen?: string }): Promise<Tool> {
   const name = input.name.trim();
   const _id = slugify(name);

@@ -1,7 +1,7 @@
 import type { CoverageCheck, CoverageEntry, CoverageValue, RequirementKey, ToolVersion } from '../domain/types';
 import { sameCoverage } from '../plan/verification';
 
-/** One row of the coverage editor as the admin left it. A blank value means "this tool says nothing about it". */
+/** One row of the coverage editor as the tool owner left it. A blank value means "this tool says nothing about it". */
 export interface DraftRow {
   key: RequirementKey;
   value: CoverageValue | '';
@@ -20,7 +20,7 @@ const clean = (s?: string) => s?.trim() || undefined;
 /**
  * Rows with no source of their own inherit the version's source. When a new version is saved that would
  * relabel every untouched row with the new source, and credit a changed row to the old one. So: a row the
- * admin did not change keeps the source it effectively had; a row they changed takes the new version's
+ * tool owner did not change keeps the source it effectively had; a row they changed takes the new version's
  * source unless they typed one for it.
  */
 export function carrySources(rows: DraftRow[], previous?: ToolVersion): DraftRow[] {

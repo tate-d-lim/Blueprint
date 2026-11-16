@@ -1,7 +1,7 @@
 import { Note } from "@/app/ui/note";
 import { getRole, type Role } from "@/lib/role";
 
-const LABELS: Record<Role, string> = { builder: "Builder", admin: "Admin", verifier: "Verifier" };
+const LABELS: Record<Role, string> = { builder: "Builder", "tool-owner": "Tool Owner", admin: "Admin" };
 
 /** Shows its children only to the given role; otherwise asks the viewer to switch. */
 export async function RoleGate({ need, children }: { need: Role; children: React.ReactNode }) {

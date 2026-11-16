@@ -9,14 +9,14 @@ import { loadPlanData } from "@/lib/data/repos/plan-data";
 import type { CoverageEntry } from "@/lib/domain/types";
 import { VALUE_LABEL } from "@/lib/plan/labels";
 import { defaultVerifyProfile } from "@/lib/plan/verification";
-import { diffVersions } from "@/lib/verify/diff";
+import { diffVersions } from "@/lib/admin/diff";
 import { ApproveButton } from "./approve-button";
 
 type Props = { params: Promise<{ toolId: string }>; searchParams: Promise<{ profile?: string }> };
 
 export default function ReviewPage(props: Props) {
   return (
-    <RoleGate need="verifier">
+    <RoleGate need="admin">
       <Review {...props} />
     </RoleGate>
   );
@@ -43,12 +43,12 @@ async function Review({ params, searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-8">
-      <Breadcrumb items={[{ label: "Waiting for approval", href: "/verify" }, { label: tool.name }]} />
+      <Breadcrumb items={[{ label: "Waiting for approval", href: "/admin" }, { label: tool.name }]} />
       <PageHeader title={`${tool.name}, version ${current.version}`}>
         {profile.title}, saved {current.createdAt.slice(0, 10)}, written against {current.writtenAgainst}. Source: {current.source}
       </PageHeader>
       {current.importedFrom?.by === "coding-agent" && (
-        <Note>A coding agent filled this in from {current.importedFrom.fileName}. The admin reviewed it.</Note>
+        <Note>A coding agent filled this in from {current.importedFrom.fileName}. The tool owner reviewed it.</Note>
       )}
       {current.changeNote && <Note title="What changed">{current.changeNote}</Note>}
 

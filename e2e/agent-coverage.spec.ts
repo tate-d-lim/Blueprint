@@ -1,15 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const asRole = async (page: Page, role: "Admin" | "Verifier" | "Builder") => {
+const asRole = async (page: Page, role: "Tool Owner" | "Admin" | "Builder") => {
   await page.getByRole("combobox", { name: "Viewing as" }).selectOption({ label: role });
 };
 
-test("an admin fills a new tool from a coding agent file and submits it for approval", async ({ page, request }) => {
+test("a tool owner fills a new tool from a coding agent file and submits it for approval", async ({ page, request }) => {
   await request.post("/api/reset");
   await page.goto("/start");
-  await asRole(page, "Admin");
-  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: "Admin" })).toBeVisible();
-  await page.goto("/admin");
+  await asRole(page, "Tool Owner");
+  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: "Tool Owner" })).toBeVisible();
+  await page.goto("/tool-owner");
   await page.getByRole("textbox", { name: "Name" }).fill("Agent Probe");
   await page.getByRole("textbox", { name: "What it is, in one line" }).fill("A tool filled in by a coding agent");
   await page.getByRole("button", { name: "Create tool" }).click();
@@ -38,7 +38,7 @@ test("an admin fills a new tool from a coding agent file and submits it for appr
   await expect(page.getByText(`Filled in from agent-probe-coverage.oscal.json: ${rows.length - 1} of ${rows.length} rows.`)).toBeVisible();
   await expect(page.getByText("Fill the 1 blank row before you submit.")).toBeVisible();
 
-  // The blank row blocks submit until the admin answers it.
+  // The blank row blocks submit until the tool owner answers it.
   await page.getByRole("button", { name: "Save new version" }).click();
   await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "Show blank rows" }).click();
@@ -49,18 +49,18 @@ test("an admin fills a new tool from a coding agent file and submits it for appr
   await page.getByRole("textbox", { name: "App Builder's part" }).fill("Set the app's own limits.");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByText("Saved version 1. It is not yet verified")).toBeVisible();
-  // Once saved, the draft is no longer the agent's: a later save is the admin's own edit.
+  // Once saved, the draft is no longer the agent's: a later save is the tool owner's own edit.
   await expect(page.getByText(/Filled in from agent-probe-coverage/)).toHaveCount(0);
 
-  // The verifier sees where the version came from.
-  await asRole(page, "Verifier");
-  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: "Verify" })).toBeVisible();
-  await page.goto("/verify");
+  // The admin sees where the version came from.
+  await asRole(page, "Admin");
+  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: "Admin" })).toBeVisible();
+  await page.goto("/admin");
   await page.getByRole("row").filter({ has: page.getByText("Agent Probe", { exact: true }) }).getByRole("link", { name: "Review" }).click();
   await expect(page.getByText("A coding agent filled this in from agent-probe-coverage.oscal.json.")).toBeVisible();
 
-  // Only an admin can download the brief.
+  // Only a tool owner can download the brief.
   await asRole(page, "Builder");
-  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: "Verify" })).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Sheets" }).getByRole("link", { name: "Admin" })).toHaveCount(0);
   expect((await page.request.get(briefUrl)).status()).toBe(403);
 });

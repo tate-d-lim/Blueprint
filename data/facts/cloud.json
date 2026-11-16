@@ -72,5 +72,71 @@
         "reason": "You said generative AI is not part of your app."
       }
     ]
+  },
+  {
+    "id": "genai-api",
+    "kind": "tick",
+    "label": "It calls an AI service that another company runs",
+    "hint": "For example a model API from a cloud or AI provider.",
+    "noReason": "You said your app does not call an AI service that another company runs.",
+    "showIf": {
+      "fact": "uses-genai",
+      "is": "yes"
+    }
+  },
+  {
+    "id": "genai-overseas",
+    "kind": "tick",
+    "label": "That AI service runs overseas",
+    "hint": "Its servers are outside Singapore.",
+    "noReason": "You said no AI service that your app uses runs overseas.",
+    "showIf": {
+      "fact": "genai-api",
+      "is": "yes"
+    }
+  },
+  {
+    "id": "genai-sg",
+    "kind": "tick",
+    "label": "That AI service runs in Singapore",
+    "hint": "Its servers are in Singapore.",
+    "noReason": "You said no AI service that your app uses runs in Singapore.",
+    "showIf": {
+      "fact": "genai-api",
+      "is": "yes"
+    }
+  },
+  {
+    "id": "genai-selfhost",
+    "kind": "tick",
+    "label": "You host an AI model yourself",
+    "hint": "It runs on servers or containers that you manage.",
+    "noReason": "You said you do not host an AI model yourself.",
+    "showIf": {
+      "fact": "uses-genai",
+      "is": "yes"
+    }
+  },
+  {
+    "id": "genai-openweights",
+    "kind": "tick",
+    "label": "That model is an open-weights model",
+    "hint": "You download its files, for example from Hugging Face.",
+    "noReason": "You said you do not use an open-weights model.",
+    "showIf": {
+      "fact": "genai-selfhost",
+      "is": "yes"
+    }
+  },
+  {
+    "id": "genai-uploads",
+    "kind": "tick",
+    "label": "Users can upload files to the AI feature",
+    "hint": "For example a document that the AI reads or summarises.",
+    "noReason": "You said users cannot upload files to your AI feature.",
+    "showIf": {
+      "fact": "uses-genai",
+      "is": "yes"
+    }
   }
 ]

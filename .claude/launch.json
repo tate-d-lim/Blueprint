@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "builder-journey",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/tate/Desktop/flashpoint/.claude/worktrees/builder-journey-ae2715", "run", "dev"],
+      "port": 3000
     }
   ]
 }

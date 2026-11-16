@@ -6,7 +6,8 @@
     "question": "Does your app send data to an AI service hosted overseas? If so, is the data at most Restricted and Sensitive Normal?",
     "checkedFor": [
       "generative-ai"
-    ]
+    ],
+    "appliesWhen": { "fact": "genai-overseas", "is": "yes" }
   },
   "ga-2": {
     "title": "Limit data sent to Singapore-hosted AI services",
@@ -15,7 +16,8 @@
     "question": "Does your app send data to an AI service hosted in Singapore? If so, is the data at most Confidential and Sensitive High?",
     "checkedFor": [
       "generative-ai"
-    ]
+    ],
+    "appliesWhen": { "fact": "genai-sg", "is": "yes" }
   },
   "ga-3": {
     "title": "Get a no-logging, no-training agreement",
@@ -24,7 +26,8 @@
     "question": "Do you have a legally binding no-logging, no-training agreement with the AI service provider?",
     "checkedFor": [
       "generative-ai"
-    ]
+    ],
+    "appliesWhen": { "fact": "genai-api", "is": "yes" }
   },
   "ga-4": {
     "title": "Host AI models where your data is allowed",
@@ -33,7 +36,8 @@
     "question": "If you host an AI model yourself, is the environment approved for the highest classification of data in your app?",
     "checkedFor": [
       "generative-ai"
-    ]
+    ],
+    "appliesWhen": { "fact": "genai-selfhost", "is": "yes" }
   },
   "ga-5": {
     "title": "Use approved formats and loaders for AI models",
@@ -42,7 +46,8 @@
     "question": "Do you use open-weights AI models? If so, which formats and loaders are approved for you?",
     "checkedFor": [
       "generative-ai"
-    ]
+    ],
+    "appliesWhen": { "fact": "genai-openweights", "is": "yes" }
   },
   "ga-6": {
     "title": "Protect file uploads in AI features",
@@ -51,7 +56,8 @@
     "question": "Can users upload files in your AI app? If so, which safeguards protect the uploads?",
     "checkedFor": [
       "generative-ai"
-    ]
+    ],
+    "appliesWhen": { "fact": "genai-uploads", "is": "yes" }
   },
   "ga-7": {
     "title": "Test your AI's accuracy and safety",
@@ -60,7 +66,8 @@
     "question": "Who tests your AI's outputs, and against what measures and scenarios?",
     "checkedFor": [
       "generative-ai"
-    ]
+    ],
+    "appliesWhen": { "fact": "uses-genai", "is": "yes" }
   },
   "ga-8": {
     "title": "Make users acknowledge AI can be wrong",
@@ -69,6 +76,7 @@
     "question": "Do users acknowledge the risk of inaccurate AI answers before they use your app?",
     "checkedFor": [
       "generative-ai"
-    ]
+    ],
+    "appliesWhen": { "fact": "uses-genai", "is": "yes" }
   }
 }

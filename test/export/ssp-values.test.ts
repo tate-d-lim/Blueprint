@@ -78,8 +78,8 @@ test('a "doesn’t apply" answer exports N/A with the builder’s reason', () =>
   expect(sspValues(dotted).explanation).toBe('Does not apply (self-declared): Not used.');
 });
 
-test.each(['open', 'conflict'] as const)('%s items are left blank for the reviewer', placement => {
-  expect(sspValues(makeItem({ placement, heading: 'questions' }))).toEqual({ implemented: '', explanation: '' });
+test('open items are left blank for the reviewer', () => {
+  expect(sspValues(makeItem({ placement: 'open', heading: 'questions' }))).toEqual({ implemented: '', explanation: '' });
 });
 
 test('claims that are not yet verified are marked at the start of their text', () => {

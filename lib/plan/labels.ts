@@ -42,7 +42,6 @@ export const GOOD_TO_HAVE_LABEL: Record<Placement, string> = {
   'app-builder': 'Yours if you want it',
   'default-builder': 'Yours if you want it',
   'answered-applies': 'Yours if you want it',
-  conflict: 'Worth checking',
   open: 'Worth checking',
   'answered-not-applicable': 'Worth checking',
   'not-for-app': "Does not apply",
@@ -59,8 +58,6 @@ export const REASON = {
   'default-builder': () => 'No tool you picked covers this.',
   'answered-applies': () => 'You said this applies to your app.',
   confirmed: () => 'You said this applies to your app.',
-  conflict: (naTools: string[], otherTools: string[]) =>
-    `Your tools disagree: ${and(naTools)} says this does not apply, but ${and(otherTools)} covers it.`,
   open: () => 'Depends on your app, and no tool you picked covers it.',
   'answered-not-applicable': (reason: string) => `You said this does not apply: ${reason}`,
 };

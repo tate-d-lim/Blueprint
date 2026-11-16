@@ -323,7 +323,6 @@ export function buildSsp(input: {
           own('not-applicable');
           break;
         case 'open':
-        case 'conflict':
           requirement.remarks = `Needs assessment: ${item.reason}`;
           break;
       }

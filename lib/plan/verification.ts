@@ -8,7 +8,7 @@ export interface VersionPair {
   lastApproved?: ToolVersion;
 }
 
-/** The profile the verifier page opens on for a tool: the first it has a version for, else the Low-Risk cloud profile. */
+/** The profile the admin page opens on for a tool: the first it has a version for, else the Low-Risk cloud profile. */
 export function defaultVerifyProfile(
   profiles: { _id: string; riskLevel?: string; hosting?: string }[],
   versions: VersionPair[],

@@ -4,8 +4,12 @@ import { loadSeed } from '../helpers/seed';
 
 const BANNED = /\b(IM8|SSP|OSCAL|controls?|agency|agencies)\b/i;
 
+/** The low-risk cloud profile with the GenAI requirements added: the facts are shared, and rules on both read them. */
 async function lowRiskCloud() {
-  return (await loadSeed()).profiles.find(p => p._id === 'low-risk-cloud')!;
+  const { profiles } = await loadSeed();
+  const low = profiles.find(p => p._id === 'low-risk-cloud')!;
+  const genai = profiles.find(p => p._id === 'generative-ai')!;
+  return { ...low, entries: [...low.entries, ...genai.entries] };
 }
 
 const valuesOf = (fact: Fact) => (fact.kind === 'tick' ? ['yes', 'no'] : fact.options.map(o => o.value));
@@ -62,4 +66,16 @@ test('the facts use builder language only', async () => {
 test('rules only sit on requirements that are in the plan, never on good-to-have extras', async () => {
   const profile = await lowRiskCloud();
   for (const e of profile.entries) if (e.plain?.appliesWhen) expect(e.level, e.id).toBeLessThan(2);
+});
+
+test('the GenAI profile reads the same facts as the cloud profiles', async () => {
+  const { profiles } = await loadSeed();
+  const genai = profiles.find(p => p._id === 'generative-ai')!;
+  const low = profiles.find(p => p._id === 'low-risk-cloud')!;
+  expect(genai.facts).toEqual(low.facts);
+});
+
+test('every GenAI requirement has a rule, so no question is left for after the plan', async () => {
+  const genai = (await loadSeed()).profiles.find(p => p._id === 'generative-ai')!;
+  expect(genai.entries.filter(e => !e.plain?.appliesWhen).map(e => e.id)).toEqual([]);
 });

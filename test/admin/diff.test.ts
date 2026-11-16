@@ -1,4 +1,4 @@
-import { diffVersions } from '@/lib/verify/diff';
+import { diffVersions } from '@/lib/admin/diff';
 import { approved, key, makeEntry, makeVersion } from '../helpers/factories';
 
 test('one added, one changed and one removed row', () => {
