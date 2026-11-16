@@ -23,19 +23,30 @@ export const unansweredFacts = (profiles: Profile[], profileId: string, answers:
   return screen ? factsToAsk(screen, answers).filter(f => answers[f.id] === undefined) : [];
 };
 
-/** One pair per (tool, profile): the highest version, and the highest approved one. */
-export function pairVersions(toolVersions: ToolVersion[]): VersionPair[] {
+const groupKey = (v: ToolVersion) => `${v.toolId}|${v.profileId}`;
+
+function groupVersions(toolVersions: ToolVersion[]): ToolVersion[][] {
   const groups = new Map<string, ToolVersion[]>();
-  for (const v of toolVersions) {
-    const k = `${v.toolId}|${v.profileId}`;
-    groups.set(k, [...(groups.get(k) ?? []), v]);
-  }
-  return [...groups.values()].map(versions => {
-    const byNewest = [...versions].sort((a, b) => b.version - a.version);
-    const current = byNewest[0];
+  for (const v of toolVersions) groups.set(groupKey(v), [...(groups.get(groupKey(v)) ?? []), v]);
+  return [...groups.values()].map(versions => [...versions].sort((a, b) => b.version - a.version));
+}
+
+/**
+ * One pair per (tool, profile) for builders: the newest version that was not sent back, and the newest approved
+ * one. A version that an admin sent back is never seen here. A group whose versions were all sent back has no pair.
+ */
+export function pairVersions(toolVersions: ToolVersion[]): VersionPair[] {
+  return groupVersions(toolVersions).flatMap(byNewest => {
+    const current = byNewest.find(v => !v.sentBack);
+    if (!current) return [];
     const lastApproved = byNewest.find(v => v.approval);
-    return lastApproved ? { current, lastApproved } : { current };
+    return [lastApproved ? { current, lastApproved } : { current }];
   });
+}
+
+/** The newest version of each (tool, profile) in any state, sent back or not. The tool owner edits from it. */
+export function newestVersions(toolVersions: ToolVersion[]): ToolVersion[] {
+  return groupVersions(toolVersions).map(byNewest => byNewest[0]);
 }
 
 /** Turns stored data plus the builder's picks into what buildPlan needs. */

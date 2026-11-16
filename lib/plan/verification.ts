@@ -2,7 +2,10 @@ import type { Approval, CoverageCheck, CoverageEntry, RequirementKey, ToolVersio
 
 export type Verification = 'verified' | 'govtech-published' | 'not-yet-verified';
 
-/** A tool's newest version and its newest approved one (the same object when the newest is approved). */
+/**
+ * What builders see of a tool for one profile: its newest version that was not sent back, and its newest approved
+ * one (the same object when that newest is approved).
+ */
 export interface VersionPair {
   current: ToolVersion;
   lastApproved?: ToolVersion;

@@ -20,3 +20,8 @@ export function diffVersions(current: ToolVersion, lastApproved?: ToolVersion): 
   for (const entry of lastApproved?.entries ?? []) if (!after.has(entry.key)) diff.removed.push(entry);
   return diff;
 }
+
+/** The size of a change in one line: "4 added, 1 changed, 0 removed". */
+export function diffSummary(diff: VersionDiff): string {
+  return `${diff.added.length} added, ${diff.changed.length} changed, ${diff.removed.length} removed`;
+}

@@ -13,10 +13,21 @@ import { createImportAction, previewImportAction, type CreateResult, type Previe
 const CHOICES: CoverageValue[] = ["provided", "shared", "app-builder", "not-applicable"];
 const NEW_TOOL = "new";
 
-export function ImportForm({ tools, profiles }: { tools: { id: string; name: string }[]; profiles: { id: string; title: string }[] }) {
+export function ImportForm({
+  tools,
+  profiles,
+  initialTool,
+  initialProfile,
+}: {
+  tools: { id: string; name: string }[];
+  profiles: { id: string; title: string }[];
+  /** From the `tool` and `profile` query parameters. Ignored when it names nothing the page knows. */
+  initialTool?: string;
+  initialProfile?: string;
+}) {
   const [file, setFile] = useState<File | null>(null);
-  const [profileId, setProfileId] = useState(profiles[0]?.id ?? "");
-  const [tool, setTool] = useState(tools[0]?.id ?? NEW_TOOL);
+  const [profileId, setProfileId] = useState(profiles.find(p => p.id === initialProfile)?.id ?? profiles[0]?.id ?? "");
+  const [tool, setTool] = useState(tools.find(t => t.id === initialTool)?.id ?? tools[0]?.id ?? NEW_TOOL);
   const [newToolName, setNewToolName] = useState("");
   const [newToolSection, setNewToolSection] = useState("cpf");
   const [pending, start] = useTransition();
