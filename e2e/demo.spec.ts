@@ -32,7 +32,7 @@ test("demo: start → verdict → app → needs → save → tools → prompt yo
   await expect(page.locator("[data-hotel]")).toBeVisible();
 
   // The security plan is the plan: the agent gets its file and a short prompt.
-  await page.getByRole("button", { name: "Prompt your agent" }).click();
+  await page.getByRole("button", { name: "Give to your agent" }).click();
   const download = page.waitForEvent("download");
   await page.getByRole("link", { name: "Download the security plan" }).click();
   const file = await download;
@@ -48,7 +48,7 @@ test("demo: start → verdict → app → needs → save → tools → prompt yo
 
 test("the security review spreadsheet is in the Export dialog, named for the profile and the project", async ({ page }) => {
   await page.goto("/projects/sample-two-weeks-in");
-  await page.getByRole("button", { name: "Export" }).click();
+  await page.getByRole("button", { name: "Export for review" }).click();
   const sheet = page.waitForEvent("download");
   await page.getByRole("link", { name: "Security review spreadsheet" }).click();
   expect((await sheet).suggestedFilename()).toBe("low-risk-cloud-ssp-sample-project-two-weeks-in.xlsx");
@@ -59,5 +59,5 @@ test("no step offers a build plan; a saved project offers the prompt for the age
   await expect(page.getByRole("link", { name: /build plan/i })).toHaveCount(0);
   await page.goto("/projects/sample-two-weeks-in");
   await expect(page.getByRole("link", { name: /build plan/i })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Prompt your agent" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Give to your agent" })).toBeVisible();
 });

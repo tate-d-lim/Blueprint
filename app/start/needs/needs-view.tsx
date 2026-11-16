@@ -19,6 +19,8 @@ export interface NeedsViewProps {
   profileTitle: string;
   line: string;
   coverageLine: string | null;
+  /** Where the content comes from: the IM8 profile lines. A new plan has no tools yet. */
+  sources: string[];
   parts: PartState[];
   details: Record<PartId, DetailRow[]>;
   skipped: { id: string; title: string; reason: string }[];
@@ -38,7 +40,7 @@ const CARD_INSET = 16 + CARD_WIDTH + 8;
  * holds the heading, the save and the way back into the tour. A new plan opens with a 4-step tour in tooltips. A click
  * on a part moves the camera in on it, and the card explains that set of controls.
  */
-export function NeedsView({ profileTitle, line, coverageLine, parts, details, skipped, query, answers, facts, edit }: NeedsViewProps) {
+export function NeedsView({ profileTitle, line, coverageLine, sources, parts, details, skipped, query, answers, facts, edit }: NeedsViewProps) {
   // `hovered` only fades the other parts; `focus` is the part the camera is close in on, with its card.
   const [hovered, setHovered] = useState<PartId | null>(null);
   const [focus, setFocus] = useState<PartId | null>(null);
@@ -179,6 +181,11 @@ export function NeedsView({ profileTitle, line, coverageLine, parts, details, sk
                 </p>
                 <p className="text-body font-medium">{line}</p>
                 {coverageLine && <p className="text-small text-ink-soft">{coverageLine}</p>}
+                {sources.map(s => (
+                  <p key={s} className="text-small text-ink-soft">
+                    {s}
+                  </p>
+                ))}
 
                 {edit?.typeChange && <p className="text-body font-medium">{edit.typeChange}</p>}
                 {tour === null && (

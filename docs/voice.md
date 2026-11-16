@@ -55,11 +55,11 @@ These are the pages and the writing guides of products that these readers alread
 
 ### Buttons
 
-- Start with a verb. Then name the object when the result is not obvious: "Save this plan", "Prompt your agent", "Start a new plan".
+- Start with a verb. Then name the object when the result is not obvious: "Save this plan", "Give to your agent", "Start a new plan".
 - The words say what happens, not the gesture: not "Click here", not "Submit", "OK" or "Yes".
 - Use "Save" only when the button saves. A button that only moves forward in the journey is "Next: <the next step's name>". Use this for every forward step, the last step included ("Next: your plan").
 - Use "you" and "your", never "my".
-- Use the same button words for the same action on every page ("Start a new plan" on the list and in the empty state).
+- Use the same button words for the same action on every page ("Start a new plan" on the Projects page and wherever a link starts a plan).
 
 ### Links
 

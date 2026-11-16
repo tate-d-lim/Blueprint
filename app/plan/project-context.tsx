@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { setProjectToolsAction, setQuestionAnswerAction, setTaskStatusAction } from "@/app/projects/actions";
-import type { ProfileEntry, Project, RequirementKey, TaskStatus } from "@/lib/domain/types";
+import { hideNextAction, markHandedOffAction, setNoToolsAction, setProjectToolsAction, setQuestionAnswerAction, setTaskStatusAction } from "@/app/projects/actions";
+import type { ProfileEntry, Project, ProjectNext, RequirementKey, TaskStatus } from "@/lib/domain/types";
 import { buildPlan, type Plan, type PlanData, type ProjectOverlay } from "@/lib/plan/engine";
 import { partState, planTotals, visibleParts, type PartState } from "@/lib/plan/hotel";
 import { runSave, type SaveOutcome } from "@/lib/plan/save";
@@ -32,6 +32,18 @@ export interface ProjectValue {
   setNote: (key: RequirementKey, note: string) => void;
   answer: (key: RequirementKey, answer: { applies: boolean; reason: string } | null) => void;
   toggleTool: (toolId: string) => void;
+  /** How far the builder is with the "Next" strip. */
+  next: ProjectNext;
+  /** The tools drawer and the hand-off dialog open from the strip, the header and the checklist, so their state is here. */
+  toolsOpen: boolean;
+  setToolsOpen: (open: boolean) => void;
+  handoffOpen: boolean;
+  setHandoffOpen: (open: boolean) => void;
+  /** Says the app uses no tools (or takes that back). */
+  setNoTools: (value: boolean) => void;
+  /** Records the first time the plan went to the agent. */
+  markHandedOff: () => void;
+  hideNext: () => void;
 }
 
 const Context = createContext<ProjectValue | null>(null);
@@ -61,6 +73,9 @@ export function ProjectProvider({
 }) {
   const [toolIds, setToolIds] = useState(project.toolIds);
   const [overlay, setOverlay] = useState<ProjectOverlay>({ taskStatus: project.taskStatus, questionAnswers: project.questionAnswers });
+  const [next, setNext] = useState<ProjectNext>(project.next ?? {});
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [handoffOpen, setHandoffOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -131,6 +146,31 @@ export function ProjectProvider({
         return { ...o, questionAnswers };
       });
       void save(() => setQuestionAnswerAction(project._id, key, answer), () => setOverlay(previous));
+    },
+    next,
+    toolsOpen,
+    setToolsOpen,
+    handoffOpen,
+    setHandoffOpen,
+    setNoTools: noTools => {
+      const previous = next;
+      setNext(n => {
+        const { noTools: _drop, ...rest } = n;
+        void _drop;
+        return noTools ? { ...rest, noTools: true } : rest;
+      });
+      void save(() => setNoToolsAction(project._id, noTools), () => setNext(previous));
+    },
+    markHandedOff: () => {
+      if (next.handedOffAt) return;
+      const previous = next;
+      setNext(n => ({ ...n, handedOffAt: new Date().toISOString() }));
+      void save(() => markHandedOffAction(project._id), () => setNext(previous));
+    },
+    hideNext: () => {
+      const previous = next;
+      setNext(n => ({ ...n, hidden: true }));
+      void save(() => hideNextAction(project._id), () => setNext(previous));
     },
     toggleTool: toolId => {
       const previous = toolIds;

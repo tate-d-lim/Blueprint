@@ -78,6 +78,24 @@ export async function setProjectTools(db: Db, id: string, toolIds: string[]): Pr
   await projects(db).updateOne({ _id: id }, { $set: { toolIds: [...new Set(toolIds)], ...touch() } });
 }
 
+/**
+ * The builder says the app uses no tools, so the first step of "Next" is done with none picked. These three writes do
+ * not count as a revision of the plan, so they leave `updatedAt` alone.
+ */
+export async function setNoTools(db: Db, id: string, value: boolean): Promise<void> {
+  await projects(db).updateOne({ _id: id }, value ? { $set: { 'next.noTools': true } } : { $unset: { 'next.noTools': '' } });
+}
+
+/** Records when the builder first took the plan to the agent. Later calls change nothing. */
+export async function markHandedOff(db: Db, id: string, at: string = new Date().toISOString()): Promise<void> {
+  await projects(db).updateOne({ _id: id, 'next.handedOffAt': { $exists: false } }, { $set: { 'next.handedOffAt': at } });
+}
+
+/** The builder closes the "Next" strip. */
+export async function hideNext(db: Db, id: string): Promise<void> {
+  await projects(db).updateOne({ _id: id }, { $set: { 'next.hidden': true } });
+}
+
 /** Removes the project for good: its tools, done marks, notes and answers go with it. Returns false when there was none. */
 export async function deleteProject(db: Db, id: string): Promise<boolean> {
   const result = await projects(db).deleteOne({ _id: id });

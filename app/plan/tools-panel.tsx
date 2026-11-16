@@ -21,13 +21,12 @@ const SECTIONS: { id: Section; title: string }[] = [
  * A tool is a way to get controls done, so picking one marks them done.
  */
 export function ToolsPanel() {
-  const { toolNames, toolIds } = useProject();
-  const [open, setOpen] = useState(false);
+  const { toolNames, toolIds, next, setToolsOpen } = useProject();
   return (
     <section aria-label="Your tools" className="flex flex-col gap-2 border-b border-rule pb-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-body font-semibold">Your tools</h2>
-        <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
+        <Button size="sm" variant="secondary" onClick={() => setToolsOpen(true)}>
           {toolIds.length ? "Change tools" : "Add tools"}
         </Button>
       </div>
@@ -40,12 +39,21 @@ export function ToolsPanel() {
           ))}
         </ul>
       ) : (
-        <p className="text-small text-ink-soft">No tools yet. A tool does some controls for you, and they show as done.</p>
+        <p className="text-small text-ink-soft">
+          {next.noTools ? "Your app uses no tools, so every control is yours." : "No tools yet. A tool does some controls for you, and they show as done."}
+        </p>
       )}
-      <Dialog side open={open} onClose={() => setOpen(false)} title="Your tools" description="Tick the tools that are part of your app. Each tick is saved at once.">
-        {open && <ToolList />}
-      </Dialog>
     </section>
+  );
+}
+
+/** The drawer where tools are picked. It lives in the project shell, so the Next strip and the checklist can open it from any tab. */
+export function ToolsDrawer() {
+  const { toolsOpen, setToolsOpen } = useProject();
+  return (
+    <Dialog side open={toolsOpen} onClose={() => setToolsOpen(false)} title="Your tools" description="Tick the tools that are part of your app. Each tick is saved at once.">
+      {toolsOpen && <ToolList />}
+    </Dialog>
   );
 }
 

@@ -12,7 +12,7 @@ const sheets = (page: Page) => page.getByRole("navigation", { name: "Sheets" });
 test("the main page is Projects, and a new plan starts from there", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveURL(/\/projects$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Projects" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Plan the security of your app" })).toBeVisible();
   await expect(sheets(page).getByRole("link")).toHaveText(["Projects"]);
   await expect(page.getByRole("link", { name: "Blueprint" })).toHaveAttribute("href", "/projects");
   await page.getByRole("link", { name: "Start a new plan" }).click();

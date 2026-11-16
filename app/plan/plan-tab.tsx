@@ -7,6 +7,7 @@ import { PartCard } from "@/app/hotel/part-card";
 import type { PartId } from "@/lib/plan/hotel";
 import { Checklist } from "./checklist";
 import { useProject } from "./project-context";
+import { SourcesNote } from "./sources-note";
 import { ToolsPanel } from "./tools-panel";
 
 /**
@@ -32,6 +33,7 @@ export function PlanTab() {
       <div className="flex min-h-0 min-w-0 flex-col gap-5 overflow-y-auto border-l border-rule bg-paper px-6 py-5">
         <ToolsPanel />
         <Checklist />
+        <SourcesNote />
       </div>
     </div>
   );

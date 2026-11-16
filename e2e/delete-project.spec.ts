@@ -19,12 +19,12 @@ test("the Projects list deletes a project after a confirm step, and Cancel keeps
 
   await page.getByRole("button", { name: "Delete Sample project (two weeks in)" }).click();
   await dialog.getByRole("button", { name: "Delete project" }).click();
-  await expect(page.getByText("No saved plans yet")).toBeVisible();
-  await expect(row).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Welcome" })).toBeVisible();
+  await expect(page.getByRole("table")).toHaveCount(0);
 
   // It stays gone after a reload, and its page and downloads are gone.
   await page.reload();
-  await expect(page.getByText("No saved plans yet")).toBeVisible();
+  await expect(page.getByRole("table")).toHaveCount(0);
   expect((await page.request.get("/projects/sample-two-weeks-in")).status()).toBe(404);
   expect((await page.request.get("/api/export/oscal?kind=ssp&project=sample-two-weeks-in")).ok()).toBe(false);
 });
@@ -34,6 +34,6 @@ test("a project page deletes its own project and returns to the Projects list", 
   await page.getByRole("button", { name: "Delete project" }).click();
   await page.getByRole("dialog", { name: "Delete this project?" }).getByRole("button", { name: "Delete project" }).click();
   await expect(page).toHaveURL(/\/projects$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Projects" })).toBeVisible();
-  await expect(page.getByText("No saved plans yet")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Plan the security of your app" })).toBeVisible();
+  await expect(page.getByRole("table")).toHaveCount(0);
 });

@@ -7,6 +7,7 @@ import { needsDetails, skippedItems } from "@/lib/plan/needs";
 import { selectPlanInput } from "@/lib/plan/select";
 import { parseStartQuery, startQuery } from "@/lib/plan/url-state";
 import { profileFor } from "@/lib/risk/assess";
+import { sourceLines } from "@/app/plan/sources";
 import { NeedsView, type NeedsViewProps } from "./needs-view";
 
 const NO_PLAN: Plan = { items: [], counts: { you: 0, platform: 0, questions: 0, skipped: 0, "good-to-have": 0 } };
@@ -26,6 +27,8 @@ export default async function NeedsPage({ searchParams }: { searchParams: Promis
 
     const plan = buildPlan(selectPlanInput(data, { profileId: profile._id, toolIds: [], facts }));
     const parts = visibleParts(plan).map(p => partState(p, plan, "needs"));
+    const active = new Set(plan.items.map(i => i.profileId));
+    const sources = sourceLines({ profiles: data.profiles.filter(p => active.has(p._id) || p._id === profile._id), tools: [], versions: data.versions, profileId: profile._id }).profiles;
     const noCoverage = !data.versions.some(v => v.current.profileId === profile._id);
 
     let edit: NeedsViewProps["edit"] = null;
@@ -47,6 +50,7 @@ export default async function NeedsPage({ searchParams }: { searchParams: Promis
       <NeedsView
         profileTitle={profile.title}
         line={needsLine(planTotals(plan), !!project)}
+        sources={sources}
         coverageLine={noCoverage ? `No tool covers ${profile.title} yet, so every part is yours.` : null}
         parts={parts}
         details={needsDetails(plan, data.profiles)}

@@ -6,15 +6,15 @@ import { Dialog } from "@/app/ui/dialog";
 
 const LINK = "font-medium text-ink underline decoration-1 hover:decoration-2";
 
-/** The files for the people who review the app. "Prompt your agent" is the main action of a saved project. */
+/** The files for the people who review the app. "Give to your agent" is the main action of a saved project. */
 export function ExportDialog({ query }: { query: string }) {
   const [open, setOpen] = useState(false);
   return (
     <>
       <Button variant="secondary" onClick={() => setOpen(true)}>
-        Export
+        Export for review
       </Button>
-      <Dialog open={open} onClose={() => setOpen(false)} title="Export your plan" description="Download your plan as files.">
+      <Dialog open={open} onClose={() => setOpen(false)} title="Export for review" description="Download your plan as files.">
         <div className="flex flex-col gap-4">
           <h3 className="text-lead font-semibold">For security review</h3>
           <p className="text-ink-soft">The same plan, filled in for the people who review your app.</p>

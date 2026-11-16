@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { attempt } from "@/lib/data/attempt";
 import { DatabaseUnavailableError, withDb } from "@/lib/data/db";
-import { createProject, deleteProject, setProjectTools, setQuestionAnswer, setTaskStatus, updateProjectAnswers } from "@/lib/data/repos/projects";
+import { createProject, deleteProject, hideNext, markHandedOff, setNoTools, setProjectTools, setQuestionAnswer, setTaskStatus, updateProjectAnswers } from "@/lib/data/repos/projects";
 import type { FactAnswers, TaskStatus } from "@/lib/domain/types";
 import type { SaveOutcome } from "@/lib/plan/save";
 import { parseSaveInput, parseToolIds } from "@/lib/plan/validate";
@@ -46,6 +46,21 @@ export async function setQuestionAnswerAction(projectId: string, key: string, an
 
 export async function setProjectToolsAction(projectId: string, toolIds: string[]) {
   return saved(projectId, () => withDb(db => setProjectTools(db, projectId, parseToolIds(toolIds))));
+}
+
+/** "My app uses no tools": step 1 of the Next strip is done with no tool picked. `false` takes it back. */
+export async function setNoToolsAction(projectId: string, value: boolean) {
+  return saved(projectId, () => withDb(db => setNoTools(db, String(projectId), value === true)));
+}
+
+/** The builder took the plan to the agent. Only the first time is kept. */
+export async function markHandedOffAction(projectId: string) {
+  return saved(projectId, () => withDb(db => markHandedOff(db, String(projectId))));
+}
+
+/** The builder closes the Next strip. */
+export async function hideNextAction(projectId: string) {
+  return saved(projectId, () => withDb(db => hideNext(db, String(projectId))));
 }
 
 /**

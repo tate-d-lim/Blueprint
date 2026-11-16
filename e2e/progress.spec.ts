@@ -30,8 +30,8 @@ test("a saved project shows how far it has got, and the count moves when a contr
 test("the plan tab has the hotel beside the checklist, and the two actions", async ({ page }) => {
   await page.goto("/projects/sample-two-weeks-in");
   await expect(page.getByRole("heading", { level: 1, name: "Sample project (two weeks in)" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Prompt your agent" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Export" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Give to your agent" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Export for review" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Change answers" })).toHaveAttribute("href", /\/start\/app\?.*project=sample-two-weeks-in/);
   await expect(page.getByRole("link", { name: /build plan/i })).toHaveCount(0);
   await expect(page.getByRole("region", { name: "Your tools" }).getByText("appCentral")).toBeVisible();
@@ -58,10 +58,10 @@ test("a control names its area, and its note goes into the details", async ({ pa
   await saved;
 });
 
-test("Prompt your agent gives the prompt and the security plan", async ({ page }) => {
+test("Give to your agent gives the prompt and the security plan", async ({ page }) => {
   await page.goto("/projects/sample-two-weeks-in");
-  await page.getByRole("button", { name: "Prompt your agent" }).click();
-  const dialog = page.getByRole("dialog", { name: "Prompt your agent" });
+  await page.getByRole("button", { name: "Give to your agent" }).click();
+  const dialog = page.getByRole("dialog", { name: "Give to your agent" });
   await expect(dialog.getByText(/Do the controls in state "planned"/)).toBeVisible();
   const download = page.waitForEvent("download");
   await dialog.getByRole("link", { name: "Download the security plan" }).click();

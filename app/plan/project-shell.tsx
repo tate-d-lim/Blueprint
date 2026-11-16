@@ -10,7 +10,9 @@ import { startQuery } from "@/lib/plan/url-state";
 import { DeleteProjectButton } from "@/app/projects/delete-project";
 import { ExportDialog } from "./export-dialog";
 import { ProjectProvider, useProject } from "./project-context";
-import { PromptButton } from "./prompt-dialog";
+import { NextStrip } from "./next-strip";
+import { HandoffButton, HandoffDialog } from "./prompt-dialog";
+import { ToolsDrawer } from "./tools-panel";
 
 /**
  * A saved project: one header that stays on every tab (the name, how far it has got, and the two actions), the tabs,
@@ -34,6 +36,8 @@ export function ProjectShell({
       <div style={{ height: "calc(100dvh - var(--header-h))" }} className="-mx-8 -mt-8 -mb-16 flex flex-col overflow-hidden">
         <Header />
         <div className="min-h-0 flex-1">{children}</div>
+        <ToolsDrawer />
+        <HandoffDialog />
       </div>
     </ProjectProvider>
   );
@@ -74,7 +78,7 @@ function Header() {
         </div>
         <div className="flex shrink-0 items-center gap-3 pt-1">
           <ExportDialog query={`project=${encodeURIComponent(project._id)}`} />
-          <PromptButton projectId={project._id} />
+          <HandoffButton />
         </div>
       </div>
 
@@ -126,7 +130,9 @@ function Header() {
         </div>
       )}
 
-      <nav aria-label="Project" className="mt-2 flex gap-6">
+      <NextStrip />
+
+      <nav aria-label="Project" className="mt-1 flex gap-6">
         {tab(base, "Plan", !onHotel)}
         {tab(`${base}/hotel`, "Hotel", onHotel)}
       </nav>
