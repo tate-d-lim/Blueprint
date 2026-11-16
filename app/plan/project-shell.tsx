@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Note } from "@/app/ui/note";
 import { Button } from "@/app/ui/button";
+import { newsSentence, type ProjectNews } from "@/lib/catalog/news";
 import type { PlanData } from "@/lib/plan/engine";
 import type { Project } from "@/lib/domain/types";
 import { startQuery } from "@/lib/plan/url-state";
@@ -46,7 +47,7 @@ export function ProjectShell({
 const TAB = "inline-flex h-10 items-center border-b-2 px-1 text-body font-semibold";
 
 function Header() {
-  const { project, profileTitle, toolNames, totals, saved, error, dismissError } = useProject();
+  const { project, profileTitle, toolNames, totals, saved, error, dismissError, news, dismissNews } = useProject();
   const pathname = usePathname();
   const base = `/projects/${project._id}`;
   const onHotel = pathname === `${base}/hotel`;
@@ -115,6 +116,12 @@ function Header() {
         </div>
       </div>
 
+      {news && (
+        <div className="mt-3">
+          <CatalogNotice news={news} onDismiss={dismissNews} />
+        </div>
+      )}
+
       {error && (
         <div className="mt-3">
           <Note
@@ -137,5 +144,43 @@ function Header() {
         {tab(`${base}/hotel`, "Hotel", onHotel)}
       </nav>
     </header>
+  );
+}
+
+const named = (items: { id: string; title: string }[]) => items.map(i => `${i.title} (${i.id})`).join(", ");
+
+/**
+ * The IM8 catalog changed after the builder last looked. The plan already uses the new catalog; this says what is
+ * different, so that nothing changes without a word. It stays until the builder closes it.
+ */
+function CatalogNotice({ news, onDismiss }: { news: ProjectNews; onDismiss: () => void }) {
+  const lines: [string, string][] = [
+    ["New", named(news.added)],
+    ["Reworded", named(news.reworded)],
+    ["New level", named(news.levelChanged)],
+    ["Removed", named(news.removed)],
+  ];
+  return (
+    <section aria-label="Catalog change" className="flex items-start justify-between gap-6 rounded-sm border border-rule-strong bg-ground px-4 py-3">
+      <div className="flex min-w-0 flex-col gap-1">
+        <p className="text-body font-semibold">
+          The IM8 catalog changed on {news.latestAt.slice(0, 10)}: {newsSentence(news)}
+        </p>
+        <p className="text-small text-ink-soft">Your plan already uses the new catalog. Your ticks and notes stay as they are.</p>
+        <dl className="mt-1 flex flex-col gap-0.5 text-small">
+          {lines
+            .filter(([, text]) => text)
+            .map(([label, text]) => (
+              <div key={label} className="flex gap-2">
+                <dt className="shrink-0 font-semibold">{label}:</dt>
+                <dd className="line-clamp-2 text-ink-soft">{text}</dd>
+              </div>
+            ))}
+        </dl>
+      </div>
+      <Button size="sm" variant="secondary" onClick={onDismiss} className="shrink-0">
+        Hide this notice
+      </Button>
+    </section>
   );
 }

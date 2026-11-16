@@ -91,6 +91,12 @@ export async function markHandedOff(db: Db, id: string, at: string = new Date().
   await projects(db).updateOne({ _id: id, 'next.handedOffAt': { $exists: false } }, { $set: { 'next.handedOffAt': at } });
 }
 
+/** The builder read the notice about catalog releases applied up to `at`. An older time never replaces a newer one. */
+export async function setCatalogSeen(db: Db, id: string, at: string): Promise<void> {
+  if (Number.isNaN(Date.parse(at))) throw new Error('Not a valid time.');
+  await projects(db).updateOne({ _id: id, $or: [{ catalogSeenAt: { $exists: false } }, { catalogSeenAt: { $lt: at } }] }, { $set: { catalogSeenAt: at } });
+}
+
 /** The builder closes the "Next" strip. */
 export async function hideNext(db: Db, id: string): Promise<void> {
   await projects(db).updateOne({ _id: id }, { $set: { 'next.hidden': true } });

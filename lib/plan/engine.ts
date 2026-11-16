@@ -1,16 +1,4 @@
-import type {
-  CoverageCheck,
-  CoverageValue,
-  FactAnswers,
-  Level,
-  PlainText,
-  Profile,
-  ProfileEntry,
-  Project,
-  RequirementKey,
-  TaskState,
-  Tool,
-} from '../domain/types';
+import type { CatalogRelease, CoverageCheck, CoverageValue, FactAnswers, Level, PlainText, Profile, ProfileEntry, Project, RequirementKey, TaskState, Tool } from '../domain/types';
 import { checkRule } from './facts';
 import { REASON } from './labels';
 import { rowVerification, type Verification, type VersionPair } from './verification';
@@ -83,6 +71,8 @@ export interface PlanData {
   profiles: Profile[];
   tools: Tool[];
   versions: VersionPair[];
+  /** The applied catalog releases. The plan does not read them; the notices about a catalog change do. */
+  releases?: CatalogRelease[];
 }
 
 export interface PlanState {

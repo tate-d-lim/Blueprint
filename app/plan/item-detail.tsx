@@ -8,7 +8,9 @@ import type { PlanItem } from "@/lib/plan/engine";
 import { areaOf } from "@/lib/plan/hotel";
 import { resolveParameters } from "@/lib/plan/format";
 import { VALUE_LABEL } from "@/lib/plan/labels";
+import { rewordedSince } from "@/lib/catalog/news";
 import { Badge } from "./badge";
+import { useProject } from "./project-context";
 
 /** The side panel with the official wording and what each picked tool says. The dialog handles Escape and focus. */
 export function ItemDetail({
@@ -26,6 +28,12 @@ export function ItemDetail({
   note?: { value: string; onSave: (value: string) => void };
 }) {
   const title = item.plain?.title ?? item.title;
+  const { data } = useProject();
+  /** When the official wording changed after this tool saved its answer, or undefined. */
+  const changedAfter = (toolId: string) => {
+    const pair = data.versions.find(v => v.current.toolId === toolId && v.current.profileId === item.profileId);
+    return pair ? rewordedSince(item.key, item.profileId, pair.current.createdAt, data.releases ?? []) : undefined;
+  };
   return (
     <Dialog
       side
@@ -75,6 +83,11 @@ export function ItemDetail({
                       </p>
                     )}
                     <p className="text-small text-ink-soft">Source: {c.source}</p>
+                    {changedAfter(c.toolId) && (
+                      <p className="text-small text-ink-soft">
+                        The official wording changed on {changedAfter(c.toolId)!.slice(0, 10)}. {c.toolName} has not checked this answer again yet.
+                      </p>
+                    )}
                   </div>
                 </li>
               ))}

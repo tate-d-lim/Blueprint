@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { attempt } from "@/lib/data/attempt";
 import { DatabaseUnavailableError, withDb } from "@/lib/data/db";
-import { createProject, deleteProject, hideNext, markHandedOff, setNoTools, setProjectTools, setQuestionAnswer, setTaskStatus, updateProjectAnswers } from "@/lib/data/repos/projects";
+import { createProject, deleteProject, hideNext, markHandedOff, setCatalogSeen, setNoTools, setProjectTools, setQuestionAnswer, setTaskStatus, updateProjectAnswers } from "@/lib/data/repos/projects";
 import type { FactAnswers, TaskStatus } from "@/lib/domain/types";
 import type { SaveOutcome } from "@/lib/plan/save";
 import { parseSaveInput, parseToolIds } from "@/lib/plan/validate";
@@ -97,3 +97,8 @@ export async function saveProjectAnswersAction(
   }
 }
 
+
+/** The builder read the notice about a catalog change. Releases applied up to `at` are not shown again. */
+export async function markCatalogSeenAction(projectId: string, at: string) {
+  return saved(projectId, () => withDb(db => setCatalogSeen(db, String(projectId), String(at))));
+}

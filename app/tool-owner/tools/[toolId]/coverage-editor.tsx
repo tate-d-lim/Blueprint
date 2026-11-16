@@ -35,6 +35,10 @@ interface EditorProps {
   /** The newest version. The rows start again from it when it changes, so a saved version leaves no row marked as changed. */
   versionId: string;
   importHref: string;
+  /** Rows whose official wording changed after the version was saved. */
+  checkAgain?: RequirementKey[];
+  /** Ids of controls that joined the profile after the version was saved. */
+  newIds?: string[];
 }
 
 type Way = "hand" | "guide" | "agent";
@@ -64,6 +68,8 @@ function Editor({
   initialRows,
   defaultSource,
   importHref,
+  checkAgain = [],
+  newIds = [],
   onSaved,
   onEdit,
 }: EditorProps & { onSaved: (version: number) => void; onEdit: () => void }) {
@@ -120,7 +126,7 @@ function Editor({
   const changedCount = requirements.filter(r => changed(r.key)).length;
   const covered = [...rows.values()].filter(r => r.value).length;
   const errorFor = (key: RequirementKey) => errors.find(e => e.key === key)?.message;
-  const blocker = saveBlocker({ changed: changedCount, blankRows: blankKeys.length, fromAgent: !!agent });
+  const blocker = saveBlocker({ changed: changedCount, blankRows: blankKeys.length, fromAgent: !!agent, toCheck: checkAgain.length + newIds.length });
   const reqOf = (key: string) => requirements.find(r => r.key === key);
 
   const fillFromAgent = (result: AgentFilled) => {
@@ -266,6 +272,7 @@ function Editor({
           const total = allGroups.find(g => g.part.id === part.id)!.items;
           const answered = total.filter(r => rows.get(r.key)!.value).length;
           const changedHere = total.filter(r => changed(r.key)).length;
+          const toCheckHere = total.filter(r => checkAgain.includes(r.key) || newIds.includes(r.id)).length;
           return (
             <Collapse
               key={part.id}
@@ -281,7 +288,16 @@ function Editor({
                   <span className="tnum text-small text-ink-soft">{answerLine(answered, total.length)}</span>
                 </span>
               }
-              aside={changedHere > 0 && <Tag>{changedLine(changedHere)}</Tag>}
+              aside={
+                <span className="flex flex-wrap items-center justify-end gap-2">
+                  {toCheckHere > 0 && (
+                    <Stamp tone="pending">
+                      {toCheckHere} {toCheckHere === 1 ? "row" : "rows"} to check
+                    </Stamp>
+                  )}
+                  {changedHere > 0 && <Tag>{changedLine(changedHere)}</Tag>}
+                </span>
+              }
             >
               <div className="px-4">
                 {items.map(req => {
@@ -305,6 +321,8 @@ function Editor({
                       }
                       aside={
                         <span className="flex flex-wrap items-center justify-end gap-2">
+                          {checkAgain.includes(req.key) && !changed(req.key) && <Stamp tone="pending">Check again</Stamp>}
+                          {newIds.includes(req.id) && !changed(req.key) && <Stamp tone="pending">New</Stamp>}
                           {changed(req.key) && <Tag>Changed</Tag>}
                           {needsAnswer && <Stamp tone="pending">Needs an answer</Stamp>}
                           {error && !needsAnswer && <Stamp tone="pending">Fix this row</Stamp>}

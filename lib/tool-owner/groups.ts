@@ -41,8 +41,9 @@ export function changedLine(count: number): string {
 }
 
 /** Why the save button is off, or null when it may save. */
-export function saveBlocker(opts: { changed: number; blankRows: number; fromAgent?: boolean }): string | null {
+export function saveBlocker(opts: { changed: number; blankRows: number; fromAgent?: boolean; toCheck?: number }): string | null {
   if (opts.blankRows > 0) return `Answer the ${opts.blankRows} blank ${opts.blankRows === 1 ? 'row' : 'rows'} first.`;
-  if (opts.changed === 0 && !opts.fromAgent) return 'Change at least one row first.';
+  // After a catalog change the tool owner may find every answer still correct. A new version records that they looked.
+  if (opts.changed === 0 && !opts.fromAgent && !opts.toCheck) return 'Change at least one row first.';
   return null;
 }

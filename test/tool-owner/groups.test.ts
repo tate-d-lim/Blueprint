@@ -40,5 +40,6 @@ describe('why the save button is off', () => {
   test('nothing changed', () => expect(saveBlocker({ changed: 0, blankRows: 0 })).toBe('Change at least one row first.'));
   test('a coding agent filled the rows, so no change is needed', () => expect(saveBlocker({ changed: 0, blankRows: 0, fromAgent: true })).toBeNull());
   test('blank rows after an agent file come first', () => expect(saveBlocker({ changed: 2, blankRows: 1, fromAgent: true })).toBe('Answer the 1 blank row first.'));
+  test('rows to check after a catalog change may be confirmed with no change', () => expect(saveBlocker({ changed: 0, blankRows: 0, toCheck: 2 })).toBeNull());
   test('a changed row allows the save', () => expect(saveBlocker({ changed: 1, blankRows: 0 })).toBeNull());
 });

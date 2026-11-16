@@ -1,8 +1,9 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { hideNextAction, markHandedOffAction, setNoToolsAction, setProjectToolsAction, setQuestionAnswerAction, setTaskStatusAction } from "@/app/projects/actions";
+import { hideNextAction, markCatalogSeenAction, markHandedOffAction, setNoToolsAction, setProjectToolsAction, setQuestionAnswerAction, setTaskStatusAction } from "@/app/projects/actions";
 import type { ProfileEntry, Project, ProjectNext, RequirementKey, TaskStatus } from "@/lib/domain/types";
+import { projectNews, type ProjectNews } from "@/lib/catalog/news";
 import { buildPlan, type Plan, type PlanData, type ProjectOverlay } from "@/lib/plan/engine";
 import { partState, planTotals, visibleParts, type PartState } from "@/lib/plan/hotel";
 import { runSave, type SaveOutcome } from "@/lib/plan/save";
@@ -33,6 +34,10 @@ export interface ProjectValue {
   answer: (key: RequirementKey, answer: { applies: boolean; reason: string } | null) => void;
   toggleTool: (toolId: string) => void;
   /** How far the builder is with the "Next" strip. */
+  /** What changed in the IM8 catalog since the builder last read the notice, or null. */
+  news: ProjectNews | null;
+  /** The builder read the notice. It does not come back for the same releases. */
+  dismissNews: () => void;
   next: ProjectNext;
   /** The tools drawer and the hand-off dialog open from the strip, the header and the checklist, so their state is here. */
   toolsOpen: boolean;
@@ -74,6 +79,7 @@ export function ProjectProvider({
   const [toolIds, setToolIds] = useState(project.toolIds);
   const [overlay, setOverlay] = useState<ProjectOverlay>({ taskStatus: project.taskStatus, questionAnswers: project.questionAnswers });
   const [next, setNext] = useState<ProjectNext>(project.next ?? {});
+  const [catalogSeenAt, setCatalogSeenAt] = useState(project.catalogSeenAt);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [handoffOpen, setHandoffOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +97,10 @@ export function ProjectProvider({
     const active = new Set(plan.items.map(i => i.profileId));
     return new Map(data.profiles.filter(p => active.has(p._id)).flatMap(p => p.entries.map(e => [e.key, e] as const)));
   }, [data, plan]);
+  const news = useMemo(
+    () => projectNews({ createdAt: project.createdAt, catalogSeenAt }, [...new Set(plan.items.map(i => i.profileId))], data.releases ?? []),
+    [project.createdAt, catalogSeenAt, plan, data.releases],
+  );
   const unanswered = useMemo(() => unansweredFacts(data.profiles, profileId, facts).length, [data, profileId, facts]);
   const parts = useMemo(() => visibleParts(plan).map(p => partState(p, plan, "progress")), [plan]);
   const totals = useMemo(() => planTotals(plan), [plan]);
@@ -146,6 +156,13 @@ export function ProjectProvider({
         return { ...o, questionAnswers };
       });
       void save(() => setQuestionAnswerAction(project._id, key, answer), () => setOverlay(previous));
+    },
+    news,
+    dismissNews: () => {
+      if (!news) return;
+      const previous = catalogSeenAt;
+      setCatalogSeenAt(news.latestAt);
+      void save(() => markCatalogSeenAction(project._id, news.latestAt), () => setCatalogSeenAt(previous));
     },
     next,
     toolsOpen,

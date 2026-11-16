@@ -20,7 +20,11 @@ import { useProject } from "./project-context";
  * closed.
  */
 export function Checklist() {
-  const { plan, entries, overlay, setDone, setNote, answer, project, unansweredFacts } = useProject();
+  const { plan, entries, overlay, setDone, setNote, answer, project, unansweredFacts, news } = useProject();
+  // While the notice about a catalog change is open, the controls it names carry a tag.
+  const newIds = new Set(news?.added.map(c => c.id));
+  const rewordedIds = new Set(news?.reworded.map(c => c.id));
+  const newsTag = (id: string) => (newIds.has(id) ? "New" : rewordedIds.has(id) ? "Reworded" : null);
   const [detailKey, setDetailKey] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const open = (item: PlanItem) => {
@@ -109,7 +113,17 @@ export function Checklist() {
                           name={`done-${item.id}`}
                           checked={isDone}
                           onChange={e => setDone(item.key, e.target.checked)}
-                          label={<span className={isDone ? "text-ink-soft" : "font-semibold"}>{title}</span>}
+                          label={
+                            <span className={isDone ? "text-ink-soft" : "font-semibold"}>
+                              {title}
+                              {newsTag(item.id) && (
+                                <>
+                                  {" "}
+                                  <Tag>{newsTag(item.id)}</Tag>
+                                </>
+                              )}
+                            </span>
+                          }
                           hint={isDone ? undefined : what ? <span className="line-clamp-2">{what}</span> : undefined}
                         />
                       </div>

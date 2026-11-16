@@ -8,6 +8,7 @@ import { Breadcrumb } from "@/app/ui/table";
 import { withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
 import { listNewestVersions } from "@/lib/data/repos/tool-versions";
+import { coverageToCheck } from "@/lib/catalog/news";
 import { coverageStatus } from "@/lib/tool-owner/status";
 import type { DraftRow } from "@/lib/tool-owner/new-version";
 import { CoverageEditor } from "./coverage-editor";
@@ -37,7 +38,12 @@ async function ToolEditor({ params, searchParams }: Props) {
   const withVersions = mine.map(v => v.profileId);
   const profile = data.profiles.find(p => p._id === wanted) ?? data.profiles.find(p => withVersions.includes(p._id)) ?? data.profiles[0];
   const current = mine.find(v => v.profileId === profile._id);
-  const status = coverageStatus(current);
+  // What a catalog release changed after this version was saved. A new version clears it.
+  const toCheck = current ? coverageToCheck(current, data.releases ?? []) : { reworded: [], added: [] };
+  const present = new Set(profile.entries.map(e => e.id));
+  const addedIds = toCheck.added.filter(id => present.has(id));
+  const checkCount = toCheck.reworded.length + addedIds.length;
+  const status = coverageStatus(current, { rowsToCheck: checkCount });
 
   const initial: DraftRow[] = (current?.entries ?? []).map(e => ({
     key: e.key,
@@ -89,7 +95,26 @@ async function ToolEditor({ params, searchParams }: Props) {
         </Note>
       )}
 
+      {checkCount > 0 && toCheck.since && (
+        <Note tone="attention" title={`The IM8 catalog changed on ${toCheck.since.slice(0, 10)}.`}>
+          <div className="flex flex-col gap-2">
+            <p>
+              {[
+                toCheck.reworded.length > 0 && `${toCheck.reworded.length} ${toCheck.reworded.length === 1 ? "control you answered was reworded" : "controls you answered were reworded"}`,
+                addedIds.length > 0 && `${addedIds.length} ${addedIds.length === 1 ? "control is new" : "controls are new"}`,
+              ]
+                .filter(Boolean)
+                .join(", and ")}
+              .
+            </p>
+            <p>Read the rows marked &ldquo;Check again&rdquo; or &ldquo;New&rdquo;, then save a new version. Your answers stay in use until then.</p>
+          </div>
+        </Note>
+      )}
+
       <CoverageEditor
+        checkAgain={toCheck.reworded}
+        newIds={addedIds}
         toolId={tool._id}
         toolName={tool.name}
         profileId={profile._id}

@@ -6,6 +6,7 @@ import { Cell, Table } from "@/app/ui/table";
 import { withDb } from "@/lib/data/db";
 import { loadPlanData } from "@/lib/data/repos/plan-data";
 import { listNewestVersions } from "@/lib/data/repos/tool-versions";
+import { coverageToCheck } from "@/lib/catalog/news";
 import { coverageStatus } from "@/lib/tool-owner/status";
 import { AddTool } from "./new-tool-form";
 
@@ -56,7 +57,9 @@ async function ToolOwnerTools() {
                 {versions.length === 0 && <StatusMark status={coverageStatus(undefined)} />}
                 <ul className="flex flex-col gap-2">
                   {versions.map(v => {
-                    const status = coverageStatus(v);
+                    // After a catalog release, an approved version shows how many of its rows to read again.
+                    const toCheck = coverageToCheck(v, data.releases ?? []);
+                    const status = coverageStatus(v, { rowsToCheck: toCheck.reworded.length + toCheck.added.length });
                     return (
                       <li key={v._id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
                         <span className="whitespace-nowrap">
