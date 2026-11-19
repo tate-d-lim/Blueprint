@@ -103,10 +103,10 @@ const COPY: ((network: number) => { title: string; body: React.ReactNode })[] = 
     ),
   }),
   network => ({
-    title: "Entrance security",
+    title: "Network · Entrance security",
     body: (
       <p>
-        Entrance security holds the Network controls: what can reach your app from the network, and what is stopped at the door.{" "}
+        The Network controls are the hotel's entrance security: what can reach your app from the network, and what is stopped at the door.{" "}
         {network === 0 ? "None of them apply to your app." : `Your app has ${network} of them.`}
       </p>
     ),

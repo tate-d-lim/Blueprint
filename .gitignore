@@ -51,3 +51,7 @@ next-env.d.ts
 # Impeccable: working files, not source
 .impeccable/review/
 .impeccable/hook.cache.json
+
+# local working files
+/.impeccable/
+/low-risk-cloud-ssp.xlsx

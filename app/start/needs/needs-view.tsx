@@ -90,7 +90,7 @@ export function NeedsView({ profileTitle, line, coverageLine, sources, parts, de
   const state = parts[index];
   const prev = index > 0 ? parts[index - 1] : null;
   const next = index >= 0 && index < parts.length - 1 ? parts[index + 1] : null;
-  const nameOf = (s: PartState) => PARTS.find(p => p.id === s.id)!.name;
+  const nameOf = (s: PartState) => s.line1;
   const network = parts.find(p => p.id === "entrance");
 
   return (

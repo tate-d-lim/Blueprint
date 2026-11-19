@@ -1,0 +1,187 @@
+# Build plan: Sample project (two weeks in)
+
+App type: Low-risk app on the cloud (IM8 Low-Risk Cloud).
+Tools: appCentral v1 (verified), DBaaS v1 (not yet verified), IGA v1 (not yet verified), genCentral (no coverage recorded).
+Generated 2026-10-29 by the CPFB build plan app. IDs in brackets are IM8 requirement IDs.
+
+## How to use this plan
+- Section 1 is required work. When you finish an item, mention its ID in the commit or PR description.
+- Before building anything section 2 asks about, ask the person you're working with.
+- Never build what section 3 lists. Use the platform's feature instead.
+
+## 1. What you need to do (17)
+
+### Check every input before you use it (as-1)
+Why it matters: Unchecked input is how attackers inject code or crash your app, which can lead to unauthorised access or an outage.
+What to do: Validate every input your app receives against the type, format and length you expect, and reject anything else.
+Status: Done
+Note: Schemas on every route.
+
+### Use parameterised queries, never string-built ones (as-2)
+Why it matters: Joining user input into a query lets an attacker change what the query does, which can expose or alter your data.
+What to do: Pass user values to the database and to system commands as parameters (for example through an ORM), never by joining strings together.
+Status: Done
+
+### Escape output before it reaches the browser (as-3)
+Why it matters: Unescaped output lets an attacker run their own script in your users' browsers (cross-site scripting).
+What to do: Sanitise or escape every value you put into an HTML page so the browser shows it as text and never runs it as code.
+Status: Done
+
+### Check permissions on every request (as-7)
+Why it matters: Skipping these checks lets one user read or change another user's data.
+What to do: Check on the server that the signed-in user is allowed to do what each request asks, using a shared filter or middleware.
+Status: Done
+
+### Set a Content Security Policy (as-9)
+Why it matters: A strict policy stops injected scripts from loading, which limits the damage from cross-site scripting.
+What to do: Send a strict Content Security Policy header that allows only the scripts, styles and images your app needs.
+Status: In progress
+Note: CSP is set; tightening script-src.
+
+### Pin your dependency versions (sc-4)
+Why it matters: Unpinned versions can change silently and bring in bugs or malicious code.
+What to do: Pin exact versions of your direct and indirect dependencies in the manifest, and commit the lock file.
+Status: Done
+
+### Install only pinned versions when you deploy (sc-6)
+Why it matters: A deploy that picks the latest version can pull in changes nobody reviewed.
+What to do: Make your deployment install exactly the versions pinned in your lock file, nothing newer.
+Status: Done
+
+### Get your app security-tested every year (st-4)
+Why it matters: Testers find weaknesses that normal reviews miss.
+What to do: Have your app penetration-tested, or put it through a bug bounty, by an internal or independent team at least every 365 days, and keep the report.
+Status: In progress
+Note: Penetration test booked for next month.
+
+### Fix vulnerabilities within the deadlines (st-5)
+Why it matters: Known weaknesses left unfixed are the easiest way into your system.
+What to do: Triage every vulnerability and fix it, or formally accept the risk, within the deadline for its severity.
+Status: Done
+
+### Pass secrets to containers at run time (cs-3)
+Why it matters: Secrets baked into an image can be pulled out by anyone who has the image.
+What to do: Provide secrets to the container when it runs, and never bake them into the image at build time.
+Status: To do
+
+### Don't run containers as root (cs-4)
+Why it matters: If the app is compromised, a non-root user limits what the attacker can do.
+What to do: Create a non-root user in the image and make it the default user.
+Status: To do
+
+### Have a plan for cyber incidents (pm-1)
+Why it matters: When something goes wrong, a ready plan saves hours.
+What to do: Have a documented cybersecurity incident plan for your organisation and share it with the team.
+Status: To do
+
+### Assess the risks before launch (pm-2)
+Why it matters: It surfaces risks while they are cheap to fix.
+What to do: Document a risk assessment for the system and get it approved before the first full release.
+Status: To do
+
+### Write your security plan (pm-3)
+Why it matters: It is the record that reviewers and future teammates rely on.
+What to do: Write, and keep up to date, a plan describing the system and the protections in place.
+Status: Done
+
+### Get leftover risks formally accepted (pm-4)
+Why it matters: Someone with authority must own the risks you can't remove.
+What to do: Get the remaining risks accepted and approved by the right authority, and review that regularly.
+Status: To do
+
+### Submit the approved security plan centrally (pm-5)
+Why it matters: It gives government a view of security across all systems.
+What to do: Submit the approved security plan to the central repository.
+Status: To do
+
+### Keep your system documentation up to date (pm-6)
+Why it matters: Good documentation is essential for running and securing the system.
+What to do: Keep detailed, current documentation of the system, its architecture and its parts.
+Status: Done
+
+## 2. Ask a person first (8)
+
+- **Will your app send data to an AI service hosted overseas, and is it no higher than Restricted and Sensitive Normal?** (ga-1). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Will your app send data to a Singapore-hosted AI service, and is it no higher than Confidential and Sensitive High?** (ga-2). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Do you have a legally binding no-logging, no-training agreement with the AI service provider?** (ga-3). Why we ask: Depends on your app, and no tool you picked covers it.
+- **If you host an AI model yourself, is the environment approved for the highest classification of data in your system?** (ga-4). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Do you use open-weights AI models? If so, which formats and loaders are approved for you?** (ga-5). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Can users upload files in your AI app, and what safeguards are planned?** (ga-6). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Who tests your AI's outputs, and against what measures and scenarios?** (ga-7). Why we ask: Depends on your app, and no tool you picked covers it.
+- **Will users have to acknowledge the risk of inaccurate AI answers before using your app?** (ga-8). Why we ask: Depends on your app, and no tool you picked covers it.
+
+## 3. Don't build this: your platform already does it (66)
+
+### appCentral
+- Slow down repeated sign-in attempts (as-4): Handled by appCentral.
+- Set strong password rules (as-5): Handled by appCentral.
+- Store passwords as salted hashes (as-6): Handled by appCentral.
+- Keep secrets in a secrets manager (as-8): Handled by appCentral.
+- Make users sign in again after a while (as-11): Handled by appCentral.
+- Force a password change after a suspected break-in (as-15): Handled by appCentral.
+- Keep your code in a central repository (sc-1): Handled by appCentral.
+- Get a second pair of eyes on every change (sc-3): Handled by appCentral.
+- Build and release the same way every time (sc-5): Handled by appCentral.
+- Scan your hosts for vulnerabilities regularly (st-1): Handled by appCentral.
+- Watch your cloud settings for mistakes (st-2): Handled by appCentral.
+- Offer a way to report vulnerabilities (st-3): Handled by appCentral.
+- Separate public and private network zones (ns-1): Handled by appCentral.
+- Restrict access to cloud services outside your network (ns-2): Handled by appCentral.
+- Block network traffic unless it's allowed (ns-3): Handled by appCentral.
+- Keep private network traffic off the internet (ns-4): Handled by appCentral.
+- Filter traffic coming from the internet (ns-5): Handled by appCentral.
+- Use valid HTTPS certificates (ns-6): Handled by appCentral.
+- Secure how your services talk to each other (ns-7): Handled by appCentral.
+- Connect cloud and on-premises systems securely (ns-8): Handled by appCentral.
+- Back up your important data (br-1): Handled by appCentral.
+- Protect backups from being changed or deleted (br-3): Handled by appCentral.
+- Store logs away from the system that made them (lm-1): Handled by appCentral.
+- Protect logs from tampering (lm-2): Handled by appCentral.
+- Log network traffic (lm-3): Handled by appCentral.
+- Log security-relevant events (lm-4): Handled by appCentral.
+- Log requests to your web front door (lm-6): Handled by appCentral.
+- Log security events on your hosts (lm-7): Handled by appCentral.
+- Keep security logs for a year (lm-8): Handled by appCentral.
+- Get alerts about security problems (lm-9): Handled by appCentral.
+- Get alerts on unusual resource use (lm-10): Handled by appCentral.
+- Send security logs to the central security team (lm-12): Handled by appCentral.
+- Scan container images for known vulnerabilities (cs-7): Handled by appCentral.
+- Keep the cluster API off the internet (cs-9): Handled by appCentral.
+- Separate container workloads (cs-10): Handled by appCentral.
+- Block secrets from being pushed to the repository (sd-1): Handled by appCentral.
+- Block direct pushes to the main branch (sd-2): Handled by appCentral.
+- Run static analysis on every change (sd-4): Handled by appCentral.
+- Scan your dependencies every week (sd-5): Handled by appCentral.
+- Detect secrets in your code (sd-6): Handled by appCentral.
+- Protect secrets used in CI jobs (sd-7): Handled by appCentral.
+- Separate production from test environments (sd-8): Handled by appCentral.
+
+### DBaaS
+- Keep your data in Singapore (dp-1): Handled by DBaaS. (not yet verified)
+- Encrypt stored data (dp-2): Handled by DBaaS. (not yet verified)
+- Encrypt data as it moves (dp-3): Handled by DBaaS. (not yet verified)
+- Manage your cloud accounts centrally (dp-4): Handled by DBaaS. (not yet verified)
+
+### IGA
+- Give people only the access they need (ac-1): Handled by IGA. (not yet verified)
+- Require multi-factor sign-in for admins (ac-2): Handled by IGA. (not yet verified)
+- Remove unused admin accounts (ac-3): Handled by IGA. (not yet verified)
+- Review who has access every year (ac-4): Handled by IGA. (not yet verified)
+- Use hardened devices for remote admin work (ac-5): Handled by IGA. (not yet verified)
+- Change default passwords before first use (ac-6): Handled by IGA. (not yet verified)
+- Use Singpass or Corppass for public users (ac-7): Handled by IGA. (not yet verified)
+- Automate removing leavers' access (ac-8): Handled by IGA. (not yet verified)
+- Manage the devices your team uses (ac-9): Handled by IGA. (not yet verified)
+- Use single sign-on for internal services (ac-12): Handled by IGA. (not yet verified)
+- Keep a list of all accounts (ac-14): Handled by IGA. (not yet verified)
+
+### Doesn't apply on your platform
+- Install cloud management agents on hosts (is-1): appCentral does not have hosts (EC2).
+- Automate security patching (is-2): appCentral does not have hosts (EC2).
+- Restrict administrator privileges on hosts (is-3): appCentral does not have hosts (EC2).
+- Turn off what you don't need (is-4): appCentral does not have hosts (EC2).
+- Harden your hosts (is-5): appCentral does not have hosts (EC2).
+- Manage remote administration safely (is-6): appCentral does not have hosts (EC2).
+- Protect hosts against malware (is-7): appCentral does not have hosts (EC2).
+- Don't run unsupported software (is-9): appCentral does not have hosts (EC2).
+- Keep clocks in sync (is-10): appCentral does not have hosts (EC2).

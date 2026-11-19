@@ -123,10 +123,15 @@ export const PARTS = [
   },
 ] as const satisfies readonly HotelPart[];
 
-/** The area a requirement belongs to, as the task list and the build plan name it: "CCTV (Logging)". */
+/** The area a requirement belongs to, as the task list and the build plan name it: "Logging (CCTV)". The category comes first. */
 export function areaOf(family: string): string {
   const part = PARTS.find(p => p.id === partOf(family))!;
-  return `${part.name} (${familyName(family)})`;
+  return `${familyName(family)} (${part.name})`;
+}
+
+/** A part's name for labels and headings: its categories first, then the hotel name. "Logging · CCTV". */
+export function partTitle(part: HotelPart, codes: readonly string[] = part.families): string {
+  return `${codes.map(familyName).join(', ')} · ${part.name}`;
 }
 
 /** One name for each family of requirements on every screen. Every screen calls the items "controls". */
@@ -273,9 +278,9 @@ export function partState(part: HotelPart, plan: Plan, mode: HotelMode): PartSta
     counts: { you: you.length, platform: platform.length, questions: questions.length, unverified, done },
     toolNames,
     families,
-    line1: `${part.name} · ${families.join(', ')}`,
+    line1: `${families.join(', ')} · ${part.name}`,
     line2,
-    areaName: `${part.name} (${families.join(', ')})`,
+    areaName: `${families.join(', ')} (${part.name})`,
   };
 }
 

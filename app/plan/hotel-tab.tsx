@@ -113,9 +113,9 @@ export function HotelTab({ initialPart }: { initialPart: string | null }) {
               </div>
               <div className="flex flex-col gap-1">
                 <h2 ref={headingRef} tabIndex={-1} className="wide text-title font-semibold outline-none">
-                  {part.name}
+                  {state.families.join(", ")}
                 </h2>
-                <p className="text-body text-ink-soft">{state.families.join(", ")}</p>
+                <p className="text-body text-ink-soft">{part.name}</p>
               </div>
               <p className="max-w-measure text-lead">{part.summary}</p>
               <p className="tnum border-y border-rule py-3 text-body font-semibold">

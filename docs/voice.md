@@ -94,7 +94,7 @@ These words are fixed. Do not change them or use other words for them:
 
 ### The hotel
 
-- The hotel is a guide, not a second language. Each part always shows its hotel name and its real name together: "CCTV · Logging".
+- The hotel is a guide, not a second language. Each part always shows its real name and its hotel name together, the real name first: "Logging · CCTV".
 - In sentences, buttons and errors, use the real name ("Logging"), not the hotel name alone.
 - Do not add more hotel words to the copy. The picture does that work.
 

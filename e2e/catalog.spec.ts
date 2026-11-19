@@ -45,8 +45,16 @@ test("an admin reads the catalog, discards an older release, and saves a plain t
   await expect(page.getByRole("row", { name: /^as-1 Input Validation/ })).toContainText("Check every input");
 });
 
-test("a builder is asked to switch to admin", async ({ page, request }) => {
+test("a builder reads the catalog but cannot change it", async ({ page, request }) => {
   await request.post("/api/reset");
   await page.goto("/admin/catalog");
-  await expect(page.getByText("Switch to Admin to use this sheet.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "IM8 catalog", level: 1 })).toBeVisible();
+  await expect(page.getByRole("row", { name: /^as-1 Input Validation/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Upload a release" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Reset all data" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Input Validation" }).click();
+  const panel = page.getByRole("dialog", { name: /as-1: Input Validation/ });
+  await expect(panel.getByRole("heading", { name: "Official wording" })).toBeVisible();
+  await expect(panel.getByRole("button", { name: "Save plain text" })).toHaveCount(0);
+  await expect(panel.getByRole("textbox")).toHaveCount(0);
 });

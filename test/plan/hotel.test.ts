@@ -20,9 +20,9 @@ test('needs mode on the demo: 84 requirements in 11 parts, all Drawing', async (
   expect(needsLine(planTotals(plan), true)).toBe('Your app needs 84 controls, in 11 parts.');
   expect(needsLine(planTotals(plan))).toBe('Your app needs 84 controls, in 11 parts. After you save, pick the tools that do some of them for you.');
   const cctv = partState(part('cctv'), plan, 'needs');
-  expect(cctv).toMatchObject({ look: 'drawing', line1: 'CCTV · Logging', line2: '10 controls' });
+  expect(cctv).toMatchObject({ look: 'drawing', line1: 'Logging · CCTV', line2: '10 controls' });
   expect(partState(part('deliveries'), plan, 'needs').line2).toBe('12 controls');
-  expect(partState(part('safe'), plan, 'needs').line1).toBe('Hotel safe · Data');
+  expect(partState(part('safe'), plan, 'needs').line1).toBe('Data · Hotel safe');
   expect(visibleParts(plan).map(p => partState(p, plan, 'needs').look)).toEqual(Array(11).fill('drawing'));
 });
 
@@ -121,7 +121,7 @@ describe('on a small fake profile', () => {
   test('a part with only good-to-have items stays and says "Nothing for your app"', () => {
     const plan = planWith([]);
     const frame = partState(part('frame'), plan, 'tools');
-    expect(frame).toMatchObject({ nothingForApp: true, look: 'drawing', line2: 'Nothing for your app', line1: 'Foundation and frame · Infrastructure' });
+    expect(frame).toMatchObject({ nothingForApp: true, look: 'drawing', line2: 'Nothing for your app', line1: 'Infrastructure · Foundation and frame' });
     expect(planTotals(plan).parts).toBe(1);
   });
 

@@ -13,7 +13,7 @@ test("the main page is Projects, and a new plan starts from there", async ({ pag
   await page.goto("/");
   await expect(page).toHaveURL(/\/projects$/);
   await expect(page.getByRole("heading", { level: 1, name: "Plan the security of your app" })).toBeVisible();
-  await expect(sheets(page).getByRole("link")).toHaveText(["Projects"]);
+  await expect(sheets(page).getByRole("link")).toHaveText(["Projects", "Catalog"]);
   await expect(page.getByRole("link", { name: "Blueprint" })).toHaveAttribute("href", "/projects");
   await page.getByRole("link", { name: "Start a new plan" }).click();
   await expect(page).toHaveURL(/\/start$/);
@@ -99,7 +99,7 @@ test("steps 1 to 5 use builder language and stay neutral about the stage of the 
   await page.goto(`/start/needs?${DEMO_FACTS_QUERY}`);
   await check("step 4, tour step 1");
   await skipTour(page);
-  await page.getByRole("button", { name: /CCTV · Logging/ }).click();
+  await page.getByRole("button", { name: /Logging · CCTV/ }).click();
   await page.getByText("Show all 10 controls").click();
   await check("step 4, CCTV");
   const id = await saveFromNeeds(page);

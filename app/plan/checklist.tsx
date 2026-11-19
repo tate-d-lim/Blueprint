@@ -6,7 +6,7 @@ import { Checkbox } from "@/app/ui/field";
 import { Disclosure } from "@/app/ui/disclosure";
 import { Tag } from "@/app/ui/stamp";
 import type { PlanItem } from "@/lib/plan/engine";
-import { PARTS, partOf, visibleParts } from "@/lib/plan/hotel";
+import { partOf, partTitle, visibleParts } from "@/lib/plan/hotel";
 import { taskStatusOf } from "@/lib/plan/progress";
 import { startQuery } from "@/lib/plan/url-state";
 import { QuestionControls } from "./item-controls";
@@ -95,7 +95,7 @@ export function Checklist() {
           return (
             <div key={part.id} className="flex flex-col">
               <h2 className="flex items-baseline justify-between gap-3 border-b border-rule-strong pb-1 text-body font-semibold">
-                <span>{PARTS.find(p => p.id === part.id)!.name}</span>
+                <span>{partTitle(part, [...new Set(items.map(i => i.family))])}</span>
                 <span className="tnum text-small font-normal text-ink-soft">
                   {done} of {items.length} done
                 </span>

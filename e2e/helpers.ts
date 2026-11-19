@@ -6,13 +6,14 @@ export const LOW_QUERY = "c=restricted&s=sn&i=slight&d=min&k=";
 /** The risk answers and the demo facts (public, web, sign-in, SMS; no domain, no short links). */
 export const DEMO_QUERY = `${LOW_QUERY}&f=reach.public,web.yes,signin.yes,sms.yes,domain.no,shortlinks.no`;
 
-/** Step 1: Restricted, Sensitive Normal, Slight, None or minimal. */
+/** Step 1: Restricted, Sensitive Normal, Slight, None or minimal. The caller then clicks "Find your app type". */
 export async function answerLowRisk(page: Page) {
-  // A new plan asks one question at a time.
-  for (const name of ["Restricted", "Sensitive Normal", "Slight", "None or minimal"]) {
+  // A new plan asks one question at a time. The last question has "Find your app type" in place of "Next question".
+  for (const name of ["Restricted", "Sensitive Normal", "Slight"]) {
     await page.getByRole("radio", { name }).check();
     await page.getByRole("button", { name: "Next question" }).click();
   }
+  await page.getByRole("radio", { name: "None or minimal" }).check();
 }
 
 /** The step bar at the top of a step page marks step n as the current one. */

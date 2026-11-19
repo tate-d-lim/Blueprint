@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/app/ui/button";
-import { Checkbox, RadioGroup } from "@/app/ui/field";
+import { RadioGroup } from "@/app/ui/field";
 import type { FactAnswers } from "@/lib/domain/types";
 import { startQuery } from "@/lib/plan/url-state";
 import { ClassificationHelper } from "./classification-helper";
@@ -11,8 +11,6 @@ import { useUnsavedGuard } from "@/lib/plan/unsaved";
 import { OPTION_LABELS, type RiskAnswers } from "@/lib/risk/assess";
 
 type Draft = Partial<Pick<RiskAnswers, "classification" | "sensitivity" | "impact" | "downstream">> & Pick<RiskAnswers, "cii" | "sii">;
-
-const ASK_OFFICER = "Not sure? Ask your IT security officer (ACISO or MCISO).";
 
 // The help for the first two questions follows appCentral's guide "Assess Risk Materiality Level (RML)" in CPF's
 // Notion: each level says what happens if the data leaks, and who to ask.
@@ -67,15 +65,6 @@ const QUESTIONS = [
   },
 ] as const;
 
-const SYSTEM_FLAGS = [
-  {
-    field: "cii",
-    label: "The system is Critical Information Infrastructure (CII)",
-    hint: `A computer system the Commissioner of Cybersecurity has formally designated as necessary for delivering an essential service, such as banking, energy or healthcare. If it has been designated, you will have been told. ${ASK_OFFICER}`,
-  },
-  { field: "sii", label: "The system is SII", hint: ASK_OFFICER },
-] as const;
-
 /** The short name of each question, for the list of answers so far. */
 const SHORT: Record<(typeof QUESTIONS)[number]["field"], string> = {
   classification: "Highest data classification",
@@ -83,9 +72,6 @@ const SHORT: Record<(typeof QUESTIONS)[number]["field"], string> = {
   impact: "Worst impact",
   downstream: "Impact on systems that depend on your app",
 };
-
-/** The 4 risk questions, then CII and SII. */
-const TOTAL = QUESTIONS.length + 1;
 
 /**
  * Step 1. A new plan asks one question at a time, with the answers so far above the question. A builder who comes back
@@ -123,9 +109,9 @@ export function StartForm({
     setStep(n);
   };
 
-  const current = QUESTIONS[step] as (typeof QUESTIONS)[number] | undefined;
-  const answered = current ? draft[current.field] !== undefined : true;
-  const last = step === QUESTIONS.length;
+  const current = QUESTIONS[step];
+  const answered = draft[current.field] !== undefined;
+  const last = step === QUESTIONS.length - 1;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,23 +140,6 @@ export function StartForm({
     </>
   );
 
-  const flags = (
-    <fieldset className="flex flex-col gap-3">
-      <legend className="mb-1 text-lead font-semibold text-ink">Does either of these apply?</legend>
-      {guided && <p className="mb-2 text-small text-ink-soft">Tick any that apply. If neither applies, tick nothing.</p>}
-      {SYSTEM_FLAGS.map(flag => (
-        <Checkbox
-          key={flag.field}
-          name={flag.field}
-          label={flag.label}
-          hint={<span className="block max-w-measure">{flag.hint}</span>}
-          checked={draft[flag.field]}
-          onChange={e => setDraft(d => ({ ...d, [flag.field]: e.target.checked }))}
-        />
-      ))}
-    </fieldset>
-  );
-
   if (guided) {
     return (
       <form onSubmit={submit} className="flex flex-col gap-8">
@@ -196,7 +165,7 @@ export function StartForm({
         )}
 
         <div ref={questionRef} tabIndex={-1} className="focus:outline-none">
-          {current ? question(current) : flags}
+          {question(current)}
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
@@ -209,7 +178,7 @@ export function StartForm({
             </Button>
           )}
           <span className="tnum text-small text-ink-soft">
-            Question {step + 1} of {TOTAL}
+            Question {step + 1} of {QUESTIONS.length}
           </span>
           <Button variant="quiet" size="sm" className="ml-auto" onClick={() => setGuided(false)}>
             Show all questions
@@ -227,14 +196,13 @@ export function StartForm({
             {question(q)}
           </div>
         ))}
-        <div className="pt-8">{flags}</div>
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
         <Button type="submit" disabled={!complete}>
           Find your app type
         </Button>
-        {!complete && <span className="text-small text-ink-soft">Answer the first 4 questions to continue.</span>}
+        {!complete && <span className="text-small text-ink-soft">Answer all 4 questions to continue.</span>}
       </div>
     </form>
   );

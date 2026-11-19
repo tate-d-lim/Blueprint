@@ -30,25 +30,27 @@ test("a new plan asks one question at a time, and an answer can be changed on th
   await expectStep(page, 1);
   await expect(page.getByRole("radio")).toHaveCount(6);
   await expect(page.getByRole("button", { name: "Next question" })).toBeDisabled();
-  await expect(page.getByText("Question 1 of 5")).toBeVisible();
+  await expect(page.locator("span").getByText("Question 1 of 4")).toBeVisible();
   await page.getByRole("radio", { name: "Restricted" }).check();
   await page.getByRole("button", { name: "Next question" }).click();
   await expect(page.getByRole("group", { name: "How sensitive is the data?" })).toBeVisible();
-  await expect(page.getByText("Question 2 of 5")).toBeVisible();
+  await expect(page.locator("span").getByText("Question 2 of 4")).toBeVisible();
   const sofar = page.getByRole("definition").filter({ hasText: "Restricted" });
   await expect(sofar).toBeVisible();
   await page.getByRole("button", { name: "Previous question" }).click();
   await expect(page.getByRole("radio", { name: "Restricted" })).toBeChecked();
   await page.getByRole("radio", { name: "Official (Open)" }).check();
   await page.getByRole("button", { name: "Next question" }).click();
-  for (const name of ["Sensitive Normal", "Slight", "None or minimal"]) {
+  for (const name of ["Sensitive Normal", "Slight"]) {
     await page.getByRole("radio", { name }).check();
     await page.getByRole("button", { name: "Next question" }).click();
   }
-  await expect(page.getByRole("group", { name: "Does either of these apply?" })).toBeVisible();
+  await expect(page.locator("span").getByText("Question 4 of 4")).toBeVisible();
+  await page.getByRole("radio", { name: "None or minimal" }).check();
+  await expect(page.getByRole("button", { name: "Find your app type" })).toBeEnabled();
   await page.getByRole("button", { name: "Change highest data classification" }).click();
   await page.getByRole("radio", { name: "Restricted" }).check();
-  for (let i = 0; i < 4; i++) await page.getByRole("button", { name: "Next question" }).click();
+  for (let i = 0; i < 3; i++) await page.getByRole("button", { name: "Next question" }).click();
   await page.getByRole("button", { name: "Find your app type" }).click();
   await expect(page).toHaveURL(/\/start\/verdict\?c=restricted&s=sn&i=slight&d=min/);
 });
@@ -194,15 +196,15 @@ test("step 4: the tour, a part close up, and the save opens the plan page", asyn
   await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
   await expect(page.getByRole("button", { name: "Show the tour again" })).toBeVisible();
 
-  await page.getByRole("button", { name: /CCTV · Logging/ }).click();
-  await expect(page.getByRole("heading", { level: 2, name: "CCTV" })).toBeFocused();
+  await page.getByRole("button", { name: /Logging · CCTV/ }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "Logging" })).toBeFocused();
   await expect(page.getByText("Part 2 of 11")).toBeVisible();
   await expect(page.getByText("A record of who did what, and when, so problems can be found and traced.")).toBeVisible();
   await expect(page.getByText("Your app has 10 controls in this part.")).toBeVisible();
   await page.getByText("Show all 10 controls").click();
   await expect(page.getByText("Official wording")).toHaveCount(10);
-  await page.getByRole("button", { name: "Next: Hotel rooms" }).click();
-  await expect(page.getByRole("heading", { level: 2, name: "Hotel rooms" })).toBeVisible();
+  await page.getByRole("button", { name: "Next: Containers · Hotel rooms" }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "Containers" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("heading", { level: 1, name: "Here is your application’s security plan" })).toBeVisible();
 
@@ -267,7 +269,7 @@ test("a click on a part of the hotel opens the Hotel tab close up, and Escape go
   await expect(page.locator('[data-hotel="ready"]')).toBeVisible({ timeout: 20_000 });
   await page.getByRole("button", { name: /Walls, windows and doors/ }).click();
   await expect(page).toHaveURL(/\/projects\/sample-two-weeks-in\/hotel\?part=walls$/);
-  await expect(page.getByRole("heading", { level: 2, name: "Walls, windows and doors" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "App security" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Project" }).locator('[aria-current="page"]')).toHaveText("Hotel");
   await expect(page.getByText(/^\d+ of \d+ done/).first()).toBeVisible(); // the header stays
   await page.keyboard.press("Escape");
@@ -277,7 +279,7 @@ test("a click on a part of the hotel opens the Hotel tab close up, and Escape go
 
 test("the Hotel tab opens on the part named in its link", async ({ page }) => {
   await page.goto("/projects/sample-two-weeks-in/hotel?part=cctv");
-  await expect(page.getByRole("heading", { level: 2, name: "CCTV" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Logging" })).toBeVisible();
   await page.goto("/projects/sample-two-weeks-in/hotel?part=nope");
   await expect(page.getByRole("heading", { level: 2, name: "Explore your hotel" })).toBeVisible();
 });
@@ -292,7 +294,7 @@ test("a profile change is announced and the save opens the plan page", async ({ 
 
 test("leaving with unsaved changes asks first", async ({ page }) => {
   await page.goto(`/start/needs?c=restricted&s=sn&i=none&d=min&k=&f=reach.public&project=sample-two-weeks-in`);
-  await page.getByRole("button", { name: /CCTV · Logging/ }).click(); // the browser asks only after a user action on the page
+  await page.getByRole("button", { name: /Logging · CCTV/ }).click(); // the browser asks only after a user action on the page
   const dialog = page.waitForEvent("dialog");
   await page.close({ runBeforeUnload: true });
   expect((await dialog).type()).toBe("beforeunload");

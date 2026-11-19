@@ -33,7 +33,7 @@ type Filter = "all" | "needs-work";
 
 const toolSays = { provided: "Provides it", shared: "Shares it with the app builder" } as const;
 
-export function CatalogBrowser({ profileId, profileTitle, rows }: { profileId: string; profileTitle: string; rows: Row[] }) {
+export function CatalogBrowser({ canEdit, profileId, profileTitle, rows }: { canEdit: boolean; profileId: string; profileTitle: string; rows: Row[] }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
@@ -151,21 +151,23 @@ export function CatalogBrowser({ profileId, profileTitle, rows }: { profileId: s
         title={current ? `${current.id}: ${current.title}` : "Control"}
         description={current ? `${current.familyName} · ${current.levelLabel} · ${profileTitle}` : undefined}
         footer={
-          current && <FooterButtons formId={`plain-${current.id}`} onClose={() => setOpenId(null)} />
+          current && <FooterButtons formId={canEdit ? `plain-${current.id}` : undefined} onClose={() => setOpenId(null)} />
         }
       >
-        {current && <Detail key={`${profileId}:${current.id}`} profileId={profileId} row={current} />}
+        {current && <Detail key={`${profileId}:${current.id}`} canEdit={canEdit} profileId={profileId} row={current} />}
       </Dialog>
     </div>
   );
 }
 
-function FooterButtons({ formId, onClose }: { formId: string; onClose: () => void }) {
+function FooterButtons({ formId, onClose }: { formId?: string; onClose: () => void }) {
   return (
     <div className="flex gap-3">
-      <Button type="submit" form={formId}>
-        Save plain text
-      </Button>
+      {formId && (
+        <Button type="submit" form={formId}>
+          Save plain text
+        </Button>
+      )}
       <Button variant="secondary" onClick={onClose}>
         Close
       </Button>
@@ -173,7 +175,7 @@ function FooterButtons({ formId, onClose }: { formId: string; onClose: () => voi
   );
 }
 
-function Detail({ profileId, row }: { profileId: string; row: Row }) {
+function Detail({ canEdit, profileId, row }: { canEdit: boolean; profileId: string; row: Row }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [title, setTitle] = useState(row.plain?.title ?? "");
@@ -194,7 +196,7 @@ function Detail({ profileId, row }: { profileId: string; row: Row }) {
         <h3 id={`official-${row.id}`} className="text-lead font-semibold">
           Official wording
         </h3>
-        <p className="text-small text-ink-soft">IM8 wording is read-only. It changes only when you apply a release.</p>
+        <p className="text-small text-ink-soft">{canEdit ? "IM8 wording is read-only. It changes only when you apply a release." : "IM8 wording changes only when an admin applies a release."}</p>
         <dl className="flex flex-col gap-4">
           <Part label="Statement">{row.statement}</Part>
           <Part label="Recommendations">{row.recommendations}</Part>
@@ -238,12 +240,21 @@ function Detail({ profileId, row }: { profileId: string; row: Row }) {
         <h3 id={`plain-title-${row.id}`} className="text-lead font-semibold">
           Plain text
         </h3>
-        {row.state === "recheck" && (
+        {canEdit && row.state === "recheck" && (
           <Note tone="attention" title="A release reworded this control after the plain text was written.">
             Read the new wording above. Change the plain text if it no longer fits, then save it.
           </Note>
         )}
         {row.state === "missing" && <p className="text-body text-ink-soft">This control has no plain text. Builders see the official wording.</p>}
+        {!canEdit ? (
+          row.plain && (
+            <dl className="flex flex-col gap-4">
+              <Part label="Title">{row.plain.title}</Part>
+              <Part label="What to do">{row.plain.task}</Part>
+              <Part label="Why it matters">{row.plain.why}</Part>
+            </dl>
+          )
+        ) : (
         <form
           id={`plain-${row.id}`}
           className="flex flex-col gap-4"
@@ -265,6 +276,7 @@ function Detail({ profileId, row }: { profileId: string; row: Row }) {
           {pending && <p role="status" className="text-small text-ink-soft">Saving…</p>}
           {result && <Note tone={result.ok ? "success" : "error"} role={result.ok ? "status" : undefined}>{result.text}</Note>}
         </form>
+        )}
       </section>
     </div>
   );

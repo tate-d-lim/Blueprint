@@ -17,7 +17,7 @@ test("demo: start → verdict → app → needs → save → tools → prompt yo
   // Step 4: the tour in tooltips, then one part at a time.
   for (let n = 0; n < 3; n++) await page.getByRole("button", { name: "Next", exact: true }).click();
   await page.getByRole("button", { name: "Explore the hotel" }).click();
-  await page.getByRole("button", { name: /CCTV · Logging/ }).click();
+  await page.getByRole("button", { name: /Logging · CCTV/ }).click();
   await page.getByText("Show all 10 controls").click();
   await page.getByRole("button", { name: "Save this plan" }).click();
 

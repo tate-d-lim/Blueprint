@@ -65,7 +65,7 @@ test("a click moves in on the part and hides the labels; Whole plan moves back o
   await expect(hotel).toBeVisible({ timeout: 20_000 });
   await page.locator('[data-label="safe"]').click();
   await expect(hotel).toHaveAttribute("data-focus", "safe");
-  await expect(page.getByRole("heading", { level: 2, name: "Hotel safe" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Data" })).toBeVisible();
   await expect(page.locator("[data-label]").first()).toBeHidden();
   await page.getByRole("button", { name: "Whole plan" }).click();
   await expect(hotel).toHaveAttribute("data-focus", "");
@@ -108,8 +108,8 @@ test("with WebGL off, step 4 and a saved project show the still image and the li
   await skipTour(page);
   await expect(page.locator('[data-hotel="fallback"] img')).toBeVisible();
   await expect(page.locator("button[data-label]")).toHaveCount(11);
-  await page.getByRole("button", { name: /CCTV · Logging/ }).click();
-  await expect(page.getByRole("heading", { level: 2, name: "CCTV" })).toBeVisible();
+  await page.getByRole("button", { name: /Logging · CCTV/ }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "Logging" })).toBeVisible();
   await saveAndTick(page, "appCentral");
   await expect(page.locator('[data-hotel="fallback"] img')).toBeVisible();
   await expect(page.getByText("51 of 84 done")).toBeVisible();

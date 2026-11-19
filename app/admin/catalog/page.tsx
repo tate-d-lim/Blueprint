@@ -1,4 +1,3 @@
-import { RoleGate } from "@/app/components/role-gate";
 import { ResetButton } from "@/app/components/reset-button";
 import { ButtonLink } from "@/app/ui/button";
 import { Note } from "@/app/ui/note";
@@ -11,6 +10,7 @@ import { withDb } from "@/lib/data/db";
 import { loadCatalogPage, newestFetched } from "@/lib/data/repos/catalog";
 import type { CatalogRelease, Profile } from "@/lib/domain/types";
 import { familyName } from "@/lib/plan/hotel";
+import { getRole } from "@/lib/role";
 import { CatalogBrowser, type Row } from "./catalog-browser";
 import { GovtechCheck } from "./govtech-check";
 import { ProfileSwitch } from "./profile-switch";
@@ -20,15 +20,9 @@ const HANDLED = "GovTech had changes. You applied or discarded them.";
 
 type Props = { searchParams: Promise<{ profile?: string; applied?: string }> };
 
-export default function CatalogPage(props: Props) {
-  return (
-    <RoleGate need="admin">
-      <Catalog {...props} />
-    </RoleGate>
-  );
-}
-
-async function Catalog({ searchParams }: Props) {
+/** Every role can read the catalog. Only the admin can change it. */
+export default async function CatalogPage({ searchParams }: Props) {
+  const isAdmin = (await getRole()) === "admin";
   const { profile: chosen, applied } = await searchParams;
   const source = SOURCES[0];
   const data = await withDb(async db => {
@@ -45,7 +39,7 @@ async function Catalog({ searchParams }: Props) {
         <Note tone="error" title="The database has no profiles.">
           Reset the data below to load the catalog from the seed files.
         </Note>
-        <SourceData />
+        {isAdmin && <SourceData />}
       </div>
     );
   }
@@ -70,15 +64,17 @@ async function Catalog({ searchParams }: Props) {
   const lastRelease = releases.find(r => r.changes.some(c => c.profileId === profile._id)) ?? releases.at(-1);
   const justApplied = applied ? releases.find(r => r._id === applied) : undefined;
   const { last, lastGood } = data.checks;
-  const due = data.due && autoCheckEnabled();
+  const due = isAdmin && data.due && autoCheckEnabled();
 
   return (
     <div className="flex max-w-page flex-col gap-8">
       <PageHeader title="IM8 catalog">
-        The official wording of each IM8 control, by profile. Update it with a release, then write the plain text that builders read.
+        {isAdmin
+          ? "The official wording of each IM8 control, by profile. Update it with a release, then write the plain text that builders read."
+          : "The official wording of each IM8 control, by profile, with the plain text that builders read. Only an admin can change it."}
       </PageHeader>
 
-      {justApplied && <Applied release={justApplied} profiles={profiles} />}
+      {isAdmin && justApplied && <Applied release={justApplied} profiles={profiles} />}
 
       <section aria-label="Release and checks" className="grid gap-x-10 gap-y-5 border-y border-rule py-5 md:grid-cols-[1fr_auto]">
         <dl className="grid grid-cols-[max-content_1fr] gap-x-8 gap-y-2 text-body">
@@ -101,13 +97,15 @@ async function Catalog({ searchParams }: Props) {
             )}
           </dd>
         </dl>
-        <div className="flex flex-wrap items-start gap-3 md:justify-end">
-          <GovtechCheck due={due} />
-          <ButtonLink href="/admin/catalog/upload">Upload a release</ButtonLink>
-        </div>
+        {isAdmin && (
+          <div className="flex flex-wrap items-start gap-3 md:justify-end">
+            <GovtechCheck due={due} />
+            <ButtonLink href="/admin/catalog/upload">Upload a release</ButtonLink>
+          </div>
+        )}
       </section>
 
-      {data.waiting && (
+      {isAdmin && data.waiting && (
         <Note
           tone="attention"
           title="GovTech has changes that wait for your review."
@@ -123,17 +121,17 @@ async function Catalog({ searchParams }: Props) {
 
       <section className="flex flex-col gap-4" aria-label="Controls">
         <SectionHeading title="Controls" count={rows.length}>
-          Select a control to read its official wording, see what the tools say, and write its plain text.
+          {isAdmin ? "Select a control to read its official wording, see what the tools say, and write its plain text." : "Select a control to read its official wording, see what the tools say, and read its plain text."}
         </SectionHeading>
         <ProfileSwitch
           value={profile._id}
           options={profiles.map(p => ({ value: p._id, label: `${p.title} · ${plural(p.entries.length, "control")}` }))}
         />
-        <CatalogBrowser key={profile._id} profileId={profile._id} profileTitle={profile.title} rows={rows} />
+        <CatalogBrowser key={profile._id} canEdit={isAdmin} profileId={profile._id} profileTitle={profile.title} rows={rows} />
       </section>
 
       <History releases={releases} profiles={profiles} />
-      <SourceData />
+      {isAdmin && <SourceData />}
     </div>
   );
 }

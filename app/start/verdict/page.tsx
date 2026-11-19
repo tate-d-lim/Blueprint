@@ -55,8 +55,6 @@ function CannotPlan({ answers }: { answers: RiskAnswers }) {
     ["Sensitivity", OPTION_LABELS.sensitivity[answers.sensitivity]],
     ["Worst impact", OPTION_LABELS.impact[answers.impact]],
     ["Impact on systems that depend on it", OPTION_LABELS.downstream[answers.downstream]],
-    ["Critical Information Infrastructure (CII)", answers.cii ? "Yes" : "No"],
-    ["SII", answers.sii ? "Yes" : "No"],
   ];
   return (
     <>

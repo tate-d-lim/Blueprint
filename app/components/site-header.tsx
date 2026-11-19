@@ -5,17 +5,19 @@ import { usePathname } from "next/navigation";
 import type { Role } from "@/lib/role";
 import { RoleSwitcher } from "./role-switcher";
 
-// Projects is the main page; a new plan starts from there.
-const SHEETS: Sheet[] = [{ href: "/projects", label: "Projects", paths: ["/projects", "/start"] }];
+// Projects is the main page; a new plan starts from there. Every role can read the Catalog; only the admin can change it.
+const SHEETS: Sheet[] = [
+  { href: "/projects", label: "Projects", paths: ["/projects", "/start"] },
+  { href: "/admin/catalog", label: "Catalog", paths: ["/admin/catalog"] },
+];
 
 type Sheet = { href: string; label: string; paths: string[]; not?: string[] };
 
-// The sheets each role gets beside Projects. The Catalog sheet lives under /admin, so Approvals leaves it out.
+// The sheets each role gets beside Projects and Catalog. The Catalog sheet lives under /admin, so Approvals leaves it out.
 const ROLE_SHEETS: Partial<Record<Role, Sheet[]>> = {
   "tool-owner": [{ href: "/tool-owner", label: "Tools", paths: ["/tool-owner"] }],
   admin: [
     { href: "/admin", label: "Approvals", paths: ["/admin"], not: ["/admin/catalog"] },
-    { href: "/admin/catalog", label: "Catalog", paths: ["/admin/catalog"] },
   ],
 };
 

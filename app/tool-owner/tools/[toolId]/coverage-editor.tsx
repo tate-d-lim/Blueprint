@@ -285,8 +285,8 @@ function Editor({
               summary={
                 <span className="flex flex-col">
                   <span className="text-lead font-semibold">
-                    {part.name}
-                    <span className="font-normal text-ink-soft"> · {[...new Set(total.map(r => familyName(r.family)))].join(", ")}</span>
+                    {[...new Set(total.map(r => familyName(r.family)))].join(", ")}
+                    <span className="font-normal text-ink-soft"> · {part.name}</span>
                   </span>
                   <span className="tnum text-small text-ink-soft">{answerLine(answered, total.length)}</span>
                 </span>
