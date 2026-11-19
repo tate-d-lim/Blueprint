@@ -1,5 +1,5 @@
 import { ResetButton } from "@/app/components/reset-button";
-import { ButtonLink } from "@/app/ui/button";
+import { ButtonLink, DownloadButton } from "@/app/ui/button";
 import { Note } from "@/app/ui/note";
 import { PageHeader, SectionHeading } from "@/app/ui/panel";
 import { Cell, Table } from "@/app/ui/table";
@@ -123,10 +123,15 @@ export default async function CatalogPage({ searchParams }: Props) {
         <SectionHeading title="Controls" count={rows.length}>
           {isAdmin ? "Select a control to read its official wording, see what the tools say, and write its plain text." : "Select a control to read its official wording, see what the tools say, and read its plain text."}
         </SectionHeading>
-        <ProfileSwitch
-          value={profile._id}
-          options={profiles.map(p => ({ value: p._id, label: `${p.title} · ${plural(p.entries.length, "control")}` }))}
-        />
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <ProfileSwitch
+            value={profile._id}
+            options={profiles.map(p => ({ value: p._id, label: `${p.title} · ${plural(p.entries.length, "control")}` }))}
+          />
+          <DownloadButton href={`/api/export/oscal/catalog?profile=${encodeURIComponent(profile._id)}`} variant="secondary">
+            Download {profile.title} as OSCAL
+          </DownloadButton>
+        </div>
         <CatalogBrowser key={profile._id} canEdit={isAdmin} profileId={profile._id} profileTitle={profile.title} rows={rows} />
       </section>
 

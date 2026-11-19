@@ -1,7 +1,8 @@
 import { v5 as uuidv5 } from 'uuid';
-import type { CoverageCheck, CoverageEntry, CoverageValue, Profile, TaskState, Tool } from '../domain/types';
+import type { CoverageCheck, CoverageEntry, CoverageValue, Profile, ProfileEntry, TaskState, Tool } from '../domain/types';
+import { familyName } from '../plan/hotel';
 import type { Plan, PlanItem } from '../plan/engine';
-import { LOCALLY_DERIVED, STATUS_LABEL } from '../plan/labels';
+import { LEVEL_LABEL, LOCALLY_DERIVED, STATUS_LABEL } from '../plan/labels';
 import { rowVerification, type VersionPair } from '../plan/verification';
 import { OPTION_LABELS, type RiskAnswers } from '../risk/assess';
 import { sspValues } from './ssp-values';
@@ -393,3 +394,51 @@ function answersDescription(a: RiskAnswers): string {
   );
 }
 
+
+/** Prop values are one line in OSCAL, so line breaks become spaces. Empty values give no prop. */
+const oneLine = (text: string) => text.replace(/\s+/g, ' ').trim();
+
+/**
+ * One profile of the catalog as an OSCAL 1.1.2 catalog: one group for each family, one control for each entry. Each
+ * control has its official wording (statement, guidance, risk statement, references), its level in this profile, and
+ * the plain text that builders read. The parameters stay in the "[ insert: param, x ]" form the IM8 files use.
+ * Blueprint's own upload reads this file back.
+ */
+export function buildCatalog({ profile, generatedAt }: { profile: Profile; generatedAt: string }): Json {
+  const families: string[] = [];
+  for (const e of profile.entries) if (!families.includes(e.family)) families.push(e.family);
+  const control = (e: ProfileEntry): Json => {
+    const props: Json[] = [
+      { name: 'label', value: e.id.toUpperCase() },
+      prop('level', LEVEL_LABEL[e.level]),
+      ...(oneLine(e.rationale) ? [{ name: 'risk-statement', value: oneLine(e.rationale) }] : []),
+      ...(e.plain?.title ? [prop('plain-title', oneLine(e.plain.title))] : []),
+    ];
+    const parts: Json[] = [
+      { id: `${e.id}_smt`, name: 'statement', prose: e.statement },
+      ...(e.recommendations.trim() ? [{ id: `${e.id}_gdn`, name: 'guidance', prose: e.recommendations }] : []),
+      ...(e.plain?.task ? [{ id: `${e.id}_plain-task`, name: 'plain-task', ns: OSCAL_NS, prose: e.plain.task }] : []),
+      ...(e.plain?.why ? [{ id: `${e.id}_plain-why`, name: 'plain-why', ns: OSCAL_NS, prose: e.plain.why }] : []),
+    ];
+    const refs = e.references.split(';').map(r => r.trim()).filter(Boolean);
+    if (refs.length) parts.push({ id: `${e.id}_ref`, name: 'references', ns: OSCAL_NS, prose: refs.join('\n\n') });
+    return { id: e.id, class: 'IM8', title: e.title, props, parts };
+  };
+  return {
+    catalog: {
+      uuid: uuid(`catalog|${profile._id}|${profile.version}|${generatedAt}`),
+      metadata: {
+        ...metadata(`IM8 ${profile.title} (locally derived)`, generatedAt),
+        version: profile.version,
+        props: [prop('profile-id', profile._id), prop('release', oneLine(profile.release))],
+        remarks: `${LOCALLY_DERIVED} Exported by Blueprint on ${generatedAt.slice(0, 10)}.`,
+      },
+      groups: families.map(family => ({
+        id: family,
+        class: 'family',
+        title: familyName(family),
+        controls: profile.entries.filter(e => e.family === family).map(control),
+      })),
+    },
+  };
+}

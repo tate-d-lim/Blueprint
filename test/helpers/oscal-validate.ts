@@ -3,7 +3,7 @@ import addFormats from 'ajv-formats';
 import { readFileSync } from 'node:fs';
 
 /** A validator for one of the NIST OSCAL 1.1.2 JSON schemas kept in test/fixtures/oscal. */
-export function oscalValidator(schema: 'component' | 'ssp'): (doc: unknown) => { ok: boolean; errors: string[] } {
+export function oscalValidator(schema: 'component' | 'ssp' | 'catalog'): (doc: unknown) => { ok: boolean; errors: string[] } {
   const ajv = new Ajv({ strict: false, allErrors: true });
   addFormats(ajv);
   const validate: ValidateFunction = ajv.compile(JSON.parse(readFileSync(`test/fixtures/oscal/oscal_${schema}_schema.json`, 'utf8')));

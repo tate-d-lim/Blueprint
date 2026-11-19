@@ -48,7 +48,7 @@ export function parseOscal(json: OscalCatalog, fileName: string, profiles: Known
         statement,
         recommendations: prose(part('guidance')),
         rationale: control.props?.find(p => p.name === 'risk-statement')?.value ?? '',
-        references: (control.links ?? []).map(l => l.text ?? '').filter(Boolean).join(';'),
+        references: [...(control.links ?? []).map(l => l.text ?? ''), ...part('references').split(/\n\s*\n/)].map(r => r.trim()).filter(Boolean).join(';'),
       });
     }
   }

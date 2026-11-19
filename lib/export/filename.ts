@@ -16,3 +16,6 @@ export function sspFileName(profileId: string, projectName?: string): string {
   const slug = projectName ? slugify(projectName) : '';
   return slug ? `${profileId}-ssp-${slug}.xlsx` : `${profileId}-ssp.xlsx`;
 }
+
+/** The OSCAL catalog of one profile: `im8-{profile}-catalog.json`. */
+export const catalogFileName = (profileId: string): string => `im8-${slugify(profileId)}-catalog.json`;
